@@ -1,11 +1,18 @@
+const CACHE_VERSION = 'v2';
+
 self.addEventListener('install', (e) => {
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (e) => {
-  e.waitUntil(self.clients.claim());
+  e.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(keys.map((key) => caches.delete(key)))
+    ).then(() => self.clients.claim())
+  );
 });
 
 self.addEventListener('fetch', (e) => {
-  // Minimal fetch handler required for PWA install prompt
+  // Pass-through: no caching, always fetch fresh
+  e.respondWith(fetch(e.request));
 });
