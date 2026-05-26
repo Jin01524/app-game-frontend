@@ -1,0 +1,295 @@
+/* ═══════════════════════════════════════════════════════════
+   TỆ LẠN 4.2 — CLASSIC RPG THEME
+   Light Mode / Pastel / 8-bit Box Aesthetic
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: auto; }
+
+/* ── Design Tokens ── */
+:root {
+  /* Background */
+  --px-bg:        #e0f2fe;
+  --px-bg2:       #bae6fd;
+  --px-panel:     #ffffff;
+  --px-panel2:    #f8fafc;
+
+  /* Primary (Blue) */
+  --px-green:     #3b82f6;
+  --px-green-mid: #2563eb;
+  --px-green-dim: #94a3b8;
+  --px-green-bg:  rgba(59, 130, 246, 0.1);
+
+  /* Accent colors */
+  --px-cyan:      #0ea5e9;
+  --px-amber:     #eab308;
+  --px-magenta:   #d946ef;
+  --px-red:       #ef4444;
+  --px-blue:      #3b82f6;
+
+  /* Text */
+  --px-text:      #0f172a;
+  --px-text-mid:  #334155;
+  --px-text-dim:  #64748b;
+
+  /* Borders */
+  --px-border:    #1e293b;
+  --px-border-bright: #0f172a;
+
+  /* Typography */
+  --font-pixel: 'Space Mono', 'Courier New', monospace;
+  --font-vt:    'Space Mono', 'Courier New', monospace;
+  --font-body:  'Be Vietnam Pro', 'Segoe UI', sans-serif;
+
+  /* Spacing */
+  --px-gap:  8px;
+  --px-gap2: 16px;
+  --px-gap3: 24px;
+
+  /* Transitions */
+  --px-trans: 0.08s steps(1);
+  --px-trans-smooth: 0.15s ease;
+}
+
+/* ── Body ── */
+body {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  background: var(--px-bg);
+  color: var(--px-text);
+  min-height: 100dvh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  cursor: default;
+}
+
+/* Pixel cursor */
+*, input, textarea { cursor: inherit; }
+button, a, [role="button"], label[for] { cursor: crosshair !important; }
+input, textarea, select { cursor: text !important; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--px-bg2); }
+::-webkit-scrollbar-thumb { background: var(--px-green-dim); border: 2px solid var(--px-bg2); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--px-text-mid); }
+
+/* ── Keyframes ── */
+@keyframes blink {
+  0%, 49%  { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+@keyframes px-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes px-scan-in {
+  from { clip-path: inset(0 0 100% 0); }
+  to   { clip-path: inset(0 0 0% 0); }
+}
+
+@keyframes glitch-anim {
+  0%, 100% { transform: translate(0); filter: none; }
+  20%      { transform: translate(-2px, 0); filter: hue-rotate(90deg); }
+  40%      { transform: translate(2px, 0); }
+  60%      { transform: translate(-1px, 0); filter: hue-rotate(-90deg); }
+  80%      { transform: translate(1px, 0); }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Typography utilities ── */
+.px-font { font-family: var(--font-pixel) !important; }
+.vt-font { font-family: var(--font-vt) !important; }
+
+.gradient-text {
+  color: var(--px-green);
+}
+
+/* ── RPG Box (replaces glass-card) ── */
+.rpg-box {
+  background: var(--px-panel);
+  border: 3px solid var(--px-border);
+  box-shadow: 4px 4px 0 var(--px-border);
+  border-radius: 6px;
+  position: relative;
+}
+
+/* ── App background (canvas renders this) ── */
+.app-bg { display: none; }
+
+/* ── Animations ── */
+.fade-in             { animation: px-fade-in 0.25s ease both; }
+.fade-in-delay-1     { animation: px-fade-in 0.25s 0.08s ease both; }
+.fade-in-delay-2     { animation: px-fade-in 0.25s 0.16s ease both; }
+.fade-in-delay-3     { animation: px-fade-in 0.25s 0.24s ease both; }
+
+/* ── Pixel titlebar ── */
+.px-titlebar {
+  background: var(--px-border);
+  color: #fff;
+  font-family: var(--font-pixel);
+  font-weight: 700;
+  font-size: 0.5rem;
+  padding: 8px 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid var(--px-border);
+  border-radius: 4px 4px 0 0;
+}
+
+/* ── Blinking cursor ── */
+.px-cursor {
+  display: inline-block;
+  width: 8px;
+  height: 14px;
+  background: var(--px-text);
+  animation: blink 1s step-end infinite;
+  vertical-align: text-bottom;
+  margin-left: 2px;
+}
+
+/* ── Glitch effect ── */
+.px-glitch {
+  animation: glitch-anim 0.3s steps(1) infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   BUTTONS
+   ═══════════════════════════════════════════════════════════ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-pixel);
+  font-weight: 700;
+  font-size: 0.55rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 12px 18px;
+  border: 3px solid var(--px-border);
+  box-shadow: 3px 3px 0 var(--px-border);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--px-text);
+  cursor: crosshair !important;
+  transition: transform 0.05s ease, box-shadow 0.05s ease;
+  width: 100%;
+  position: relative;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.btn:not(:disabled):active {
+  transform: translate(3px, 3px);
+  box-shadow: 0 0 0 var(--px-border) !important;
+}
+
+.btn:disabled { opacity: 0.5; cursor: not-allowed !important; box-shadow: 0 0 0 var(--px-border); transform: translate(3px, 3px); }
+
+.btn-primary {
+  background: var(--px-green);
+  color: #fff;
+}
+.btn-primary:not(:disabled):hover {
+  background: var(--px-green-mid);
+}
+
+.btn-outline {
+  background: var(--px-bg2);
+  color: var(--px-text-mid);
+}
+.btn-outline:not(:disabled):hover {
+  background: #cbd5e1;
+}
+
+.btn-danger {
+  background: var(--px-red);
+  color: #fff;
+}
+.btn-danger:not(:disabled):hover {
+  background: #dc2626;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   INPUTS
+   ═══════════════════════════════════════════════════════════ */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.input-label {
+  font-family: var(--font-pixel);
+  font-size: 0.5rem;
+  color: var(--px-text-dim);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.input-field {
+  width: 100%;
+  padding: 12px 14px;
+  background: #fff;
+  border: 3px solid var(--px-border);
+  border-radius: 6px;
+  color: var(--px-text);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  outline: none;
+  transition: all var(--px-trans-smooth);
+  -webkit-appearance: none;
+  box-shadow: inset 2px 2px 0 rgba(0,0,0,0.05);
+}
+.input-field::placeholder { color: var(--px-green-dim); opacity: 1; }
+.input-field:focus {
+  border-color: var(--px-green);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+.input-field[readonly] {
+  background: var(--px-bg2);
+  color: var(--px-text-dim);
+}
+
+.input-wrapper { position: relative; display: flex; }
+.input-wrapper .input-field { flex: 1; }
+.input-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--px-text-dim);
+  cursor: crosshair !important;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
+.input-toggle:hover { color: var(--px-green); }
+
+/* ── Spinner ── */
+.spinner {
+  width: 14px; height: 14px;
+  border: 2px solid var(--px-border);
+  border-top-color: var(--px-green);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   OVERLAY / MODAL
+   ═══════════════════════════════════════════════════════════ */
+/* Keep common overlay utility */

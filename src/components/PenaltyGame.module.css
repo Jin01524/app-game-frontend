@@ -1,0 +1,153 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--px-bg2);
+  border: 3px solid var(--px-border);
+  padding: 8px 12px;
+  border-radius: 4px;
+  box-shadow: inset 2px 2px 0 rgba(0,0,0,0.05);
+}
+
+.statBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.statLabel {
+  font-family: var(--font-pixel);
+  font-size: 0.4rem;
+  color: var(--px-text-dim);
+  letter-spacing: 1px;
+}
+
+.statValue {
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: var(--px-text);
+}
+
+.xuValue {
+  color: var(--px-amber);
+}
+
+.field {
+  position: relative;
+  width: 100%;
+  height: 180px;
+  background: #a3e635; /* Retro grass green */
+  border: 3px solid var(--px-border);
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: inset 2px 2px 0 rgba(0,0,0,0.1);
+  background-image: linear-gradient(rgba(255,255,255,0.2) 1px, transparent 1px),
+  linear-gradient(90deg, rgba(255,255,255,0.2) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.goalLine {
+  position: absolute;
+  top: 15%;
+  left: 10%;
+  right: 10%;
+  height: 4px;
+  background: #fff;
+  border: 1px solid var(--px-border);
+}
+
+.goalPostLeft, .goalPostRight {
+  position: absolute;
+  top: 5%;
+  width: 6px;
+  height: 30px;
+  background: #fff;
+  border: 2px solid var(--px-border);
+  border-radius: 2px;
+}
+.goalPostLeft { left: 10%; }
+.goalPostRight { right: 10%; }
+
+.goalkeeper {
+  position: absolute;
+  top: 16%;
+  width: 24px;
+  height: 32px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 10;
+}
+
+.gkHead {
+  width: 14px;
+  height: 14px;
+  background: #fca5a5;
+  border: 2px solid var(--px-border);
+}
+
+.gkBody {
+  width: 20px;
+  height: 18px;
+  background: var(--px-red);
+  border: 2px solid var(--px-border);
+  border-top: none;
+}
+
+.ball {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  transform: translateX(-50%);
+  font-size: 18px;
+  line-height: 20px;
+  text-align: center;
+  z-index: 10;
+  filter: drop-shadow(0 2px 0 rgba(0,0,0,0.2));
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.message {
+  text-align: center;
+  font-family: var(--font-pixel);
+  font-size: 0.45rem;
+  height: 20px;
+  color: var(--px-text);
+}
+
+.msgSuccess { color: var(--px-green); font-weight: bold; }
+.msgError { color: var(--px-red); font-weight: bold; }
+
+.shootBtn {
+  width: 100%;
+  padding: 14px;
+  font-size: 0.6rem;
+  letter-spacing: 2px;
+}
+
+.aimArrow {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  width: 4px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.8);
+  transform-origin: bottom center;
+  z-index: 5;
+  border-radius: 2px;
+  pointer-events: none;
+}
