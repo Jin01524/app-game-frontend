@@ -3,6 +3,7 @@
   "short_name": "TL4.2",
   "start_url": "/",
   "display": "standalone",
+  "orientation": "any",
   "background_color": "#080808",
   "theme_color": "#080808",
   "icons": [
