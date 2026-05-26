@@ -195,52 +195,58 @@ export default function WelcomePage() {
               <span className={styles.clockDate}>{dateStr}</span>
             </div>
           </div>
-          
-          {deferredPrompt && (
-            <button 
-              onClick={handleInstallClick}
-              className="pixel-btn"
-              style={{
-                width: '60px',
-                height: '70px',
-                backgroundColor: 'var(--px-bg)',
-                border: '4px solid #ef4444',
-                color: '#ef4444',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                fontFamily: 'var(--font-pixel)',
-                fontSize: '0.6rem',
-                lineHeight: '1.2'
-              }}
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '4px' }}>
-                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                 <polyline points="7 10 12 15 17 10"></polyline>
-                 <line x1="12" y1="15" x2="12" y2="3"></line>
-              </svg>
-              <span>CÀI APP</span>
-            </button>
-          )}
         </div>
 
         {/* ── User List ── */}
-        <div className={`${styles.userList} rpg-box fade-in fade-in-delay-1`} style={{ margin: '0' }}>
-          {usersStatus.map(u => {
-            const diff = u.last_online ? (now - new Date(u.last_online + 'Z')) / 1000 : Infinity;
-            const isOnline = diff < 300;
-            return (
-              <div key={u.id} className={styles.userListItem} title={u.display_name || u.username} onClick={() => navigate(`/home2d/${u.username}`)} style={{ cursor: 'pointer' }}>
-                <div className={styles.userAvatarWrap}>
-                  <img src={u.avatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${u.username}`} alt={u.username} className={styles.userAvatarImg} crossOrigin="anonymous" />
-                  <div className={styles.userDot} style={{ background: isOnline ? 'var(--px-green)' : '#666' }} title={getRelativeTime(u.last_online)} />
+        <div className={`${styles.userList} rpg-box fade-in fade-in-delay-1`} style={{ margin: '0', display: 'flex', alignItems: 'center' }}>
+          <div style={{ display: 'flex', flex: 1, overflowX: 'auto', gap: '0' }}>
+            {usersStatus.map(u => {
+              const diff = u.last_online ? (now - new Date(u.last_online + 'Z')) / 1000 : Infinity;
+              const isOnline = diff < 300;
+              return (
+                <div key={u.id} className={styles.userListItem} title={u.display_name || u.username} onClick={() => navigate(`/home2d/${u.username}`)} style={{ cursor: 'pointer' }}>
+                  <div className={styles.userAvatarWrap}>
+                    <img src={u.avatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${u.username}`} alt={u.username} className={styles.userAvatarImg} crossOrigin="anonymous" />
+                    <div className={styles.userDot} style={{ background: isOnline ? 'var(--px-green)' : '#666' }} title={getRelativeTime(u.last_online)} />
+                  </div>
+                  <div className={styles.userName} style={{ color: isOnline ? 'var(--px-text)' : '#aaa' }}>{u.username}</div>
                 </div>
-                <div className={styles.userName} style={{ color: isOnline ? 'var(--px-text)' : '#aaa' }}>{u.username}</div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
+
+          {/* Install button - always visible */}
+          <button
+            onClick={handleInstallClick}
+            title={deferredPrompt ? 'Cài ứng dụng' : 'Thêm vào màn hình chính'}
+            className="pixel-btn"
+            style={{
+              flexShrink: 0,
+              width: '52px',
+              height: '64px',
+              marginLeft: '8px',
+              backgroundColor: 'var(--px-bg)',
+              border: `3px solid ${deferredPrompt ? '#10b981' : '#64748b'}`,
+              color: deferredPrompt ? '#10b981' : '#64748b',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              fontFamily: 'var(--font-pixel)',
+              fontSize: '0.55rem',
+              lineHeight: '1.3',
+              borderRadius: '4px',
+            }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '3px' }}>
+              <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+              <line x1="12" y1="18" x2="12" y2="18"></line>
+              <path d="M9 10l3 3 3-3"></path>
+              <line x1="12" y1="7" x2="12" y2="13"></line>
+            </svg>
+            <span>CÀI APP</span>
+          </button>
         </div>
 
         {/* ── Penalty Game ── */}
