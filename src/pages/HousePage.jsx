@@ -202,7 +202,7 @@ export default function HousePage() {
   useEffect(() => {
     if (!targetUsername) return;
     
-    socketRef.current = io(window.location.origin.replace('5173', '3001'));
+    socketRef.current = io(import.meta.env.VITE_API_URL || window.location.origin.replace('5173', '3001'));
     
     socketRef.current.on('connect', () => {
       socketRef.current.emit('join_house', {
