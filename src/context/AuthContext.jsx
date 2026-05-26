@@ -65,7 +65,8 @@ export function AuthProvider({ children }) {
   // Authenticated fetch helper
   const authFetch = useCallback(async (url, options = {}) => {
     const token = localStorage.getItem('tl42_token');
-    return fetch(url, {
+    const fullUrl = url.startsWith('/') ? `${import.meta.env.VITE_API_URL || ''}${url}` : url;
+    return fetch(fullUrl, {
       ...options,
       headers: {
         'Content-Type': 'application/json',
