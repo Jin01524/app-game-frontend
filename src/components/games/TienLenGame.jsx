@@ -144,19 +144,19 @@ export default function TienLenGame({ onClose, user, socket }) {
       position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
       backgroundColor: '#064e3b',
       backgroundImage: 'radial-gradient(circle, #065f46 0%, #022c22 100%)',
-      zIndex: 9999, display: 'flex', flexDirection: 'column', boxSizing: 'border-box',
-      overflowY: 'auto', overflowX: 'hidden', padding: '20px', fontFamily: 'sans-serif'
+      zIndex: 9999, boxSizing: 'border-box',
+      overflow: 'hidden', fontFamily: 'sans-serif'
     }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: '60px', marginBottom: '20px' }}>
-        <div style={{ display: 'flex', gap: '1vw', alignItems: 'center' }}>
-          <div style={{ color: 'white', fontWeight: 'bold', fontSize: 'clamp(12px, 1.5vh, 20px)' }}>Khán giả: {gameState.spectators.length}</div>
-        </div>
+      <div style={{ position: 'absolute', top: '10px', left: '20px', display: 'flex', gap: '1vw', alignItems: 'center', zIndex: 100 }}>
+        <div style={{ color: 'white', fontWeight: 'bold', fontSize: 'clamp(12px, 1.5vh, 20px)', textShadow: '1px 1px 2px black' }}>Khán giả: {gameState.spectators.length}</div>
+      </div>
+      <div style={{ position: 'absolute', top: '10px', right: '20px', zIndex: 100 }}>
         <button onClick={handleClose} style={{ backgroundColor: '#ef4444', color: 'white', border: '2px solid #7f1d1d', borderRadius: '8px', padding: '1vh 2vw', fontSize: 'clamp(14px, 2vh, 24px)', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}>Thoát</button>
       </div>
 
       {gameState.status === 'waiting' && (
-        <div style={{ position: 'absolute', top:0, left:0, width:'100%', height:'100%', backgroundColor:'rgba(0,0,0,0.8)', zIndex: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ position: 'absolute', top:0, left:0, width:'100%', height:'100%', backgroundColor:'rgba(0,0,0,0.8)', zIndex: 1000, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
           {isSpectator ? (
             <div style={{ textAlign: 'center' }}>
               {!hasHumanPlayer ? (
@@ -204,16 +204,16 @@ export default function TienLenGame({ onClose, user, socket }) {
         </div>
       )}
 
-      {/* Main Grid Area */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative' }}>
+      {/* Main Game Area */}
+      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}>
         
         {/* Top Player */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingBottom: '1vh' }}>
+        <div style={{ position: 'absolute', top: '10px', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 10 }}>
           {topPlayer && (
             <>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1vw', marginBottom: '1vh' }}>
                 <div style={{ width: '6vh', height: '6vh', borderRadius: '50%', backgroundColor: '#2563eb', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: 'clamp(14px, 2vh, 24px)', border: getPlayerTurn(topPlayer) ? '3px solid #facc15' : '3px solid white', boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}>{topPlayer.displayName.charAt(0)}</div>
-                <div style={{ color: 'white' }}>{topPlayer.displayName}</div>
+                <div style={{ color: 'white', textShadow: '1px 1px 2px black' }}>{topPlayer.displayName}</div>
                 {topPlayer.passed && <div style={{ color: '#ef4444', fontWeight: 'bold', fontSize: 'clamp(12px, 1.5vh, 20px)', backgroundColor: 'rgba(0,0,0,0.5)', padding: '0.5vh 1vw', borderRadius: '4px' }}>Bỏ lượt</div>}
               </div>
               <div style={{ display: 'flex' }}>
@@ -227,95 +227,89 @@ export default function TienLenGame({ onClose, user, socket }) {
           )}
         </div>
 
-        {/* Middle Area */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'stretch', flex: 1, minHeight: 0, padding: '1vh 0' }}>
-          
-          {/* Left Player */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '15vw' }}>
-            {leftPlayer && (
-              <>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1vw', marginBottom: '1vh' }}>
-                  <div style={{ width: '6vh', height: '6vh', borderRadius: '50%', backgroundColor: '#2563eb', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: 'clamp(14px, 2vh, 24px)', border: getPlayerTurn(leftPlayer) ? '3px solid #facc15' : '3px solid white', boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}>{leftPlayer.displayName.charAt(0)}</div>
-                  {leftPlayer.passed && <div style={{ color: '#ef4444', fontWeight: 'bold', fontSize: 'clamp(12px, 1.5vh, 20px)', backgroundColor: 'rgba(0,0,0,0.5)', padding: '0.5vh 1vw', borderRadius: '4px' }}>Bỏ lượt</div>}
-                </div>
-                <div style={{ color: 'white', marginBottom: '5px', textAlign: 'center' }}>{leftPlayer.displayName}</div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  {Array.from({ length: leftPlayer.cardsCount }).map((_, i) => (
-                     <div key={i} style={{ marginTop: i === 0 ? 0 : 'clamp(-60px, -8vw, -20px)', zIndex: i }}>
-                       <PlayingCard hidden={true} />
-                     </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Center Table */}
-          <div style={{ flex: 1, border: '4px solid rgba(255,255,255,0.1)', borderRadius: '2vw', backgroundColor: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-            {gameState.tableCards.length === 0 ? (
-              <div style={{ color: 'rgba(255,255,255,0.3)', fontWeight: 'bold', fontSize: 'clamp(20px, 4vh, 40px)', textTransform: 'uppercase', letterSpacing: '2px' }}>Ra bài</div>
-            ) : (
-              <div style={{ display: 'flex' }}>
-                {gameState.tableCards.map((card, i) => (
-                  <div key={i} style={{ marginLeft: i === 0 ? 0 : 'clamp(-60px, -4vw, -20px)' }}>
-                    <PlayingCard card={card} />
-                  </div>
+        {/* Left Player */}
+        <div style={{ position: 'absolute', top: '50%', left: '10px', transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 10 }}>
+          {leftPlayer && (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1vw', marginBottom: '1vh' }}>
+                <div style={{ width: '6vh', height: '6vh', borderRadius: '50%', backgroundColor: '#2563eb', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: 'clamp(14px, 2vh, 24px)', border: getPlayerTurn(leftPlayer) ? '3px solid #facc15' : '3px solid white', boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}>{leftPlayer.displayName.charAt(0)}</div>
+                {leftPlayer.passed && <div style={{ color: '#ef4444', fontWeight: 'bold', fontSize: 'clamp(12px, 1.5vh, 20px)', backgroundColor: 'rgba(0,0,0,0.5)', padding: '0.5vh 1vw', borderRadius: '4px' }}>Bỏ lượt</div>}
+              </div>
+              <div style={{ color: 'white', marginBottom: '5px', textAlign: 'center', textShadow: '1px 1px 2px black' }}>{leftPlayer.displayName}</div>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {Array.from({ length: leftPlayer.cardsCount }).map((_, i) => (
+                   <div key={i} style={{ marginTop: i === 0 ? 0 : 'clamp(-60px, -8vw, -20px)', zIndex: i }}>
+                     <PlayingCard hidden={true} />
+                   </div>
                 ))}
               </div>
-            )}
-            
-            {gameState.winners && gameState.winners.length > 0 && (
-              <div style={{ position: 'absolute', left: '2vw', top: '2vh', backgroundColor: 'rgba(0,0,0,0.85)', color: '#facc15', padding: '1.5vh 1.5vw', minWidth: '120px', fontSize: 'clamp(14px, 2vh, 24px)', fontWeight: 'bold', borderRadius: '1vw', zIndex: 10, textAlign: 'left', border: '2px solid #facc15', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
-                <h3 style={{ margin: 0, marginBottom: '10px', textAlign: 'center', fontSize: '1.2em' }}>Kết quả</h3>
-                {gameState.winners.map((w, idx) => {
-                  let payoutText = '';
-                  if (gameState.winners.length === 4) {
-                    if (idx === 0) payoutText = `+${gameState.winners[3].bet}`;
-                    else if (idx === 1) payoutText = `+${gameState.winners[2].bet}`;
-                    else if (idx === 2) payoutText = `-${gameState.winners[2].bet}`;
-                    else if (idx === 3) payoutText = `-${gameState.winners[3].bet}`;
-                  }
-                  
-                  return (
-                    <div key={idx} style={{ color: idx === 0 ? '#facc15' : 'white', fontSize: '1em', margin: '8px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', justifyContent: 'space-between' }}>
-                      <span>{idx + 1}. {w.displayName}</span>
-                      <span style={{ marginLeft: '15px', fontWeight: 'bold', color: (idx === 0 || idx === 1) ? '#10b981' : '#ef4444' }}>{payoutText}</span>
-                    </div>
-                  );
-                })}
+            </>
+          )}
+        </div>
+
+        {/* Right Player */}
+        <div style={{ position: 'absolute', top: '50%', right: '10px', transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 10 }}>
+          {rightPlayer && (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1vw', marginBottom: '1vh' }}>
+                {rightPlayer.passed && <div style={{ color: '#ef4444', fontWeight: 'bold', fontSize: 'clamp(12px, 1.5vh, 20px)', backgroundColor: 'rgba(0,0,0,0.5)', padding: '0.5vh 1vw', borderRadius: '4px' }}>Bỏ lượt</div>}
+                <div style={{ width: '6vh', height: '6vh', borderRadius: '50%', backgroundColor: '#2563eb', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: 'clamp(14px, 2vh, 24px)', border: getPlayerTurn(rightPlayer) ? '3px solid #facc15' : '3px solid white', boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}>{rightPlayer.displayName.charAt(0)}</div>
               </div>
-            )}
-          </div>
+              <div style={{ color: 'white', marginBottom: '5px', textAlign: 'center', textShadow: '1px 1px 2px black' }}>{rightPlayer.displayName}</div>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {Array.from({ length: rightPlayer.cardsCount }).map((_, i) => (
+                   <div key={i} style={{ marginTop: i === 0 ? 0 : 'clamp(-60px, -8vw, -20px)', zIndex: i }}>
+                     <PlayingCard hidden={true} />
+                   </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
 
-          {/* Right Player */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '15vw' }}>
-            {rightPlayer && (
-              <>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1vw', marginBottom: '1vh' }}>
-                  {rightPlayer.passed && <div style={{ color: '#ef4444', fontWeight: 'bold', fontSize: 'clamp(12px, 1.5vh, 20px)', backgroundColor: 'rgba(0,0,0,0.5)', padding: '0.5vh 1vw', borderRadius: '4px' }}>Bỏ lượt</div>}
-                  <div style={{ width: '6vh', height: '6vh', borderRadius: '50%', backgroundColor: '#2563eb', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: 'clamp(14px, 2vh, 24px)', border: getPlayerTurn(rightPlayer) ? '3px solid #facc15' : '3px solid white', boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}>{rightPlayer.displayName.charAt(0)}</div>
+        {/* Center Table */}
+        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '45vw', minHeight: '30vh', border: '4px solid rgba(255,255,255,0.1)', borderRadius: '2vw', backgroundColor: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 5 }}>
+          {gameState.tableCards.length === 0 ? (
+            <div style={{ color: 'rgba(255,255,255,0.3)', fontWeight: 'bold', fontSize: 'clamp(20px, 4vh, 40px)', textTransform: 'uppercase', letterSpacing: '2px' }}>Ra bài</div>
+          ) : (
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', padding: '10px' }}>
+              {gameState.tableCards.map((card, i) => (
+                <div key={i} style={{ marginLeft: i === 0 ? 0 : 'clamp(-60px, -4vw, -20px)', marginBottom: '5px' }}>
+                  <PlayingCard card={card} />
                 </div>
-                <div style={{ color: 'white', marginBottom: '5px', textAlign: 'center' }}>{rightPlayer.displayName}</div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  {Array.from({ length: rightPlayer.cardsCount }).map((_, i) => (
-                     <div key={i} style={{ marginTop: i === 0 ? 0 : 'clamp(-60px, -8vw, -20px)', zIndex: i }}>
-                       <PlayingCard hidden={true} />
-                     </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-
+              ))}
+            </div>
+          )}
+          
+          {gameState.winners && gameState.winners.length > 0 && (
+            <div style={{ position: 'absolute', left: '2vw', top: '-2vh', transform: 'translateY(-100%)', backgroundColor: 'rgba(0,0,0,0.85)', color: '#facc15', padding: '1.5vh 1.5vw', minWidth: '120px', fontSize: 'clamp(14px, 2vh, 24px)', fontWeight: 'bold', borderRadius: '1vw', zIndex: 10, textAlign: 'left', border: '2px solid #facc15', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
+              <h3 style={{ margin: 0, marginBottom: '10px', textAlign: 'center', fontSize: '1.2em' }}>Kết quả</h3>
+              {gameState.winners.map((w, idx) => {
+                let payoutText = '';
+                if (gameState.winners.length === 4) {
+                  if (idx === 0) payoutText = `+${gameState.winners[3].bet}`;
+                  else if (idx === 1) payoutText = `+${gameState.winners[2].bet}`;
+                  else if (idx === 2) payoutText = `-${gameState.winners[2].bet}`;
+                  else if (idx === 3) payoutText = `-${gameState.winners[3].bet}`;
+                }
+                return (
+                  <div key={idx} style={{ color: idx === 0 ? '#facc15' : 'white', fontSize: '1em', margin: '8px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', justifyContent: 'space-between' }}>
+                    <span>{idx + 1}. {w.displayName}</span>
+                    <span style={{ marginLeft: '15px', fontWeight: 'bold', color: (idx === 0 || idx === 1) ? '#10b981' : '#ef4444' }}>{payoutText}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Bottom Player */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', paddingTop: '1vh' }}>
+        <div style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 20 }}>
           {bottomPlayer && (
             <>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1vw', marginBottom: '1vh' }}>
                  <div style={{ width: '6vh', height: '6vh', borderRadius: '50%', backgroundColor: '#facc15', color: '#854d0e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: 'clamp(16px, 2.5vh, 32px)', border: getPlayerTurn(bottomPlayer) ? '4px solid white' : '3px solid #ca8a04', boxShadow: '0 4px 6px rgba(0,0,0,0.3)', zIndex: 10 }}>{bottomPlayer.displayName.charAt(0)}</div>
-                 <div style={{ color: 'white', fontWeight: 'bold', fontSize: 'clamp(14px, 2vh, 24px)' }}>{bottomPlayer.displayName}</div>
+                 <div style={{ color: 'white', fontWeight: 'bold', fontSize: 'clamp(14px, 2vh, 24px)', textShadow: '1px 1px 2px black' }}>{bottomPlayer.displayName}</div>
                  {bottomPlayer.passed && <div style={{ color: '#ef4444', fontWeight: 'bold', fontSize: 'clamp(12px, 1.5vh, 20px)', backgroundColor: 'rgba(0,0,0,0.5)', padding: '0.5vh 1vw', borderRadius: '4px' }}>Bỏ lượt</div>}
               </div>
 
@@ -339,25 +333,25 @@ export default function TienLenGame({ onClose, user, socket }) {
                   ))
                 )}
               </div>
-
-              {/* Action Buttons */}
-              {!isSpectator && (
-                <div style={{ position: 'absolute', bottom: '2vh', right: '2vw', display: 'flex', gap: '1vw' }}>
-                  {getPlayerTurn(bottomPlayer) && (gameState.lastCombo !== null && gameState.lastPlayerIdx !== mySlot) && (
-                    <button onClick={handlePassClick} style={{ backgroundColor: '#64748b', color: 'white', border: '2px solid #334155', borderRadius: '8px', padding: '1.5vh 3vw', fontSize: 'clamp(14px, 2vh, 24px)', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}>
-                      Bỏ qua
-                    </button>
-                  )}
-                  <button onClick={handlePlayClick} disabled={!getPlayerTurn(bottomPlayer)} style={{ backgroundColor: getPlayerTurn(bottomPlayer) ? '#10b981' : '#059669', color: getPlayerTurn(bottomPlayer) ? 'white' : '#a7f3d0', border: getPlayerTurn(bottomPlayer) ? '2px solid #047857' : '2px solid #064e3b', borderRadius: '8px', padding: '1.5vh 3vw', fontSize: 'clamp(14px, 2vh, 24px)', fontWeight: 'bold', cursor: getPlayerTurn(bottomPlayer) ? 'pointer' : 'default', opacity: getPlayerTurn(bottomPlayer) ? 1 : 0.6, boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}>
-                      Đánh
-                  </button>
-                </div>
-              )}
             </>
           )}
         </div>
 
+        {/* Action Buttons */}
+        {!isSpectator && (
+          <div style={{ position: 'absolute', bottom: '20px', right: '20px', display: 'flex', gap: '1vw', zIndex: 30 }}>
+            {getPlayerTurn(bottomPlayer) && (gameState.lastCombo !== null && gameState.lastPlayerIdx !== mySlot) && (
+              <button onClick={handlePassClick} style={{ backgroundColor: '#64748b', color: 'white', border: '2px solid #334155', borderRadius: '8px', padding: '1.5vh 3vw', fontSize: 'clamp(14px, 2vh, 24px)', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}>
+                Bỏ qua
+              </button>
+            )}
+            <button onClick={handlePlayClick} disabled={!getPlayerTurn(bottomPlayer)} style={{ backgroundColor: getPlayerTurn(bottomPlayer) ? '#10b981' : '#059669', color: getPlayerTurn(bottomPlayer) ? 'white' : '#a7f3d0', border: getPlayerTurn(bottomPlayer) ? '2px solid #047857' : '2px solid #064e3b', borderRadius: '8px', padding: '1.5vh 3vw', fontSize: 'clamp(14px, 2vh, 24px)', fontWeight: 'bold', cursor: getPlayerTurn(bottomPlayer) ? 'pointer' : 'default', opacity: getPlayerTurn(bottomPlayer) ? 1 : 0.6, boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}>
+                Đánh
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
 }
+
