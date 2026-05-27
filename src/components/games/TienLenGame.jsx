@@ -280,27 +280,6 @@ export default function TienLenGame({ onClose, user, socket }) {
               ))}
             </div>
           )}
-          
-          {gameState.winners && gameState.winners.length > 0 && (
-            <div style={{ position: 'absolute', left: '2vw', top: '-2vh', transform: 'translateY(-100%)', backgroundColor: 'rgba(0,0,0,0.85)', color: '#facc15', padding: '1.5vh 1.5vw', minWidth: '120px', fontSize: 'clamp(14px, 2vh, 24px)', fontWeight: 'bold', borderRadius: '1vw', zIndex: 10, textAlign: 'left', border: '2px solid #facc15', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
-              <h3 style={{ margin: 0, marginBottom: '10px', textAlign: 'center', fontSize: '1.2em' }}>Kết quả</h3>
-              {gameState.winners.map((w, idx) => {
-                let payoutText = '';
-                if (gameState.winners.length === 4) {
-                  if (idx === 0) payoutText = `+${gameState.winners[3].bet}`;
-                  else if (idx === 1) payoutText = `+${gameState.winners[2].bet}`;
-                  else if (idx === 2) payoutText = `-${gameState.winners[2].bet}`;
-                  else if (idx === 3) payoutText = `-${gameState.winners[3].bet}`;
-                }
-                return (
-                  <div key={idx} style={{ color: idx === 0 ? '#facc15' : 'white', fontSize: '1em', margin: '8px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', justifyContent: 'space-between' }}>
-                    <span>{idx + 1}. {w.displayName}</span>
-                    <span style={{ marginLeft: '15px', fontWeight: 'bold', color: (idx === 0 || idx === 1) ? '#10b981' : '#ef4444' }}>{payoutText}</span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
         </div>
 
         {/* Bottom Player */}
@@ -350,7 +329,65 @@ export default function TienLenGame({ onClose, user, socket }) {
             </button>
           </div>
         )}
+
       </div>
+
+      {/* End Game Leaderboard Overlay */}
+      {gameState.winners && gameState.winners.length > 0 && (
+        <div style={{
+          position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+          backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <div style={{
+            backgroundColor: '#1e293b', border: '4px solid #facc15', borderRadius: '20px',
+            padding: '30px 50px', minWidth: '400px', boxShadow: '0 0 50px rgba(250, 204, 21, 0.4)'
+          }}>
+            <h2 style={{ color: '#facc15', textAlign: 'center', fontSize: '2rem', margin: 0, marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '2px', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>Bảng Xếp Hạng</h2>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              {gameState.winners.map((w, idx) => {
+                let payoutText = '';
+                if (gameState.winners.length === 4) {
+                  if (idx === 0) payoutText = `+${gameState.winners[3].bet}`;
+                  else if (idx === 1) payoutText = `+${gameState.winners[2].bet}`;
+                  else if (idx === 2) payoutText = `-${gameState.winners[2].bet}`;
+                  else if (idx === 3) payoutText = `-${gameState.winners[3].bet}`;
+                }
+                
+                let color = 'white';
+                let fontSize = '1.5rem';
+                let fontWeight = 'bold';
+                let badge = '';
+                
+                if (idx === 0) { color = '#facc15'; fontSize = '1.8rem'; badge = '🏆 Tới Nhất'; }
+                else if (idx === 1) { color = '#cbd5e1'; badge = '🥈 Tới Nhì'; }
+                else if (idx === 2) { color = '#d97706'; badge = '🥉 Tới Ba'; }
+                else if (idx === 3) { color = '#ef4444'; badge = '💀 Chót'; }
+
+                return (
+                  <div key={idx} style={{ 
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    backgroundColor: 'rgba(255,255,255,0.05)', padding: '10px 20px', borderRadius: '10px',
+                    borderLeft: `5px solid ${color}`
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                      <span style={{ color, fontSize, fontWeight, width: '30px' }}>#{idx + 1}</span>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ color: 'white', fontSize: '1.2rem', fontWeight: 'bold' }}>{w.displayName}</span>
+                        <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem' }}>{badge}</span>
+                      </div>
+                    </div>
+                    <span style={{ fontSize: '1.5rem', fontWeight: 'bold', color: (idx === 0 || idx === 1) ? '#10b981' : '#ef4444' }}>
+                      {payoutText}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
