@@ -593,7 +593,15 @@ export default function ShurikenGame({ onClose, user, socket }) {
                 </tbody>
               </table>
               <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-                <button className="pixel-btn" onClick={() => setView('lobby')} style={{ background: '#3b82f6', color: 'white', padding: '10px 30px', border: '4px solid #1e3a8a', fontSize: '1.2rem' }}>Quay Lại Phòng</button>
+                <button className="pixel-btn" onClick={() => {
+                  if (roomState.host === user.username) {
+                    socket.emit('shuriken_return_lobby', { user, hostUsername: roomState.host });
+                  } else {
+                    toast.info('Đang chờ chủ phòng...');
+                  }
+                }} style={{ background: '#3b82f6', color: 'white', padding: '10px 30px', border: '4px solid #1e3a8a', fontSize: '1.2rem' }}>
+                  {roomState.host === user.username ? 'Quay Lại Phòng' : 'Chờ Chủ Phòng...'}
+                </button>
               </div>
             </div>
           </div>
