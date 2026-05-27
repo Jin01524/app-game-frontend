@@ -6,12 +6,11 @@ import PixelCanvas from '../components/PixelCanvas';
 import BackpackModal from '../components/BackpackModal';
 import TradeModal from '../components/TradeModal';
 import TienLenGame from '../components/games/TienLenGame';
-import XiDachGame from '../components/games/XiDachGame';
 import { useGameWindowSize } from '../hooks/useGameWindowSize';
 import LandscapeEnforcer from '../components/LandscapeEnforcer';
 
 import groundGreenImg from '../../assets/ground-green.png';
-import casinoImgAsset from '../../assets/casino_building.png';
+import casinoImgAsset from '../../assets/game_center.png';
 import coinIcon from '../../assets/coin-tl4.2.png';
 import bagIcon from '../../assets/bag.png';
 import transactionIcon from '../../assets/transaction.png';
@@ -65,7 +64,6 @@ export default function LobbyPage() {
   const [canInteractCasino, setCanInteractCasino] = useState(false);
   const [showCasinoMenu, setShowCasinoMenu] = useState(false);
   const [showTienLen, setShowTienLen] = useState(false);
-  const [showXiDach, setShowXiDach] = useState(false);
 
   const canvasRef = useRef(null);
   const keys = useRef({ left: false, right: false, jump: false });
@@ -518,14 +516,13 @@ export default function LobbyPage() {
           width: '320px'
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <h2 style={{ color: '#facc15', margin: 0 }}>CASINO</h2>
-            <button onClick={() => setShowCasinoMenu(false)} style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '1.5rem', cursor: 'pointer' }}>✖</button>
+            <h2 style={{ color: '#facc15', margin: 0 }}>GAME CENTER</h2>
+            <button onClick={() => setShowCasinoMenu(false)} style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '1.5rem', cursor: 'pointer' }}>×</button>
           </div>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <button className="pixel-btn" style={{ width: '100%', padding: '16px', fontSize: '1.2rem', background: '#3b82f6', color: 'white', border: '4px solid #1e3a8a' }} onClick={() => setShowTienLen(true)}>Tiến Lên</button>
-            <button className="pixel-btn" style={{ width: '100%', padding: '16px', fontSize: '1.2rem', background: '#10b981', color: 'white', border: '4px solid #065f46' }} onClick={() => setShowXiDach(true)}>Xì Dách</button>
-            <button className="pixel-btn" style={{ width: '100%', padding: '16px', fontSize: '1.2rem', background: '#ef4444', color: 'white', border: '4px solid #991b1b' }} onClick={() => alert('Poker đang được phát triển!')}>Poker</button>
+            <button className="pixel-btn" style={{ width: '100%', padding: '16px', fontSize: '1.2rem', background: '#ef4444', color: 'white', border: '4px solid #991b1b' }} onClick={() => alert('Ném phi tiêu đang được phát triển!')}>Ném phi tiêu</button>
           </div>
         </div>
       )}
@@ -533,12 +530,8 @@ export default function LobbyPage() {
       {showTienLen && (
         <TienLenGame onClose={() => setShowTienLen(false)} user={user} socket={socketRef.current} />
       )}
-      
-      {showXiDach && (
-        <XiDachGame onClose={() => setShowXiDach(false)} user={user} socket={socketRef.current} />
-      )}
 
-      {pendingTradeRequest && (
+      {pendingTradeRequest && (      {pendingTradeRequest && (
         <div style={{
           position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
           background: '#1e293b', border: '4px solid var(--px-border)', borderRadius: '8px',

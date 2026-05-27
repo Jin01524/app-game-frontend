@@ -218,7 +218,7 @@ export default function TienLenGame({ onClose, user, socket }) {
               </div>
               <div style={{ display: 'flex' }}>
                 {Array.from({ length: topPlayer.cardsCount }).map((_, i) => (
-                  <div key={i} style={{ marginLeft: i === 0 ? 0 : 'clamp(-50px, -4vw, -25px)' }}>
+                  <div key={i} style={{ marginLeft: i === 0 ? 0 : 'clamp(-60px, -4vw, -20px)' }}>
                     <PlayingCard hidden={true} />
                   </div>
                 ))}
@@ -241,7 +241,7 @@ export default function TienLenGame({ onClose, user, socket }) {
                 <div style={{ color: 'white', marginBottom: '5px', textAlign: 'center' }}>{leftPlayer.displayName}</div>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   {Array.from({ length: leftPlayer.cardsCount }).map((_, i) => (
-                     <div key={i} style={{ marginTop: i === 0 ? 0 : 'clamp(-100px, -12vh, -45px)', zIndex: i }}>
+                     <div key={i} style={{ marginTop: i === 0 ? 0 : 'clamp(-105px, -14vw, -45px)', zIndex: i }}>
                        <PlayingCard hidden={true} />
                      </div>
                   ))}
@@ -257,7 +257,7 @@ export default function TienLenGame({ onClose, user, socket }) {
             ) : (
               <div style={{ display: 'flex' }}>
                 {gameState.tableCards.map((card, i) => (
-                  <div key={i} style={{ marginLeft: i === 0 ? 0 : 'clamp(-40px, -3vw, -20px)' }}>
+                  <div key={i} style={{ marginLeft: i === 0 ? 0 : 'clamp(-60px, -4vw, -20px)' }}>
                     <PlayingCard card={card} />
                   </div>
                 ))}
@@ -298,7 +298,7 @@ export default function TienLenGame({ onClose, user, socket }) {
                 <div style={{ color: 'white', marginBottom: '5px', textAlign: 'center' }}>{rightPlayer.displayName}</div>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   {Array.from({ length: rightPlayer.cardsCount }).map((_, i) => (
-                     <div key={i} style={{ marginTop: i === 0 ? 0 : 'clamp(-100px, -12vh, -45px)', zIndex: i }}>
+                     <div key={i} style={{ marginTop: i === 0 ? 0 : 'clamp(-105px, -14vw, -45px)', zIndex: i }}>
                        <PlayingCard hidden={true} />
                      </div>
                   ))}
@@ -322,13 +322,13 @@ export default function TienLenGame({ onClose, user, socket }) {
               <div style={{ display: 'flex' }}>
                 {isSpectator ? (
                   Array.from({ length: bottomPlayer.cardsCount }).map((_, i) => (
-                    <div key={i} style={{ marginLeft: i === 0 ? 0 : 'clamp(-40px, -3vw, -20px)' }}>
+                    <div key={i} style={{ marginLeft: i === 0 ? 0 : 'clamp(-60px, -4vw, -20px)' }}>
                       <PlayingCard hidden={true} />
                     </div>
                   ))
                 ) : (
                   myHand.map((card, i) => (
-                    <div key={i} style={{ marginLeft: i === 0 ? 0 : 'clamp(-40px, -3vw, -20px)' }}>
+                    <div key={i} style={{ marginLeft: i === 0 ? 0 : 'clamp(-60px, -4vw, -20px)' }}>
                       <PlayingCard 
                         card={card} 
                         selected={selectedCards.includes(card)} 
