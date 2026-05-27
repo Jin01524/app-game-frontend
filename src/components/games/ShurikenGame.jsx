@@ -116,10 +116,16 @@ export default function ShurikenGame({ onClose, user, socket }) {
       socket.emit('shuriken_get_rooms', { user });
     };
 
+    const handleError = (msg) => {
+      toast.error(msg);
+      console.error('Shuriken error:', msg);
+    };
+
     socket.on('shuriken_rooms_list', handleRoomsList);
     socket.on('shuriken_state', handleState);
     socket.on('shuriken_event', handleEvent);
     socket.on('shuriken_room_closed', handleClosed);
+    socket.on('shuriken_error', handleError);
 
     if (view === 'menu') {
       socket.emit('shuriken_get_rooms', { user });
@@ -130,6 +136,7 @@ export default function ShurikenGame({ onClose, user, socket }) {
       socket.off('shuriken_state', handleState);
       socket.off('shuriken_event', handleEvent);
       socket.off('shuriken_room_closed', handleClosed);
+      socket.off('shuriken_error', handleError);
     };
   }, [socket, user, view]);
 
