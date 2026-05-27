@@ -6,6 +6,7 @@ import PixelCanvas from '../components/PixelCanvas';
 import BackpackModal from '../components/BackpackModal';
 import TradeModal from '../components/TradeModal';
 import TienLenGame from '../components/games/TienLenGame';
+import ShurikenGame from '../components/games/ShurikenGame';
 import { useGameWindowSize } from '../hooks/useGameWindowSize';
 import LandscapeEnforcer from '../components/LandscapeEnforcer';
 
@@ -58,12 +59,13 @@ export default function LobbyPage() {
   const { width: gameWidth, height: gameHeight } = useGameWindowSize();
   
   const [showBackpackMenu, setShowBackpackMenu] = useState(false);
+  const [showTienLen, setShowTienLen] = useState(false);
+  const [showShuriken, setShowShuriken] = useState(false);
   const [closestPlayer, setClosestPlayer] = useState(null);
   const [showTradeMenu, setShowTradeMenu] = useState(null);
   const [pendingTradeRequest, setPendingTradeRequest] = useState(null);
   const [canInteractCasino, setCanInteractCasino] = useState(false);
   const [showCasinoMenu, setShowCasinoMenu] = useState(false);
-  const [showTienLen, setShowTienLen] = useState(false);
 
   const canvasRef = useRef(null);
   const keys = useRef({ left: false, right: false, jump: false });
@@ -522,13 +524,17 @@ export default function LobbyPage() {
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <button className="pixel-btn" style={{ width: '100%', padding: '16px', fontSize: '1.2rem', background: '#3b82f6', color: 'white', border: '4px solid #1e3a8a' }} onClick={() => setShowTienLen(true)}>Tiến Lên</button>
-            <button className="pixel-btn" style={{ width: '100%', padding: '16px', fontSize: '1.2rem', background: '#ef4444', color: 'white', border: '4px solid #991b1b' }} onClick={() => alert('Ném phi tiêu đang được phát triển!')}>Ném phi tiêu</button>
+            <button className="pixel-btn" style={{ width: '100%', padding: '16px', fontSize: '1.2rem', background: '#ef4444', color: 'white', border: '4px solid #991b1b' }} onClick={() => setShowShuriken(true)}>Ném phi tiêu</button>
           </div>
         </div>
       )}
 
       {showTienLen && (
         <TienLenGame onClose={() => setShowTienLen(false)} user={user} socket={socketRef.current} />
+      )}
+
+      {showShuriken && (
+        <ShurikenGame onClose={() => setShowShuriken(false)} user={user} socket={socketRef.current} />
       )}
 
       {pendingTradeRequest && (
