@@ -4,8 +4,8 @@ export function useGameWindowSize() {
   const [size, setSize] = useState(() => {
     const isPortrait = window.innerHeight > window.innerWidth;
     return {
-      width: window.innerWidth,
-      height: window.innerHeight,
+      width: isPortrait ? window.innerHeight : window.innerWidth,
+      height: isPortrait ? window.innerWidth : window.innerHeight,
       isPortrait
     };
   });
@@ -14,8 +14,8 @@ export function useGameWindowSize() {
     const handleResize = () => {
       const isPortrait = window.innerHeight > window.innerWidth;
       setSize({
-        width: window.innerWidth,
-        height: window.innerHeight,
+        width: isPortrait ? window.innerHeight : window.innerWidth,
+        height: isPortrait ? window.innerWidth : window.innerHeight,
         isPortrait
       });
     };
