@@ -113,7 +113,7 @@ export default function ShurikenGame({ onClose, user, socket }) {
       toast.error('Phòng đã bị đóng.');
       setView('menu');
       setRoomState(null);
-      socket.emit('shuriken_get_rooms');
+      socket.emit('shuriken_', { user });
     };
 
     socket.on('shuriken_rooms_list', handleRoomsList);
@@ -122,7 +122,7 @@ export default function ShurikenGame({ onClose, user, socket }) {
     socket.on('shuriken_room_closed', handleClosed);
 
     if (view === 'menu') {
-      socket.emit('shuriken_get_rooms');
+      socket.emit('shuriken_', { user });
     }
 
     return () => {
@@ -135,30 +135,30 @@ export default function ShurikenGame({ onClose, user, socket }) {
 
   // Actions
   const handleCreateRoom = () => {
-    socket.emit('shuriken_create_room');
+    socket.emit('shuriken_', { user });
   };
   const handleJoinRoom = (host) => {
-    socket.emit('shuriken_join_room', { hostUsername: host });
+    socket.emit('shuriken_', { user,  });
   };
   const handleLeaveRoom = () => {
     if (roomState?.host) {
-      socket.emit('shuriken_leave_room', { hostUsername: roomState.host });
+      socket.emit('shuriken_', { user,  });
     }
     setView('menu');
     setRoomState(null);
-    socket.emit('shuriken_get_rooms');
+    socket.emit('shuriken_', { user });
   };
   const handleAddBot = () => {
-    socket.emit('shuriken_add_bot', { hostUsername: roomState.host });
+    socket.emit('shuriken_', { user,  });
   };
   const handleRemoveBot = (botId) => {
-    socket.emit('shuriken_remove_bot', { hostUsername: roomState.host, botId });
+    socket.emit('shuriken_', { user,  });
   };
   const handleReady = () => {
-    socket.emit('shuriken_ready', { hostUsername: roomState.host });
+    socket.emit('shuriken_', { user,  });
   };
   const handleStart = () => {
-    socket.emit('shuriken_start_game', { hostUsername: roomState.host });
+    socket.emit('shuriken_', { user,  });
   };
 
   // Game Loop
@@ -320,7 +320,7 @@ export default function ShurikenGame({ onClose, user, socket }) {
             if (nearest) {
               angle = Math.atan2(nearest.y - lp.y, nearest.x - lp.x);
             }
-            socket.emit('shuriken_shoot', { hostUsername: state.host, angle });
+            socket.emit('shuriken_', { user,  });
             lp.lastShoot = time;
             keys.current.shoot = false; // require re-press
           }
