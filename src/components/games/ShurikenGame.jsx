@@ -437,7 +437,6 @@ export default function ShurikenGame({ onClose, user, socket }) {
   
   if (view === 'menu') {
     return (
-      <LandscapeEnforcer>
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, backgroundColor: '#0f172a', display: 'flex', flexDirection: 'column', color: 'white', fontFamily: 'var(--font-pixel)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 20px', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 10 }}>
             <h1 style={{ margin: 0, color: '#facc15' }}>Ném Phi Tiêu</h1>
@@ -459,7 +458,6 @@ export default function ShurikenGame({ onClose, user, socket }) {
             </div>
           </div>
         </div>
-      </LandscapeEnforcer>
     );
   }
 
@@ -469,7 +467,6 @@ export default function ShurikenGame({ onClose, user, socket }) {
     const allReady = players.every(p => p.isReady);
 
     return (
-      <LandscapeEnforcer>
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, backgroundColor: '#0f172a', display: 'flex', flexDirection: 'column', color: 'white', fontFamily: 'var(--font-pixel)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 20px', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 10 }}>
             <h1 style={{ margin: 0, color: '#facc15' }}>Phòng chờ: {roomState?.host}</h1>
@@ -510,14 +507,12 @@ export default function ShurikenGame({ onClose, user, socket }) {
             </div>
           </div>
         </div>
-      </LandscapeEnforcer>
     );
   }
 
   // view === 'playing' || view === 'ended'
   const myPlayer = roomState?.players[user.username];
   return (
-    <LandscapeEnforcer>
       <div style={{ position: 'fixed', inset: 0, zIndex: 9999, backgroundColor: '#0f172a', display: 'flex', flexDirection: 'column', color: 'white', fontFamily: 'var(--font-pixel)', overflow: 'hidden' }}>
         
         {/* HUD */}
@@ -599,6 +594,5 @@ export default function ShurikenGame({ onClose, user, socket }) {
         )}
 
       </div>
-    </LandscapeEnforcer>
   );
 }
