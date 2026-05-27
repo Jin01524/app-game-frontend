@@ -1,0 +1,274 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  font-family: var(--font-pixel, monospace);
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.table {
+  background: radial-gradient(circle at 50% 0%, #065f46 0%, #064e3b 100%);
+  width: 100%;
+  max-width: 900px;
+  height: 90vh;
+  border-radius: 400px 400px 20px 20px;
+  border: 12px solid #5c3a21;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: inset 0 0 50px rgba(0,0,0,0.5), 0 10px 30px rgba(0,0,0,0.8);
+}
+
+.tableInner {
+  border-radius: 380px 380px 10px 10px;
+  border: 2px solid #059669;
+  flex: 1;
+  margin: 10px;
+  position: relative;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: #ef4444;
+  color: white;
+  border: 2px solid #7f1d1d;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 0 #7f1d1d;
+}
+.closeBtn:active {
+  transform: translateY(4px);
+  box-shadow: none;
+}
+
+.dealerArea {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.dealerLabel {
+  color: #fbbf24;
+  text-shadow: 2px 2px 0 #000;
+  font-size: 1.2rem;
+  letter-spacing: 2px;
+}
+
+.cardsContainer {
+  display: flex;
+  gap: -30px; /* Overlap cards */
+  justify-content: center;
+  min-height: 120px;
+}
+
+.card {
+  width: 80px;
+  height: 112px;
+  background: white;
+  border-radius: 6px;
+  border: 2px solid #333;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 4px;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+  font-family: 'Arial', sans-serif;
+  font-weight: bold;
+  font-size: 1.5rem;
+  margin-left: -40px;
+  position: relative;
+}
+.card:first-child {
+  margin-left: 0;
+}
+.card.red {
+  color: #dc2626;
+}
+.card.black {
+  color: #171717;
+}
+
+.cardTop { align-self: flex-start; line-height: 1; }
+.cardCenter { align-self: center; font-size: 2.5rem; line-height: 1; }
+.cardBottom { align-self: flex-end; line-height: 1; transform: rotate(180deg); }
+
+.cardBack {
+  background: repeating-linear-gradient(45deg, #1e40af, #1e40af 10px, #1e3a8a 10px, #1e3a8a 20px);
+  border: 4px solid white;
+}
+
+.playersArea {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  padding: 0 20px;
+}
+
+.playerSpot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 140px;
+}
+
+.playerInfo {
+  background: rgba(0,0,0,0.6);
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: white;
+  text-align: center;
+  font-size: 0.8rem;
+  border: 1px solid #333;
+}
+
+.betChip {
+  background: #fbbf24;
+  color: #78350f;
+  border: 3px dashed #d97706;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.7rem;
+  box-shadow: 0 4px 0 #b45309;
+}
+
+.actionPanel {
+  position: absolute;
+  bottom: 150px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 16px;
+  background: rgba(0,0,0,0.8);
+  padding: 16px;
+  border-radius: 12px;
+  border: 2px solid #fbbf24;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn {
+  padding: 12px 24px;
+  font-family: var(--font-pixel, monospace);
+  font-size: 1rem;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-shadow: 1px 1px 0 #000;
+  box-shadow: 0 4px 0 rgba(0,0,0,0.3);
+}
+.btn:active {
+  transform: translateY(4px);
+  box-shadow: none;
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 4px 0 rgba(0,0,0,0.3);
+}
+
+.btnHit { background: #3b82f6; border: 2px solid #1e3a8a; }
+.btnStand { background: #ef4444; border: 2px solid #7f1d1d; }
+
+.betOptions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.betBtn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 3px dashed white;
+  font-family: var(--font-pixel, monospace);
+  font-weight: bold;
+  cursor: pointer;
+  color: #78350f;
+  box-shadow: 0 4px 0 rgba(0,0,0,0.5);
+}
+.betBtn:active { transform: translateY(4px); box-shadow: none; }
+.betBtn10 { background: #60a5fa; }
+.betBtn50 { background: #34d399; }
+.betBtn100 { background: #f87171; }
+.betBtn500 { background: #c084fc; }
+
+.statusBanner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2rem;
+  color: white;
+  text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
+  background: rgba(0,0,0,0.6);
+  padding: 10px 40px;
+  border-radius: 8px;
+  border: 2px solid #fbbf24;
+  text-align: center;
+  z-index: 20;
+}
+
+.handResult {
+  position: absolute;
+  top: -30px;
+  font-size: 1.2rem;
+  color: #fbbf24;
+  text-shadow: 1px 1px 0 #000;
+  font-weight: bold;
+  white-space: nowrap;
+  animation: popIn 0.3s ease-out;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.payoutAnim {
+  position: absolute;
+  top: -60px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-shadow: 1px 1px 0 #000;
+  animation: floatUp 2s ease-out forwards;
+}
+.win { color: #4ade80; }
+.lose { color: #f87171; }
+
+@keyframes floatUp {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-50px); opacity: 0; }
+}

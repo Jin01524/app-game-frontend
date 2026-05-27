@@ -6,6 +6,7 @@ import PixelCanvas from '../components/PixelCanvas';
 import BackpackModal from '../components/BackpackModal';
 import TradeModal from '../components/TradeModal';
 import TienLenGame from '../components/games/TienLenGame';
+import XiDachGame from '../components/games/XiDachGame';
 import { useGameWindowSize } from '../hooks/useGameWindowSize';
 import LandscapeEnforcer from '../components/LandscapeEnforcer';
 
@@ -64,6 +65,7 @@ export default function LobbyPage() {
   const [canInteractCasino, setCanInteractCasino] = useState(false);
   const [showCasinoMenu, setShowCasinoMenu] = useState(false);
   const [showTienLen, setShowTienLen] = useState(false);
+  const [showXiDach, setShowXiDach] = useState(false);
 
   const canvasRef = useRef(null);
   const keys = useRef({ left: false, right: false, jump: false });
@@ -522,7 +524,7 @@ export default function LobbyPage() {
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <button className="pixel-btn" style={{ width: '100%', padding: '16px', fontSize: '1.2rem', background: '#3b82f6', color: 'white', border: '4px solid #1e3a8a' }} onClick={() => setShowTienLen(true)}>Tiến Lên</button>
-            <button className="pixel-btn" style={{ width: '100%', padding: '16px', fontSize: '1.2rem', background: '#10b981', color: 'white', border: '4px solid #065f46' }} onClick={() => alert('Xì Dách đang được phát triển!')}>Xì Dách</button>
+            <button className="pixel-btn" style={{ width: '100%', padding: '16px', fontSize: '1.2rem', background: '#10b981', color: 'white', border: '4px solid #065f46' }} onClick={() => setShowXiDach(true)}>Xì Dách</button>
             <button className="pixel-btn" style={{ width: '100%', padding: '16px', fontSize: '1.2rem', background: '#ef4444', color: 'white', border: '4px solid #991b1b' }} onClick={() => alert('Poker đang được phát triển!')}>Poker</button>
           </div>
         </div>
@@ -530,6 +532,10 @@ export default function LobbyPage() {
 
       {showTienLen && (
         <TienLenGame onClose={() => setShowTienLen(false)} user={user} socket={socketRef.current} />
+      )}
+      
+      {showXiDach && (
+        <XiDachGame onClose={() => setShowXiDach(false)} user={user} socket={socketRef.current} />
       )}
 
       {pendingTradeRequest && (
