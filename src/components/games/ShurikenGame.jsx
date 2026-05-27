@@ -88,14 +88,18 @@ export default function ShurikenGame({ onClose, user, socket }) {
     };
 
     const handleState = (state) => {
+      console.log('Received shuriken_state:', state.status, 'current view:', view);
       setRoomState(state);
       gameStateRef.current = state;
       if (state.status === 'playing' && view !== 'playing') {
+        console.log('Transitioning to playing...');
         setView('playing');
         startGameLoop();
       } else if (state.status === 'ended' && view !== 'ended') {
+        console.log('Transitioning to ended...');
         setView('ended');
       } else if (state.status === 'waiting' && view !== 'lobby') {
+        console.log('Transitioning to lobby...');
         setView('lobby');
       }
     };
@@ -174,6 +178,13 @@ export default function ShurikenGame({ onClose, user, socket }) {
   const localPlayerState = useRef({ x: 200, y: 100, vy: 0, isWalking: false, dirX: 1, lastShoot: 0 });
 
   useEffect(() => {
+    if (view !== 'playing' && requestRef.current) {
+      cancelAnimationFrame(requestRef.current);
+      requestRef.current = null;
+    }
+  }, [view]);
+
+  useEffect(() => {
     const handleKeyDown = (e) => {
       if (['ArrowUp', 'w', ' ', 'Enter', 'e'].includes(e.key) && view === 'playing') {
         e.preventDefault();
@@ -201,19 +212,31 @@ export default function ShurikenGame({ onClose, user, socket }) {
   const spectatorTargetRef = useRef(null); // Which player ID we are watching if dead
 
   const startGameLoop = () => {
+    if (requestRef.current) {
+      cancelAnimationFrame(requestRef.current);
+      requestRef.current = null;
+    }
     let lastTime = performance.now();
     let frameCount = 0;
     
     const loop = (time) => {
-      const dt = (time - lastTime) / 1000;
-      lastTime = time;
-      frameCount++;
-      
+      if (gameStateRef.current && gameStateRef.current.status !== 'playing') {
+        // Stop rendering if game ended
+        return;
+      }
+      if (!canvasRef.current) {
+        requestRef.current = requestAnimationFrame(loop);
+        return;
+      }
       const canvas = canvasRef.current;
       if (!canvas) {
         requestRef.current = requestAnimationFrame(loop);
         return;
       }
+      const dt = (time - lastTime) / 1000;
+      lastTime = time;
+      frameCount++;
+      
       const ctx = canvas.getContext('2d');
       const cw = canvas.width;
       const ch = canvas.height;
