@@ -15,11 +15,23 @@ export default function LandscapeHint() {
   const [locking, setLocking] = useState(false);
   const [lockDone, setLockDone] = useState(false);
   const [lockUnsupported, setLockUnsupported] = useState(false);
+  const [isPortrait, setIsPortrait] = useState(
+    () => window.innerHeight > window.innerWidth
+  );
 
   useEffect(() => {
     setMounted(true);
+    
+    const checkOrientation = () => {
+      setIsPortrait(window.innerHeight > window.innerWidth);
+    };
+    
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('orientationchange', checkOrientation);
+    
     return () => {
-      // Release fullscreen + orientation lock when leaving page
+      window.removeEventListener('resize', checkOrientation);
+      window.removeEventListener('orientationchange', checkOrientation);
       try { screen.orientation?.unlock(); } catch {}
       if (document.fullscreenElement) {
         document.exitFullscreen().catch(() => {});
@@ -44,13 +56,14 @@ export default function LandscapeHint() {
     }
   };
 
-  if (!mounted || lockDone) return null;
+  // Do not render anything if landscape or lock succeeded
+  if (!mounted || lockDone || !isPortrait) return null;
 
   const overlay = (
     <div className="landscape-hint-overlay">
       <style>{`
         .landscape-hint-overlay {
-          display: none;
+          display: flex;
           position: fixed;
           inset: 0;
           z-index: 2147483647;
@@ -63,12 +76,6 @@ export default function LandscapeHint() {
           color: #f8fafc;
           padding: 32px;
           box-sizing: border-box;
-        }
-        /* Show ONLY in portrait on mobile-sized screens */
-        @media screen and (orientation: portrait) and (max-aspect-ratio: 1/1) {
-          .landscape-hint-overlay {
-            display: flex;
-          }
         }
         .lh-icon {
           font-size: 3.5rem;

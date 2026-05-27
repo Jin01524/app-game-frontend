@@ -116,7 +116,14 @@ export default function LobbyPage() {
   useEffect(() => {
     if (!user) return;
     
-    socketRef.current = io(import.meta.env.VITE_API_URL || window.location.origin.replace('5173', '3001'));
+    socketRef.current = io(import.meta.env.VITE_API_URL || window.location.origin.replace('5173', '3001'), {
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: Infinity,
+      timeout: 60000,
+      transports: ['websocket', 'polling']
+    });
     
     socketRef.current.emit('join_house', { 
       hostUsername: 'lobby', 
