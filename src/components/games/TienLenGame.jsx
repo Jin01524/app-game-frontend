@@ -241,7 +241,7 @@ export default function TienLenGame({ onClose, user, socket }) {
                 <div style={{ color: 'white', marginBottom: '5px', textAlign: 'center' }}>{leftPlayer.displayName}</div>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   {Array.from({ length: leftPlayer.cardsCount }).map((_, i) => (
-                     <div key={i} style={{ marginTop: i === 0 ? 0 : 'clamp(-105px, -14vw, -45px)', zIndex: i }}>
+                     <div key={i} style={{ marginTop: i === 0 ? 0 : 'clamp(-60px, -8vw, -20px)', zIndex: i }}>
                        <PlayingCard hidden={true} />
                      </div>
                   ))}
@@ -251,7 +251,7 @@ export default function TienLenGame({ onClose, user, socket }) {
           </div>
 
           {/* Center Table */}
-          <div style={{ flex: 1, minHeight: '300px', border: '4px solid rgba(255,255,255,0.1)', borderRadius: '2vw', backgroundColor: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+          <div style={{ flex: 1, border: '4px solid rgba(255,255,255,0.1)', borderRadius: '2vw', backgroundColor: 'rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
             {gameState.tableCards.length === 0 ? (
               <div style={{ color: 'rgba(255,255,255,0.3)', fontWeight: 'bold', fontSize: 'clamp(20px, 4vh, 40px)', textTransform: 'uppercase', letterSpacing: '2px' }}>Ra bài</div>
             ) : (
@@ -298,7 +298,7 @@ export default function TienLenGame({ onClose, user, socket }) {
                 <div style={{ color: 'white', marginBottom: '5px', textAlign: 'center' }}>{rightPlayer.displayName}</div>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   {Array.from({ length: rightPlayer.cardsCount }).map((_, i) => (
-                     <div key={i} style={{ marginTop: i === 0 ? 0 : 'clamp(-105px, -14vw, -45px)', zIndex: i }}>
+                     <div key={i} style={{ marginTop: i === 0 ? 0 : 'clamp(-60px, -8vw, -20px)', zIndex: i }}>
                        <PlayingCard hidden={true} />
                      </div>
                   ))}
