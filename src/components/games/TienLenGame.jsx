@@ -333,14 +333,15 @@ export default function TienLenGame({ onClose, user, socket }) {
       </div>
 
       {/* End Game Leaderboard Overlay */}
-      {gameState.winners && gameState.winners.length > 0 && (
+      {gameState.status === 'ended' && gameState.winners && gameState.winners.length > 0 && (
         <div style={{
           position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
           backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center'
         }}>
           <div style={{
             backgroundColor: '#1e293b', border: '4px solid #facc15', borderRadius: '20px',
-            padding: '30px 50px', minWidth: '400px', boxShadow: '0 0 50px rgba(250, 204, 21, 0.4)'
+            padding: '30px 50px', minWidth: '400px', boxShadow: '0 0 50px rgba(250, 204, 21, 0.4)',
+            transform: 'scale(0.85)'
           }}>
             <h2 style={{ color: '#facc15', textAlign: 'center', fontSize: '2rem', margin: 0, marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '2px', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>Bảng Xếp Hạng</h2>
             
