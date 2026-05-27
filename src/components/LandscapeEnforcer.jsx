@@ -7,13 +7,6 @@ import { useGameWindowSize } from '../hooks/useGameWindowSize';
  */
 export default function LandscapeEnforcer({ children }) {
   const { isPortrait, width, height } = useGameWindowSize();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) return null;
 
   if (isPortrait) {
     // When portrait, we rotate the container 90deg.
