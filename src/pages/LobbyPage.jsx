@@ -392,6 +392,7 @@ export default function LobbyPage() {
 
   return (
     <LandscapeEnforcer>
+      <div style={{ width: '100%', height: '100%', overflow: 'hidden', position: 'relative' }}>
       <PixelCanvas />
       
       {/* Title */}
@@ -551,6 +552,7 @@ export default function LobbyPage() {
           </div>
         </div>
       )}
+      </div>
     </LandscapeEnforcer>
   );
 }
