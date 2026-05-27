@@ -531,7 +531,7 @@ export default function LobbyPage() {
         <TienLenGame onClose={() => setShowTienLen(false)} user={user} socket={socketRef.current} />
       )}
 
-      {pendingTradeRequest && (      {pendingTradeRequest && (
+      {pendingTradeRequest && (
         <div style={{
           position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
           background: '#1e293b', border: '4px solid var(--px-border)', borderRadius: '8px',
