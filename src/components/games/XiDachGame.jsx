@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import styles from './XiDachGame.module.css';
-import cardBg from '../../../assets/card-bg.png'; // fallback if needed, but we draw CSS cards
 
 export default function XiDachGame({ onClose, user, socket }) {
   const [gameState, setGameState] = useState(null);
