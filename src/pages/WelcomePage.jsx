@@ -42,9 +42,8 @@ function Dropdown({ open, onClose, onProfile, onAdmin, onLogout, isAdmin }) {
   useEffect(() => {
     if (!open) return;
     const h = (e) => { if (ref.current && !ref.current.contains(e.target)) onClose(); };
-    document.addEventListener('mousedown', h);
-    document.addEventListener('touchstart', h);
-    return () => { document.removeEventListener('mousedown', h); document.removeEventListener('touchstart', h); };
+    document.addEventListener('pointerdown', h);
+    return () => document.removeEventListener('pointerdown', h);
   }, [open, onClose]);
 
   if (!open) return null;

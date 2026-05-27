@@ -1,50 +1,105 @@
 import React, { useState, useEffect } from 'react';
 
 /**
- * LandscapeEnforcer – Simulates landscape orientation on portrait mobile devices
- * by rotating the content 90° clockwise using CSS transforms.
- * On desktop or when already in landscape, renders children normally.
+ * LandscapeEnforcer – Ensures the page renders in landscape orientation.
+ *
+ * Strategy (in order of priority):
+ * 1. Use Screen Orientation API to lock landscape.
+ *    Works in installed PWAs (display: standalone) and fullscreen mode.
+ *    When the lock succeeds, the OS rotates the entire viewport – vw/vh/canvas
+ *    all update correctly. No CSS tricks needed.
+ *
+ * 2. If the lock fails (regular browser tab, API not supported), show a
+ *    "Please rotate your device" overlay when the device is in portrait.
+ *    This avoids broken canvas/vw/vh rendering from CSS rotation tricks.
  */
 export default function LandscapeEnforcer({ children }) {
+  const [lockFailed, setLockFailed] = useState(false);
   const [isPortrait, setIsPortrait] = useState(
     () => window.innerHeight > window.innerWidth
   );
 
   useEffect(() => {
-    const handler = () => {
+    // 1. Try native orientation lock (works in installed PWA)
+    const tryLock = async () => {
+      if (screen.orientation && typeof screen.orientation.lock === 'function') {
+        try {
+          await screen.orientation.lock('landscape');
+          setLockFailed(false);
+        } catch {
+          // Lock failed: running in a regular browser tab
+          setLockFailed(true);
+        }
+      } else {
+        setLockFailed(true);
+      }
+    };
+    tryLock();
+
+    // 2. Track orientation for the fallback overlay
+    const handleResize = () => {
       setIsPortrait(window.innerHeight > window.innerWidth);
     };
-    window.addEventListener('resize', handler);
-    window.addEventListener('orientationchange', handler);
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+
     return () => {
-      window.removeEventListener('resize', handler);
-      window.removeEventListener('orientationchange', handler);
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+      // Unlock when leaving the page
+      try { screen.orientation?.unlock(); } catch {}
     };
   }, []);
 
-  // Desktop or already landscape – render as-is
+  // Lock succeeded → OS handles rotation, render normally
+  if (!lockFailed) {
+    return <>{children}</>;
+  }
+
+  // Lock failed but already in landscape → render normally
   if (!isPortrait) {
     return <>{children}</>;
   }
 
-  // Portrait on mobile – rotate 90° to simulate landscape
-  // Technique: centre a width×height = 100vh×100vw element then rotate 90deg
-  // so it visually fills the screen in landscape orientation.
+  // Lock failed and still in portrait → show rotate overlay
   return (
-    <div
-      style={{
+    <>
+      {/* Dimmed children underneath so layout doesn't shift */}
+      <div style={{ visibility: 'hidden', width: '100vw', height: '100vh', overflow: 'hidden' }}>
+        {children}
+      </div>
+
+      {/* Rotate overlay */}
+      <div style={{
         position: 'fixed',
-        top: 'calc((100vh - 100vw) / 2)',
-        left: 'calc((100vw - 100vh) / 2)',
-        width: '100vh',
-        height: '100vw',
-        transform: 'rotate(90deg)',
-        transformOrigin: 'center center',
-        overflow: 'hidden',
-        zIndex: 0,
-      }}
-    >
-      {children}
-    </div>
+        inset: 0,
+        zIndex: 9999,
+        background: 'linear-gradient(135deg, #0a0a1a 0%, #0f172a 100%)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '24px',
+        color: 'white',
+        fontFamily: 'var(--font-pixel, monospace)',
+      }}>
+        {/* Animated phone rotate icon */}
+        <div style={{ fontSize: '4rem', animation: 'spin-cw 1.8s ease-in-out infinite' }}>📱</div>
+        <div style={{ fontSize: '0.9rem', textAlign: 'center', color: '#94a3b8', lineHeight: 1.8 }}>
+          <div style={{ fontSize: '1.1rem', color: '#f8fafc', marginBottom: '8px' }}>
+            [ XOAY ĐIỆN THOẠI ]
+          </div>
+          Trang này yêu cầu<br />chế độ <span style={{ color: '#22d3ee' }}>màn hình ngang</span>
+        </div>
+        <style>{`
+          @keyframes spin-cw {
+            0%   { transform: rotate(0deg); }
+            40%  { transform: rotate(90deg); }
+            60%  { transform: rotate(90deg); }
+            100% { transform: rotate(90deg) scale(1.1); }
+          }
+        `}</style>
+      </div>
+    </>
   );
 }
