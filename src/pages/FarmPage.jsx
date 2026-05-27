@@ -125,8 +125,8 @@ export default function FarmPage() {
   const totalLua = inventory.find(i => i.item_id === 'lua')?.quantity || 0;
 
   return (
-    <div className={styles.page} style={{ backgroundImage: `url(${farmBg})`, backgroundSize: 'cover', backgroundPosition: 'center top' }}>
-      <LandscapeEnforcer />
+    <LandscapeEnforcer>
+      <div className={styles.page} style={{ backgroundImage: `url(${farmBg})`, backgroundSize: 'cover', backgroundPosition: 'center top' }}>
       <main className={styles.main}>
         <header className={`${styles.header} rpg-box fade-in`}>
           <div>
@@ -209,7 +209,8 @@ export default function FarmPage() {
       {showInv && <StorageModal onClose={() => setShowInv(false)} />}
       {showBackpackMenu && <BackpackModal onClose={() => setShowBackpackMenu(false)} onOpenStorage={() => { setShowBackpackMenu(false); setShowInv(true); }} />}
 
-      <BottomNav />
-    </div>
+        <BottomNav />
+      </div>
+    </LandscapeEnforcer>
   );
 }

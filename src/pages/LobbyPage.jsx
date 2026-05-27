@@ -6,7 +6,7 @@ import PixelCanvas from '../components/PixelCanvas';
 import BackpackModal from '../components/BackpackModal';
 import TradeModal from '../components/TradeModal';
 import TienLenGame from '../components/games/TienLenGame';
-import LandscapeEnforcer from '../components/LandscapeEnforcer';
+import { useGameWindowSize } from '../hooks/useGameWindowSize';
 
 import groundGreenImg from '../../assets/ground-green.png';
 import casinoImgAsset from '../../assets/casino_building.png';
@@ -54,6 +54,7 @@ const frogRunSrcs = [
 export default function LobbyPage() {
   const navigate = useNavigate();
   const { user, refreshUser } = useAuth();
+  const { width: gameWidth, height: gameHeight } = useGameWindowSize();
   
   const [showBackpackMenu, setShowBackpackMenu] = useState(false);
   const [closestPlayer, setClosestPlayer] = useState(null);
@@ -346,8 +347,8 @@ export default function LobbyPage() {
     };
 
     const loop = (time) => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      canvas.width = gameWidth;
+      canvas.height = gameHeight;
       const dt = Math.min((time - lastTime) / 1000, 0.1);
       lastTime = time;
 
@@ -390,8 +391,7 @@ export default function LobbyPage() {
   }, []);
 
   return (
-    <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', position: 'relative' }}>
-      <LandscapeEnforcer />
+    <LandscapeEnforcer>
       <PixelCanvas />
       
       {/* Title */}
@@ -488,8 +488,8 @@ export default function LobbyPage() {
       {/* Canvas */}
       <canvas
         ref={canvasRef}
-        width={window.innerWidth}
-        height={window.innerHeight}
+        width={gameWidth}
+        height={gameHeight}
         style={{ display: 'block', width: '100%', height: '100%', imageRendering: 'pixelated', position: 'relative', zIndex: 1 }}
       />
       
@@ -551,6 +551,6 @@ export default function LobbyPage() {
           </div>
         </div>
       )}
-    </div>
+    </LandscapeEnforcer>
   );
 }

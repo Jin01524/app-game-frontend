@@ -33,6 +33,8 @@ import coinIcon from '../../assets/coin-tl4.2.png';
 import BackpackModal from '../components/BackpackModal';
 import StorageModal from '../components/StorageModal';
 import TradeModal from '../components/TradeModal';
+import LandscapeEnforcer from '../components/LandscapeEnforcer';
+import { useGameWindowSize } from '../hooks/useGameWindowSize';
 
 import frogIdle1 from '../../assets/character/FrogNinja/idle (1).png';
 import frogIdle2 from '../../assets/character/FrogNinja/idle (2).png';
@@ -91,6 +93,7 @@ const frogAttackSrcs = [
 
 export default function HousePage() {
   const navigate = useNavigate();
+  const { width: gameWidth, height: gameHeight } = useGameWindowSize();
   const { username: visitUsername } = useParams();
   const { authFetch, user, refreshUser } = useAuth();
   
@@ -334,14 +337,14 @@ export default function HousePage() {
   useEffect(() => {
     const handleResize = () => {
       if (canvasRef.current) {
-        canvasRef.current.width = window.innerWidth;
-        canvasRef.current.height = window.innerHeight;
+        canvasRef.current.width = gameWidth;
+        canvasRef.current.height = gameHeight;
       }
     };
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [gameWidth, gameHeight]);
 
   // Keyboard
   useEffect(() => {
@@ -375,9 +378,9 @@ export default function HousePage() {
       state.lastTime = time;
 
       // Fix canvas internal size if it mismatch window
-      if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
-          canvas.width = window.innerWidth;
-          canvas.height = window.innerHeight;
+      if (canvas.width !== gameWidth || canvas.height !== gameHeight) {
+          canvas.width = gameWidth;
+          canvas.height = gameHeight;
       }
 
       const dist = Math.abs(state.player.x + state.player.width/2 - (state.farmPlot.x + state.farmPlot.width/2));
@@ -839,7 +842,7 @@ export default function HousePage() {
     };
     rafId = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(rafId);
-  }, [farm, showFarmMenu, showHouseMenu, showCageMenu, user, loading]);
+  }, [farm, showFarmMenu, showHouseMenu, showCageMenu, user, loading, gameWidth, gameHeight]);
 
 
   const submitFeed = async (amount) => {
@@ -986,7 +989,8 @@ export default function HousePage() {
   const availableCows = getAvailableCows();
 
   return (
-    <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', position: 'relative' }}>
+    <LandscapeEnforcer>
+      <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', position: 'relative' }}>
       <PixelCanvas />
       <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%', position: 'relative', zIndex: 1 }} />
 
@@ -1428,6 +1432,7 @@ export default function HousePage() {
           100% { transform: scale(1); }
         }
       `}</style>
-    </div>
+      </div>
+    </LandscapeEnforcer>
   );
 }
