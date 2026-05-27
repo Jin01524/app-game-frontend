@@ -113,7 +113,7 @@ export default function ShurikenGame({ onClose, user, socket }) {
       toast.error('Phòng đã bị đóng.');
       setView('menu');
       setRoomState(null);
-      socket.emit('shuriken_', { user });
+      socket.emit('shuriken_get_rooms', { user });
     };
 
     socket.on('shuriken_rooms_list', handleRoomsList);
@@ -122,7 +122,7 @@ export default function ShurikenGame({ onClose, user, socket }) {
     socket.on('shuriken_room_closed', handleClosed);
 
     if (view === 'menu') {
-      socket.emit('shuriken_', { user });
+      socket.emit('shuriken_get_rooms', { user });
     }
 
     return () => {
@@ -135,30 +135,30 @@ export default function ShurikenGame({ onClose, user, socket }) {
 
   // Actions
   const handleCreateRoom = () => {
-    socket.emit('shuriken_', { user });
+    socket.emit('shuriken_create_room', { user });
   };
   const handleJoinRoom = (host) => {
-    socket.emit('shuriken_', { user,  });
+    socket.emit('shuriken_join_room', { user, hostUsername: host });
   };
   const handleLeaveRoom = () => {
     if (roomState?.host) {
-      socket.emit('shuriken_', { user,  });
+      socket.emit('shuriken_leave_room', { user, hostUsername: roomState.host });
     }
     setView('menu');
     setRoomState(null);
-    socket.emit('shuriken_', { user });
+    socket.emit('shuriken_get_rooms', { user });
   };
   const handleAddBot = () => {
-    socket.emit('shuriken_', { user,  });
+    socket.emit('shuriken_add_bot', { user, hostUsername: roomState.host });
   };
   const handleRemoveBot = (botId) => {
-    socket.emit('shuriken_', { user,  });
+    socket.emit('shuriken_remove_bot', { user, hostUsername: roomState.host, botId });
   };
   const handleReady = () => {
-    socket.emit('shuriken_', { user,  });
+    socket.emit('shuriken_ready', { user, hostUsername: roomState.host });
   };
   const handleStart = () => {
-    socket.emit('shuriken_', { user,  });
+    socket.emit('shuriken_start_game', { user, hostUsername: roomState.host });
   };
 
   // Game Loop
@@ -320,7 +320,7 @@ export default function ShurikenGame({ onClose, user, socket }) {
             if (nearest) {
               angle = Math.atan2(nearest.y - lp.y, nearest.x - lp.x);
             }
-            socket.emit('shuriken_', { user,  });
+            socket.emit('shuriken_shoot', { user, hostUsername: state.host, angle });
             lp.lastShoot = time;
             keys.current.shoot = false; // require re-press
           }
@@ -328,7 +328,7 @@ export default function ShurikenGame({ onClose, user, socket }) {
           // Emit state 20 times per sec
           if (frameCount % 3 === 0) {
             socket.emit('shuriken_player_move', {
-              hostUsername: state.host,
+              user, hostUsername: state.host,
               x: lp.x, y: lp.y, vy: lp.vy, isWalking: lp.isWalking, dirX: lp.dirX
             });
           }
