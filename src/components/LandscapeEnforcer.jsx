@@ -1,102 +1,135 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 /**
- * LandscapeEnforcer – Ensures the page renders in landscape orientation.
+ * LandscapeEnforcer
  *
- * Strategy (in order of priority):
- * 1. Use Screen Orientation API to lock landscape.
- *    Works in installed PWAs (display: standalone) and fullscreen mode.
- *    When the lock succeeds, the OS rotates the entire viewport – vw/vh/canvas
- *    all update correctly. No CSS tricks needed.
- *
- * 2. If the lock fails (regular browser tab, API not supported), show a
- *    "Please rotate your device" overlay when the device is in portrait.
- *    This avoids broken canvas/vw/vh rendering from CSS rotation tricks.
+ * Reality check on Chrome Android (Pixel 7a etc.):
+ * - screen.orientation.lock() requires FULLSCREEN, not just standalone PWA.
+ * - Manifest "orientation":"any" lets the user PHYSICALLY rotate to landscape.
+ * - So the correct flow is:
+ *     1. Show a small tap-to-fullscreen banner when in portrait.
+ *     2. On tap → requestFullscreen() → screen.orientation.lock('landscape').
+ *     3. If already landscape, render normally.
+ *     4. If user refuses / not supported, show a gentle hint.
  */
 export default function LandscapeEnforcer({ children }) {
-  const [lockFailed, setLockFailed] = useState(false);
   const [isPortrait, setIsPortrait] = useState(
     () => window.innerHeight > window.innerWidth
   );
+  const [isLocked, setIsLocked] = useState(false);
+  const [locking, setLocking] = useState(false);
+  const [lockUnsupported, setLockUnsupported] = useState(false);
 
   useEffect(() => {
-    // 1. Try native orientation lock (works in installed PWA)
-    const tryLock = async () => {
-      if (screen.orientation && typeof screen.orientation.lock === 'function') {
-        try {
-          await screen.orientation.lock('landscape');
-          setLockFailed(false);
-        } catch {
-          // Lock failed: running in a regular browser tab
-          setLockFailed(true);
-        }
-      } else {
-        setLockFailed(true);
-      }
+    const handler = () => {
+      const portrait = window.innerHeight > window.innerWidth;
+      setIsPortrait(portrait);
+      if (!portrait) setIsLocked(true); // already landscape – good
     };
-    tryLock();
-
-    // 2. Track orientation for the fallback overlay
-    const handleResize = () => {
-      setIsPortrait(window.innerHeight > window.innerWidth);
-    };
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', handleResize);
-
+    handler();
+    window.addEventListener('resize', handler);
+    window.addEventListener('orientationchange', handler);
     return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('orientationchange', handleResize);
-      // Unlock when leaving the page
+      window.removeEventListener('resize', handler);
+      window.removeEventListener('orientationchange', handler);
+      // Unlock and exit fullscreen when leaving page
       try { screen.orientation?.unlock(); } catch {}
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
     };
   }, []);
 
-  // Lock succeeded → OS handles rotation, render normally
-  if (!lockFailed) {
+  const handleForce = async () => {
+    setLocking(true);
+    try {
+      // Step 1: Go fullscreen (required for orientation lock on Chrome Android)
+      await document.documentElement.requestFullscreen({ navigationUI: 'hide' });
+      // Step 2: Lock to landscape
+      await screen.orientation.lock('landscape');
+      setIsLocked(true);
+    } catch (e) {
+      // Lock not supported even in fullscreen (some devices/browsers)
+      setLockUnsupported(true);
+    } finally {
+      setLocking(false);
+    }
+  };
+
+  // Already landscape or locked → render normally
+  if (!isPortrait || isLocked) {
     return <>{children}</>;
   }
 
-  // Lock failed but already in landscape → render normally
-  if (!isPortrait) {
-    return <>{children}</>;
-  }
-
-  // Lock failed and still in portrait → show rotate overlay
+  // Portrait mode – show overlay
   return (
     <>
-      {/* Dimmed children underneath so layout doesn't shift */}
-      <div style={{ visibility: 'hidden', width: '100vw', height: '100vh', overflow: 'hidden' }}>
+      {/* Render page behind overlay so it's ready when rotated */}
+      <div style={{ position: 'fixed', inset: 0, visibility: 'hidden', pointerEvents: 'none' }}>
         {children}
       </div>
 
-      {/* Rotate overlay */}
+      {/* Overlay */}
       <div style={{
         position: 'fixed',
         inset: 0,
         zIndex: 9999,
-        background: 'linear-gradient(135deg, #0a0a1a 0%, #0f172a 100%)',
+        background: 'linear-gradient(160deg, #0a0a1a 0%, #0f172a 60%, #0a1628 100%)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: '24px',
-        color: 'white',
+        gap: '28px',
         fontFamily: 'var(--font-pixel, monospace)',
+        color: '#f8fafc',
+        padding: '32px',
       }}>
-        {/* Animated phone rotate icon */}
-        <div style={{ fontSize: '4rem', animation: 'spin-cw 1.8s ease-in-out infinite' }}>📱</div>
-        <div style={{ fontSize: '0.9rem', textAlign: 'center', color: '#94a3b8', lineHeight: 1.8 }}>
-          <div style={{ fontSize: '1.1rem', color: '#f8fafc', marginBottom: '8px' }}>
-            [ XOAY ĐIỆN THOẠI ]
-          </div>
-          Trang này yêu cầu<br />chế độ <span style={{ color: '#22d3ee' }}>màn hình ngang</span>
+        {/* Animated icon */}
+        <div style={{ fontSize: '3.5rem', animation: 'rotatePhone 2s ease-in-out infinite' }}>
+          📱
         </div>
+
+        <div style={{ textAlign: 'center', lineHeight: 2 }}>
+          <div style={{ fontSize: '1rem', color: '#22d3ee', marginBottom: '8px', letterSpacing: '0.1em' }}>
+            [ XOA Y NGANG ]
+          </div>
+          <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+            {lockUnsupported
+              ? 'Xoay điện thoại sang ngang để tiếp tục'
+              : 'Bấm nút bên dưới để tự động chuyển sang ngang'}
+          </div>
+        </div>
+
+        {!lockUnsupported && (
+          <button
+            onClick={handleForce}
+            disabled={locking}
+            style={{
+              padding: '14px 32px',
+              background: locking ? '#1e293b' : 'linear-gradient(135deg, #0ea5e9, #6366f1)',
+              border: '3px solid #22d3ee',
+              color: 'white',
+              fontFamily: 'var(--font-pixel, monospace)',
+              fontSize: '0.85rem',
+              cursor: locking ? 'wait' : 'pointer',
+              borderRadius: '4px',
+              letterSpacing: '0.05em',
+            }}
+          >
+            {locking ? '⏳ ĐANG CHUYỂN...' : '[ CHUYỂN SANG NGANG ]'}
+          </button>
+        )}
+
+        <div style={{ fontSize: '0.65rem', color: '#475569', textAlign: 'center' }}>
+          Hoặc xoay điện thoại nếu đã bật tự động xoay
+        </div>
+
         <style>{`
-          @keyframes spin-cw {
+          @keyframes rotatePhone {
             0%   { transform: rotate(0deg); }
-            40%  { transform: rotate(90deg); }
-            60%  { transform: rotate(90deg); }
-            100% { transform: rotate(90deg) scale(1.1); }
+            35%  { transform: rotate(-90deg); }
+            65%  { transform: rotate(-90deg); }
+            100% { transform: rotate(0deg); }
           }
         `}</style>
       </div>
