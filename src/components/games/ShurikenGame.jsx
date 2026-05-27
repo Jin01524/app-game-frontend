@@ -175,6 +175,9 @@ export default function ShurikenGame({ onClose, user, socket }) {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
+      if (['ArrowUp', 'w', ' ', 'Enter', 'e'].includes(e.key) && view === 'playing') {
+        e.preventDefault();
+      }
       if (e.key === 'ArrowLeft' || e.key === 'a') keys.current.left = true;
       if (e.key === 'ArrowRight' || e.key === 'd') keys.current.right = true;
       if (e.key === 'ArrowUp' || e.key === 'w' || e.key === ' ') keys.current.jump = true;
@@ -298,17 +301,13 @@ export default function ShurikenGame({ onClose, user, socket }) {
           if (lp.x < 16) lp.x = 16;
           if (lp.x > MAP_W - 16) lp.x = MAP_W - 16;
 
-          // Jump
-          if (keys.current.jump && lp.y >= groundY) {
-            lp.vy = -400;
-          }
-          
-          // Gravity
+          // Gravity and Jump
           if (lp.y < groundY) {
             lp.vy += 1000 * dt;
           } else {
             lp.y = groundY;
-            lp.vy = 0;
+            if (keys.current.jump) lp.vy = -400;
+            else lp.vy = 0;
           }
           lp.y += lp.vy * dt;
 
@@ -555,14 +554,14 @@ export default function ShurikenGame({ onClose, user, socket }) {
 
         {/* Controls Overlay */}
         {view === 'playing' && myPlayer && !myPlayer.isDead && (
-          <div style={{ position: 'absolute', bottom: '20px', left: '20px', right: '20px', zIndex: 20, display: 'flex', justifyContent: 'space-between', pointerEvents: 'none' }}>
+          <div style={{ position: 'absolute', bottom: '20px', left: '20px', right: '20px', zIndex: 20, display: 'flex', justifyContent: 'space-between', pointerEvents: 'none' }} onContextMenu={e => e.preventDefault()}>
             <div style={{ display: 'flex', gap: '15px', pointerEvents: 'auto' }}>
-              <button className="pixel-btn" onPointerDown={() => keys.current.left=true} onPointerUp={() => keys.current.left=false} onPointerLeave={() => keys.current.left=false} style={{ width: '60px', height: '60px', background: 'rgba(0,0,0,0.5)', border: '4px solid #fff', color: '#fff', fontSize: '24px' }}>◀</button>
-              <button className="pixel-btn" onPointerDown={() => keys.current.right=true} onPointerUp={() => keys.current.right=false} onPointerLeave={() => keys.current.right=false} style={{ width: '60px', height: '60px', background: 'rgba(0,0,0,0.5)', border: '4px solid #fff', color: '#fff', fontSize: '24px' }}>▶</button>
+              <button className="pixel-btn" onTouchStart={() => keys.current.left=true} onTouchEnd={() => keys.current.left=false} onPointerDown={() => keys.current.left=true} onPointerUp={() => keys.current.left=false} onPointerLeave={() => keys.current.left=false} style={{ width: '60px', height: '60px', background: 'rgba(0,0,0,0.5)', border: '4px solid #fff', color: '#fff', fontSize: '24px', userSelect: 'none', touchAction: 'none' }}>◀</button>
+              <button className="pixel-btn" onTouchStart={() => keys.current.right=true} onTouchEnd={() => keys.current.right=false} onPointerDown={() => keys.current.right=true} onPointerUp={() => keys.current.right=false} onPointerLeave={() => keys.current.right=false} style={{ width: '60px', height: '60px', background: 'rgba(0,0,0,0.5)', border: '4px solid #fff', color: '#fff', fontSize: '24px', userSelect: 'none', touchAction: 'none' }}>▶</button>
             </div>
             <div style={{ display: 'flex', gap: '15px', pointerEvents: 'auto' }}>
-              <button className="pixel-btn" onPointerDown={() => keys.current.shoot=true} onPointerUp={() => keys.current.shoot=false} onPointerLeave={() => keys.current.shoot=false} style={{ width: '60px', height: '60px', background: 'rgba(239,68,68,0.7)', border: '4px solid #991b1b', color: '#fff', borderRadius: '50%', fontSize: '24px' }}>🎯</button>
-              <button className="pixel-btn" onPointerDown={() => keys.current.jump=true} onPointerUp={() => keys.current.jump=false} onPointerLeave={() => keys.current.jump=false} style={{ width: '60px', height: '60px', background: 'rgba(59,130,246,0.7)', border: '4px solid #1e3a8a', color: '#fff', borderRadius: '50%', fontSize: '24px' }}>▲</button>
+              <button className="pixel-btn" onTouchStart={() => keys.current.shoot=true} onTouchEnd={() => keys.current.shoot=false} onPointerDown={() => keys.current.shoot=true} onPointerUp={() => keys.current.shoot=false} onPointerLeave={() => keys.current.shoot=false} style={{ width: '60px', height: '60px', background: 'rgba(239,68,68,0.7)', border: '4px solid #991b1b', color: '#fff', borderRadius: '50%', fontSize: '24px', userSelect: 'none', touchAction: 'none' }}>🎯</button>
+              <button className="pixel-btn" onTouchStart={() => keys.current.jump=true} onTouchEnd={() => keys.current.jump=false} onPointerDown={() => keys.current.jump=true} onPointerUp={() => keys.current.jump=false} onPointerLeave={() => keys.current.jump=false} style={{ width: '60px', height: '60px', background: 'rgba(59,130,246,0.7)', border: '4px solid #1e3a8a', color: '#fff', borderRadius: '50%', fontSize: '24px', userSelect: 'none', touchAction: 'none' }}>▲</button>
             </div>
           </div>
         )}
