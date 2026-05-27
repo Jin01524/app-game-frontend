@@ -575,8 +575,8 @@ export default function MarketPage() {
   };
 
   return (
-    <LandscapeEnforcer>
     <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', position: 'relative' }}>
+      <LandscapeEnforcer />
       <PixelCanvas />
       <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%', position: 'relative', zIndex: 1 }} />
 
@@ -809,6 +809,5 @@ export default function MarketPage() {
         </div>
       )}
     </div>
-    </LandscapeEnforcer>
   );
 }

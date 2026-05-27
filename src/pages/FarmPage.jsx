@@ -125,8 +125,8 @@ export default function FarmPage() {
   const totalLua = inventory.find(i => i.item_id === 'lua')?.quantity || 0;
 
   return (
-    <LandscapeEnforcer>
     <div className={styles.page} style={{ backgroundImage: `url(${farmBg})`, backgroundSize: 'cover', backgroundPosition: 'center top' }}>
+      <LandscapeEnforcer />
       <main className={styles.main}>
         <header className={`${styles.header} rpg-box fade-in`}>
           <div>
@@ -211,6 +211,5 @@ export default function FarmPage() {
 
       <BottomNav />
     </div>
-    </LandscapeEnforcer>
   );
 }

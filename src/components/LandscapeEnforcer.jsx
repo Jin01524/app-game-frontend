@@ -1,38 +1,25 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 
 /**
- * LandscapeEnforcer
- *
- * Reality check on Chrome Android (Pixel 7a etc.):
- * - screen.orientation.lock() requires FULLSCREEN, not just standalone PWA.
- * - Manifest "orientation":"any" lets the user PHYSICALLY rotate to landscape.
- * - So the correct flow is:
- *     1. Show a small tap-to-fullscreen banner when in portrait.
- *     2. On tap → requestFullscreen() → screen.orientation.lock('landscape').
- *     3. If already landscape, render normally.
- *     4. If user refuses / not supported, show a gentle hint.
+ * LandscapeHint – Renders a portal directly into document.body.
+ * 
+ * Uses CSS @media (orientation: portrait) for detection – 100% reliable,
+ * no JS state race conditions. Portal escapes all stacking contexts so
+ * no transform/overflow/z-index from parent components can hide it.
+ * 
+ * Add this component anywhere inside a page that requires landscape.
  */
-export default function LandscapeEnforcer({ children }) {
-  const [isPortrait, setIsPortrait] = useState(
-    () => window.innerHeight > window.innerWidth
-  );
-  const [isLocked, setIsLocked] = useState(false);
+export default function LandscapeHint() {
+  const [mounted, setMounted] = useState(false);
   const [locking, setLocking] = useState(false);
+  const [lockDone, setLockDone] = useState(false);
   const [lockUnsupported, setLockUnsupported] = useState(false);
 
   useEffect(() => {
-    const handler = () => {
-      const portrait = window.innerHeight > window.innerWidth;
-      setIsPortrait(portrait);
-      if (!portrait) setIsLocked(true); // already landscape – good
-    };
-    handler();
-    window.addEventListener('resize', handler);
-    window.addEventListener('orientationchange', handler);
+    setMounted(true);
     return () => {
-      window.removeEventListener('resize', handler);
-      window.removeEventListener('orientationchange', handler);
-      // Unlock and exit fullscreen when leaving page
+      // Release fullscreen + orientation lock when leaving page
       try { screen.orientation?.unlock(); } catch {}
       if (document.fullscreenElement) {
         document.exitFullscreen().catch(() => {});
@@ -43,96 +30,115 @@ export default function LandscapeEnforcer({ children }) {
   const handleForce = async () => {
     setLocking(true);
     try {
-      // Step 1: Go fullscreen (required for orientation lock on Chrome Android)
-      await document.documentElement.requestFullscreen({ navigationUI: 'hide' });
-      // Step 2: Lock to landscape
-      await screen.orientation.lock('landscape');
-      setIsLocked(true);
-    } catch (e) {
-      // Lock not supported even in fullscreen (some devices/browsers)
+      if (document.documentElement.requestFullscreen) {
+        await document.documentElement.requestFullscreen({ navigationUI: 'hide' });
+      }
+      if (screen.orientation?.lock) {
+        await screen.orientation.lock('landscape');
+      }
+      setLockDone(true);
+    } catch {
       setLockUnsupported(true);
     } finally {
       setLocking(false);
     }
   };
 
-  // Already landscape or locked → render normally
-  if (!isPortrait || isLocked) {
-    return <>{children}</>;
-  }
+  if (!mounted || lockDone) return null;
 
-  // Portrait mode – show overlay
-  return (
-    <>
-      {/* Render page behind overlay so it's ready when rotated */}
-      <div style={{ position: 'fixed', inset: 0, visibility: 'hidden', pointerEvents: 'none' }}>
-        {children}
-      </div>
-
-      {/* Overlay */}
-      <div style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 9999,
-        background: 'linear-gradient(160deg, #0a0a1a 0%, #0f172a 60%, #0a1628 100%)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '28px',
-        fontFamily: 'var(--font-pixel, monospace)',
-        color: '#f8fafc',
-        padding: '32px',
-      }}>
-        {/* Animated icon */}
-        <div style={{ fontSize: '3.5rem', animation: 'rotatePhone 2s ease-in-out infinite' }}>
-          📱
-        </div>
-
-        <div style={{ textAlign: 'center', lineHeight: 2 }}>
-          <div style={{ fontSize: '1rem', color: '#22d3ee', marginBottom: '8px', letterSpacing: '0.1em' }}>
-            [ XOA Y NGANG ]
-          </div>
-          <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
-            {lockUnsupported
-              ? 'Xoay điện thoại sang ngang để tiếp tục'
-              : 'Bấm nút bên dưới để tự động chuyển sang ngang'}
-          </div>
-        </div>
-
-        {!lockUnsupported && (
-          <button
-            onClick={handleForce}
-            disabled={locking}
-            style={{
-              padding: '14px 32px',
-              background: locking ? '#1e293b' : 'linear-gradient(135deg, #0ea5e9, #6366f1)',
-              border: '3px solid #22d3ee',
-              color: 'white',
-              fontFamily: 'var(--font-pixel, monospace)',
-              fontSize: '0.85rem',
-              cursor: locking ? 'wait' : 'pointer',
-              borderRadius: '4px',
-              letterSpacing: '0.05em',
-            }}
-          >
-            {locking ? '⏳ ĐANG CHUYỂN...' : '[ CHUYỂN SANG NGANG ]'}
-          </button>
-        )}
-
-        <div style={{ fontSize: '0.65rem', color: '#475569', textAlign: 'center' }}>
-          Hoặc xoay điện thoại nếu đã bật tự động xoay
-        </div>
-
-        <style>{`
-          @keyframes rotatePhone {
-            0%   { transform: rotate(0deg); }
-            35%  { transform: rotate(-90deg); }
-            65%  { transform: rotate(-90deg); }
-            100% { transform: rotate(0deg); }
+  const overlay = (
+    <div className="landscape-hint-overlay">
+      <style>{`
+        .landscape-hint-overlay {
+          display: none;
+          position: fixed;
+          inset: 0;
+          z-index: 2147483647;
+          background: linear-gradient(160deg, #0a0a1a 0%, #0f172a 60%, #0a1628 100%);
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 28px;
+          font-family: 'Space Mono', monospace;
+          color: #f8fafc;
+          padding: 32px;
+          box-sizing: border-box;
+        }
+        /* Show ONLY in portrait on mobile-sized screens */
+        @media screen and (orientation: portrait) and (max-aspect-ratio: 1/1) {
+          .landscape-hint-overlay {
+            display: flex;
           }
-        `}</style>
+        }
+        .lh-icon {
+          font-size: 3.5rem;
+          animation: lh-rotate 2.2s ease-in-out infinite;
+        }
+        @keyframes lh-rotate {
+          0%   { transform: rotate(0deg); }
+          35%  { transform: rotate(-90deg); }
+          65%  { transform: rotate(-90deg); }
+          100% { transform: rotate(0deg); }
+        }
+        .lh-title {
+          font-size: 1rem;
+          color: #22d3ee;
+          letter-spacing: 0.12em;
+          margin-bottom: 6px;
+        }
+        .lh-sub {
+          font-size: 0.72rem;
+          color: #94a3b8;
+          line-height: 1.9;
+          text-align: center;
+        }
+        .lh-btn {
+          padding: 14px 28px;
+          background: linear-gradient(135deg, #0ea5e9, #6366f1);
+          border: 3px solid #22d3ee;
+          color: white;
+          font-family: 'Space Mono', monospace;
+          font-size: 0.82rem;
+          cursor: pointer;
+          border-radius: 4px;
+          letter-spacing: 0.04em;
+          touch-action: manipulation;
+        }
+        .lh-btn:disabled {
+          background: #1e293b;
+          cursor: wait;
+        }
+        .lh-hint {
+          font-size: 0.62rem;
+          color: #475569;
+          text-align: center;
+          line-height: 1.8;
+        }
+      `}</style>
+
+      <div className="lh-icon">📱</div>
+
+      <div style={{ textAlign: 'center' }}>
+        <div className="lh-title">[ XOAY NGANG ]</div>
+        <div className="lh-sub">
+          {lockUnsupported
+            ? 'Xoay điện thoại sang ngang để tiếp tục'
+            : 'Trang này hiển thị tốt hơn ở chế độ ngang'}
+        </div>
       </div>
-    </>
+
+      {!lockUnsupported && (
+        <button className="lh-btn" onClick={handleForce} disabled={locking}>
+          {locking ? '⏳ ĐANG CHUYỂN...' : '[ CHUYỂN SANG NGANG ]'}
+        </button>
+      )}
+
+      <div className="lh-hint">
+        Nếu đã bật tự động xoay trên điện thoại,<br />
+        hãy xoay điện thoại sang ngang
+      </div>
+    </div>
   );
+
+  return ReactDOM.createPortal(overlay, document.body);
 }
