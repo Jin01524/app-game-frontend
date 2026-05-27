@@ -6,6 +6,7 @@ import PixelCanvas from '../components/PixelCanvas';
 import BackpackModal from '../components/BackpackModal';
 import TradeModal from '../components/TradeModal';
 import TienLenGame from '../components/games/TienLenGame';
+import LandscapeEnforcer from '../components/LandscapeEnforcer';
 
 import groundGreenImg from '../../assets/ground-green.png';
 import casinoImgAsset from '../../assets/casino_building.png';
@@ -382,6 +383,7 @@ export default function LobbyPage() {
   }, []);
 
   return (
+    <LandscapeEnforcer>
     <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', position: 'relative' }}>
       <PixelCanvas />
       
@@ -543,5 +545,6 @@ export default function LobbyPage() {
         </div>
       )}
     </div>
+    </LandscapeEnforcer>
   );
 }

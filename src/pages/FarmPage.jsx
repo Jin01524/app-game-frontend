@@ -11,6 +11,7 @@ import bagIcon from '../../assets/bag.png';
 
 import StorageModal from '../components/StorageModal';
 import BackpackModal from '../components/BackpackModal';
+import LandscapeEnforcer from '../components/LandscapeEnforcer';
 
 export default function FarmPage() {
   const { authFetch, updateXu } = useAuth();
@@ -124,6 +125,7 @@ export default function FarmPage() {
   const totalLua = inventory.find(i => i.item_id === 'lua')?.quantity || 0;
 
   return (
+    <LandscapeEnforcer>
     <div className={styles.page} style={{ backgroundImage: `url(${farmBg})`, backgroundSize: 'cover', backgroundPosition: 'center top' }}>
       <main className={styles.main}>
         <header className={`${styles.header} rpg-box fade-in`}>
@@ -209,5 +211,6 @@ export default function FarmPage() {
 
       <BottomNav />
     </div>
+    </LandscapeEnforcer>
   );
 }

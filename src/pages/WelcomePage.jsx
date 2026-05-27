@@ -168,7 +168,12 @@ export default function WelcomePage() {
             </div>
 
             <div className={styles.menuWrap}>
-              <button id="btn-menu" className={styles.menuBtn} onClick={() => setMenuOpen(o => !o)}>
+              <button
+                id="btn-menu"
+                className={styles.menuBtn}
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={() => setMenuOpen(o => !o)}
+              >
                 {menuOpen ? <CloseMenuIcon /> : <MenuIcon />}
               </button>
               <Dropdown
