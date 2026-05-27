@@ -7,6 +7,7 @@ import BackpackModal from '../components/BackpackModal';
 import TradeModal from '../components/TradeModal';
 import TienLenGame from '../components/games/TienLenGame';
 import { useGameWindowSize } from '../hooks/useGameWindowSize';
+import LandscapeEnforcer from '../components/LandscapeEnforcer';
 
 import groundGreenImg from '../../assets/ground-green.png';
 import casinoImgAsset from '../../assets/casino_building.png';

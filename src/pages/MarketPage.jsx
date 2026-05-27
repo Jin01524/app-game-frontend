@@ -20,6 +20,7 @@ import whiskIcon from '../../assets/whisk.png';
 import BackpackModal from '../components/BackpackModal';
 import TradeModal from '../components/TradeModal';
 import { useGameWindowSize } from '../hooks/useGameWindowSize';
+import LandscapeEnforcer from '../components/LandscapeEnforcer';
 
 import frogIdle1 from '../../assets/character/FrogNinja/idle (1).png';
 import frogIdle2 from '../../assets/character/FrogNinja/idle (2).png';
