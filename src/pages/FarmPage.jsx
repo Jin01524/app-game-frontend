@@ -126,7 +126,7 @@ export default function FarmPage() {
 
   return (
     <LandscapeEnforcer>
-      <div className={styles.page} style={{ backgroundImage: `url(${farmBg})`, backgroundSize: 'cover', backgroundPosition: 'center top', width: '100%', height: '100%', overflowY: 'auto' }}>
+      <div className={styles.page} style={{ backgroundImage: `url(${farmBg})`, backgroundSize: 'cover', backgroundPosition: 'center top' }}>
       <main className={styles.main}>
         <header className={`${styles.header} rpg-box fade-in`}>
           <div>
