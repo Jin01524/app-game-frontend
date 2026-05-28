@@ -91,9 +91,10 @@ export default function PenaltyGame({ onGoal, onMiss, xu, previewSettings }) {
           setMessage('THỦ MÔN CẢN PHÁ! STREAK = 0');
           if (onMiss) onMiss();
         } else {
+          const xuEarned = (streakRef.current + 1) * 2;
           setStreak(s => s + 1);
-          setMessage('VÀO LƯỚI!!! +2 XU');
-          if (onGoal) onGoal();
+          setMessage(`VÀO LƯỚI!!! +${xuEarned} XU`);
+          if (onGoal) onGoal(xuEarned);
         }
         
         setTimeout(() => {

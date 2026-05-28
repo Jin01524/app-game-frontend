@@ -325,7 +325,7 @@
 .profileBtn {
   margin-top: 6px;
   padding: 11px 16px;
-  background: transparent;
+  background: #ffc000;
   border: 2px solid var(--px-border);
   color: var(--px-text-dim);
   font-family: var(--font-pixel);

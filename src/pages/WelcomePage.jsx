@@ -120,8 +120,8 @@ export default function WelcomePage() {
     catch { setLoggingOut(false); }
   };
 
-  const handleGoal = async () => {
-    addXu(2);
+  const handleGoal = async (amount = 2) => {
+    addXu(amount);
     try {
       await authFetch('/api/profile/game/score', {
         method: 'POST',
