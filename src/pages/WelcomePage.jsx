@@ -303,7 +303,7 @@ export default function WelcomePage() {
             if (quest.key === 'mua_ruong') {
               return (
                 <>
-                  Mua ruộng ở <span className={styles.questLink} onClick={() => navigate('/farm')}>nông trại</span> của bạn
+                  Mua ruộng ở <span className={styles.questLink} onClick={() => navigate('/home2d')}>nông trại</span> của bạn
                 </>
               );
             }
