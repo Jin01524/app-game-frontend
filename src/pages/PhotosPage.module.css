@@ -145,6 +145,21 @@
   object-fit: contain;
 }
 
+.metadataBox {
+  width: 100%;
+  background: #f8fafc;
+  border: 2px solid var(--px-border);
+  padding: 10px 14px;
+  font-family: var(--font-pixel);
+  font-size: 0.7rem;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  color: var(--px-text-mid);
+  box-shadow: 2px 2px 0 var(--px-border);
+  box-sizing: border-box;
+}
+
 .navControls {
   display: flex;
   width: 100%;
