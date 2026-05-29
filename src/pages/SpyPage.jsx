@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { io } from 'socket.io-client';
 import PixelCanvas from '../components/PixelCanvas';
+import BottomNav from '../components/BottomNav';
 import styles from './SpyPage.module.css';
+
 
 export default function SpyPage() {
   const navigate = useNavigate();
