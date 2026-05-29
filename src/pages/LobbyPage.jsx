@@ -524,7 +524,9 @@ export default function LobbyPage() {
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <button className="pixel-btn" style={{ width: '100%', padding: '16px', fontSize: '1.2rem', background: '#3b82f6', color: 'white', border: '4px solid #1e3a8a' }} onClick={() => setShowTienLen(true)}>Tiến Lên</button>
-            <button className="pixel-btn" style={{ width: '100%', padding: '16px', fontSize: '1.2rem', background: '#ef4444', color: 'white', border: '4px solid #991b1b' }} onClick={() => setShowShuriken(true)}>Ném phi tiêu</button>
+            {user?.role === 'admin' && (
+              <button className="pixel-btn" style={{ width: '100%', padding: '16px', fontSize: '1.2rem', background: '#ef4444', color: 'white', border: '4px solid #991b1b' }} onClick={() => setShowShuriken(true)}>Ném phi tiêu</button>
+            )}
           </div>
         </div>
       )}

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import PixelCanvas from '../components/PixelCanvas';
@@ -6,6 +6,7 @@ import PenaltyGame from '../components/PenaltyGame';
 import BottomNav from '../components/BottomNav';
 import styles from './WelcomePage.module.css';
 import coinImg from '../../assets/coin-tl4.2.png';
+import { toast } from '../utils/toast';
 
 // ── Icons (SVG) ───────────────────────────────────────────────────────────────
 const LogoutIcon  = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>;
@@ -71,6 +72,41 @@ export default function WelcomePage() {
   const [loggingOut, setLoggingOut] = useState(false);
   const [usersStatus, setUsersStatus] = useState([]);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [quests, setQuests] = useState([]);
+
+  const refreshQuests = useCallback(async () => {
+    try {
+      const res = await authFetch('/api/quests');
+      if (res.ok) setQuests(await res.json());
+    } catch (e) {
+      console.error('Error fetching quests:', e);
+    }
+  }, [authFetch]);
+
+  useEffect(() => {
+    if (user) {
+      refreshQuests();
+    }
+  }, [user, refreshQuests]);
+
+  const handleClaimReward = async (questKey, rewardAmount) => {
+    try {
+      const res = await authFetch('/api/quests/claim', {
+        method: 'POST',
+        body: JSON.stringify({ questKey }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(`Nhận thành công ${rewardAmount} xu!`);
+        addXu(rewardAmount);
+        refreshQuests();
+      } else {
+        toast.error(data.error || 'Nhận thưởng thất bại');
+      }
+    } catch (e) {
+      toast.error('Lỗi hệ thống');
+    }
+  };
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e) => {
@@ -127,6 +163,7 @@ export default function WelcomePage() {
         method: 'POST',
         body: JSON.stringify({ goals: 1 }),
       });
+      refreshQuests();
     } catch (e) {
       console.error(e);
     }
@@ -252,6 +289,66 @@ export default function WelcomePage() {
             <span>CÀI APP</span>
           </button>
         </div>
+
+        {/* ── Starter Quests ── */}
+        {quests && quests.length > 0 && (
+          <div className={`${styles.questsCard} rpg-box fade-in fade-in-delay-1`}>
+            <div className="px-titlebar">
+              <span>◄ NHIỆM VỤ KHỞI ĐẦU ►</span>
+              <span className={styles.blinkDot}>█</span>
+            </div>
+            <div className={styles.cardBody}>
+              <div className={styles.questsList}>
+                {quests.map((q) => {
+                  const isCompleted = q.completed;
+                  const isClaimed = q.claimed;
+                  
+                  const renderQuestText = (quest) => {
+                    if (quest.key === 'mua_ruong') {
+                      return (
+                        <>
+                          Mua ruộng ở <span className={styles.questLink} onClick={() => navigate('/farm')}>nông trại</span> của bạn
+                        </>
+                      );
+                    }
+                    return quest.title;
+                  };
+
+                  return (
+                    <div key={q.key} className={styles.questItem}>
+                      <span className={`${styles.questCheckbox} ${isCompleted || isClaimed ? styles.questCheckboxCompleted : ''}`}>
+                        {isCompleted || isClaimed ? '[x]' : '[ ]'}
+                      </span>
+                      <div className={styles.questBody}>
+                        <span className={`${styles.questText} ${isCompleted || isClaimed ? styles.questTextCompleted : ''}`}>
+                          {renderQuestText(q)}
+                        </span>
+                        <div className={styles.questMeta}>
+                          {q.reward > 0 ? `Thưởng: ${q.reward} xu` : 'Không có thưởng'}
+                          {q.maxProgress > 1 && ` | Tiến độ: ${q.progress}/${q.maxProgress}`}
+                        </div>
+                      </div>
+                      
+                      {isCompleted && !isClaimed && q.reward > 0 && (
+                        <button 
+                          className={styles.questClaimBtn} 
+                          onClick={() => handleClaimReward(q.key, q.reward)}
+                        >
+                          [ NHẬN ]
+                        </button>
+                      )}
+                      {isClaimed && q.reward > 0 && (
+                        <span className={styles.questClaimedText}>
+                          [ ĐÃ NHẬN ]
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ── Penalty Game ── */}
         <div className={`${styles.welcomeCard} rpg-box fade-in fade-in-delay-2`}>

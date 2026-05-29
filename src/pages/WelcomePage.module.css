@@ -408,3 +408,112 @@
   .clockTime { font-size: 2.2rem; letter-spacing: 2px; }
   .displayName { font-size: 1.5rem; }
 }
+
+/* ── Starter Quests ── */
+.questsCard {
+  overflow: hidden;
+}
+
+.questsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.questItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 2px dashed var(--px-border);
+}
+
+.questItem:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.questCheckbox {
+  font-family: var(--font-pixel);
+  font-size: 0.65rem;
+  color: var(--px-text-dim);
+  user-select: none;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.questCheckboxCompleted {
+  color: var(--px-green) !important;
+}
+
+.questBody {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.questText {
+  font-family: var(--font-pixel);
+  font-size: 0.52rem;
+  color: var(--px-text);
+  line-height: 1.5;
+}
+
+.questTextCompleted {
+  color: var(--px-text-dim) !important;
+  text-decoration: line-through;
+}
+
+.questLink {
+  color: #10b981; /* emerald/green matching retro */
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: bold;
+}
+.questLink:hover {
+  color: var(--px-amber);
+}
+
+.questMeta {
+  font-family: var(--font-pixel);
+  font-size: 0.42rem;
+  color: var(--px-text-dim);
+  margin-top: 2px;
+}
+
+.questClaimBtn {
+  font-family: var(--font-pixel);
+  font-size: 0.42rem;
+  background-color: #fbbf24; /* Amber yellow */
+  color: #1e293b;
+  border: 2px solid var(--px-border);
+  box-shadow: 2px 2px 0 var(--px-border);
+  padding: 5px 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+  border-radius: 4px;
+  transition: transform 0.05s, box-shadow 0.05s;
+}
+
+.questClaimBtn:hover {
+  background-color: #f59e0b;
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--px-border);
+}
+
+.questClaimBtn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 var(--px-border);
+}
+
+.questClaimedText {
+  font-family: var(--font-pixel);
+  font-size: 0.42rem;
+  color: #10b981;
+  font-weight: bold;
+  flex-shrink: 0;
+  padding: 5px 0;
+}
+
