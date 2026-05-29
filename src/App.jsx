@@ -13,6 +13,7 @@ import LobbyPage   from './pages/LobbyPage';
 import UtilitiesPage from './pages/UtilitiesPage';
 import CalculatorPage from './pages/CalculatorPage';
 import PhotosPage from './pages/PhotosPage';
+import WeatherPage from './pages/WeatherPage';
 
 // Guard: only admin can access, others redirect to /
 function AdminOnly({ children }) {
@@ -49,6 +50,9 @@ export default function App() {
           />
           <Route path="/utilities/photos"
             element={<ProtectedRoute><PhotosPage /></ProtectedRoute>}
+          />
+          <Route path="/utilities/weather"
+            element={<ProtectedRoute><WeatherPage /></ProtectedRoute>}
           />
           <Route path="/lobby"
             element={<ProtectedRoute><LobbyPage /></ProtectedRoute>}
