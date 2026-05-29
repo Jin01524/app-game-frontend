@@ -389,17 +389,17 @@ export default function WeatherPage() {
             </div>
 
             {/* Actions */}
-            <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '6px', justifyContent: 'center' }}>
               <button
                 className="btn btn-outline"
-                style={{ flex: 1 }}
+                style={{ padding: '6px 12px', minWidth: '135px' }}
                 onClick={() => setShowSearch(true)}
               >
                 [ 🔍 XEM NƠI KHÁC ]
               </button>
               <button
                 className="btn btn-outline"
-                style={{ flex: 1 }}
+                style={{ padding: '6px 12px', minWidth: '135px' }}
                 onClick={detectLocation}
               >
                 [ 🔄 CẬP NHẬT ]

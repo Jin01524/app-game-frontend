@@ -9,12 +9,8 @@ const UTILITIES = [
   { key: 'calculator', name: 'Máy tính', icon: '🧮', color: '#f59e0b' },
   { key: 'photos',     name: 'Photos',   icon: '🖼️', color: '#10b981' },
   { key: 'messaging',  name: 'Nhắn tin', icon: '💬', color: '#3b82f6' },
-  { key: 'notes',      name: 'Ghi chú',  icon: '📝', color: '#8b5cf6' },
   { key: 'weather',    name: 'Thời tiết', icon: '🌤️', color: '#06b6d4' },
-  { key: 'music',      name: 'Âm nhạc',  icon: '🎵', color: '#ec4899' },
-  { key: 'clock',      name: 'Đồng hồ',  icon: '⏰', color: '#ef4444' },
   { key: 'tarot',      name: 'Xem Tarot', icon: tarotIcon, color: '#6366f1' },
-  { key: 'settings',   name: 'Cài đặt',  icon: '⚙️', color: '#64748b' },
 ];
 
 export default function UtilitiesPage() {
