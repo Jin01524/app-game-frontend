@@ -72,6 +72,11 @@ export default function PhotosPage() {
                 <div className={styles.imgWrapper}>
                   {/* Append =w300 dynamic width modifier for fast thumbnail loading */}
                   <img src={`${p.url}=w300`} alt={p.location ? `Ảnh chụp tại ${p.location}` : "Ảnh kỷ niệm"} className={styles.thumbnail} loading="lazy" />
+                  {p.isVideo && (
+                    <div className={styles.videoOverlay}>
+                      <span>▶️</span>
+                    </div>
+                  )}
                 </div>
                 <div className={styles.caption}>
                   <div>📍 {p.location || 'Không rõ'}</div>
@@ -102,18 +107,31 @@ export default function PhotosPage() {
         <div className={styles.overlay} onClick={() => setSelectedIdx(null)}>
           <div className={`${styles.modal} rpg-box`} onClick={e => e.stopPropagation()}>
             <div className="px-titlebar">
-              <span>◄ CHI TIẾT ẢNH ({(selectedIdx + 1)}/{ALL_PHOTOS.length}) ►</span>
+              <span>◄ CHI TIẾT {ALL_PHOTOS[selectedIdx].isVideo ? "VIDEO" : "ẢNH"} ({(selectedIdx + 1)}/{ALL_PHOTOS.length}) ►</span>
               <span style={{ cursor: 'pointer', fontWeight: 'bold' }} onClick={() => setSelectedIdx(null)}>[X]</span>
             </div>
 
             <div className={styles.modalContent}>
               <div className={styles.largeImgWrapper}>
-                {/* Append =w800 dynamic width modifier for full size high quality image */}
-                <img 
-                  src={`${ALL_PHOTOS[selectedIdx].url}=w800`} 
-                  alt={ALL_PHOTOS[selectedIdx].location ? `Ảnh chụp tại ${ALL_PHOTOS[selectedIdx].location}` : "Ảnh kỷ niệm"} 
-                  className={styles.largeImg} 
-                />
+                {ALL_PHOTOS[selectedIdx].isVideo ? (
+                  <video 
+                    key={selectedIdx} // Force recreate DOM element on index change to play new video stream
+                    controls 
+                    autoPlay 
+                    playsInline 
+                    className={styles.largeVideo}
+                  >
+                    <source src={`${ALL_PHOTOS[selectedIdx].url}=m22`} type="video/mp4" />
+                    <source src={`${ALL_PHOTOS[selectedIdx].url}=m18`} type="video/mp4" />
+                    Trình duyệt không hỗ trợ xem video này.
+                  </video>
+                ) : (
+                  <img 
+                    src={`${ALL_PHOTOS[selectedIdx].url}=w800`} 
+                    alt={ALL_PHOTOS[selectedIdx].location ? `Ảnh chụp tại ${ALL_PHOTOS[selectedIdx].location}` : "Ảnh kỷ niệm"} 
+                    className={styles.largeImg} 
+                  />
+                )}
               </div>
 
               {/* Location & Date Details Box */}
