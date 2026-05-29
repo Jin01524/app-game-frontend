@@ -6,8 +6,6 @@ import PixelCanvas from '../components/PixelCanvas';
 import BottomNav from '../components/BottomNav';
 import styles from './MessagingPage.module.css';
 
-const RPG_STICKERS = ['🐮', '💰', '🃏', '🎯', '🌾', '🍀', '🏆', '⭐', '❤️', '🔥'];
-
 export default function MessagingPage() {
   const navigate = useNavigate();
   const { user, authFetch } = useAuth();
@@ -18,7 +16,6 @@ export default function MessagingPage() {
   const [inputValue, setInputValue] = useState('');
   const [typingUsers, setTypingUsers] = useState({}); // { username: isTyping }
   const [unreadCounts, setUnreadCounts] = useState({}); // { username: count }
-  const [showStickers, setShowStickers] = useState(false);
 
   const socketRef = useRef(null);
   const chatEndRef = useRef(null);
@@ -31,8 +28,12 @@ export default function MessagingPage() {
     // Clear unread count when clicking a room
     if (activeRoom !== 'global') {
       setUnreadCounts(prev => ({ ...prev, [activeRoom]: 0 }));
+      authFetch('/api/messages/read', {
+        method: 'POST',
+        body: JSON.stringify({ senderUsername: activeRoom })
+      }).catch(err => console.error('Error marking as read:', err));
     }
-  }, [activeRoom]);
+  }, [activeRoom, authFetch]);
 
   const scrollToBottom = useCallback(() => {
     setTimeout(() => {
@@ -78,6 +79,12 @@ export default function MessagingPage() {
     if (user) {
       fetchUsers();
       fetchHistory();
+      
+      // Request notification permissions
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+
       const interval = setInterval(fetchUsers, 20000); // refresh user states every 20s
       return () => clearInterval(interval);
     }
@@ -87,7 +94,6 @@ export default function MessagingPage() {
   const handleRoomSelect = (roomKey) => {
     setActiveRoom(roomKey);
     setMessages([]);
-    setShowStickers(false);
   };
 
   // Socket Connection and Event Listeners
@@ -123,6 +129,22 @@ export default function MessagingPage() {
       if (isCurrentDM) {
         setMessages(prev => [...prev, msg]);
         scrollToBottom();
+
+        // Mark as read immediately if we are active in this room and the message is from the other person
+        if (sender !== user.username) {
+          authFetch('/api/messages/read', {
+            method: 'POST',
+            body: JSON.stringify({ senderUsername: sender })
+          }).catch(err => console.error('Error marking as read:', err));
+        }
+
+        // If window is blurred (not in focus), also show a system notification!
+        if (document.hidden && Notification.permission === 'granted' && sender !== user.username) {
+          new Notification(`@${sender} đã nhắn tin`, {
+            body: msg.content,
+            icon: msg.sender_avatar || '/favicon.ico'
+          });
+        }
       } else {
         // Increment unread badge for the sender
         if (sender !== user.username) {
@@ -130,6 +152,14 @@ export default function MessagingPage() {
             ...prev,
             [sender]: (prev[sender] || 0) + 1
           }));
+
+          // Send push notification for unread background message
+          if (Notification.permission === 'granted') {
+            new Notification(`Tin nhắn từ @${sender}`, {
+              body: msg.content,
+              icon: msg.sender_avatar || '/favicon.ico'
+            });
+          }
         }
       }
     });
@@ -209,11 +239,6 @@ export default function MessagingPage() {
     if (e.key === 'Enter') {
       handleSendMessage();
     }
-  };
-
-  const handleStickerClick = (sticker) => {
-    handleSendMessage(`[STICKER: ${sticker}]`);
-    setShowStickers(false);
   };
 
   // Helper: check if offline / online relative time
@@ -335,24 +360,27 @@ export default function MessagingPage() {
                       )}
 
                       <div className={styles.msgBubbleWrap}>
-                        {!isMe && (
-                          <div className={styles.msgSenderInfo}>
-                            <span className={styles.senderName}>{displayName}</span>
-                            <span className={`${styles.roleBadge} ${role === 'admin' ? styles.adminBadge : styles.userBadge}`}>
-                              {role === 'admin' ? '[ ADMIN ]' : '[ USER ]'}
-                            </span>
-                          </div>
-                        )}
+                        <div className={styles.msgSenderInfo} style={isMe ? { justifyContent: 'flex-end', width: '100%' } : {}}>
+                          {isMe ? (
+                            <>
+                              <span className={`${styles.roleBadge} ${role === 'admin' ? styles.adminBadge : styles.userBadge}`}>
+                                {role === 'admin' ? '[ ADMIN ]' : '[ USER ]'}
+                              </span>
+                              <span className={styles.senderName} style={{ marginLeft: '6px' }}>{displayName} (Bạn)</span>
+                            </>
+                          ) : (
+                            <>
+                              <span className={styles.senderName}>{displayName}</span>
+                              <span className={`${styles.roleBadge} ${role === 'admin' ? styles.adminBadge : styles.userBadge}`}>
+                                {role === 'admin' ? '[ ADMIN ]' : '[ USER ]'}
+                              </span>
+                            </>
+                          )}
+                        </div>
 
-                        {isSticker ? (
-                          <div className={styles.stickerMsg} title={msg.content}>
-                            {stickerEmoji}
-                          </div>
-                        ) : (
-                          <div className={styles.msgBubble}>
-                            {msg.content}
-                          </div>
-                        )}
+                        <div className={styles.msgBubble}>
+                          {msg.content}
+                        </div>
                         <span className={styles.msgTime}>
                           {new Date(msg.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
                         </span>
@@ -376,33 +404,6 @@ export default function MessagingPage() {
 
             {/* Input Bar */}
             <div className={styles.inputBar}>
-              {/* Sticker Toggle Button */}
-              <div className={styles.stickerMenuWrap}>
-                <button 
-                  className={styles.stickerToggleBtn} 
-                  onClick={() => setShowStickers(s => !s)}
-                  title="Gửi sticker RPG"
-                >
-                  🐮
-                </button>
-                {showStickers && (
-                  <div className={`${styles.stickerBox} rpg-box`}>
-                    <div className={styles.stickerTitle}>[ CHỌN STICKER RPG ]</div>
-                    <div className={styles.stickerList}>
-                      {RPG_STICKERS.map(s => (
-                        <button 
-                          key={s} 
-                          className={styles.stickerBtn}
-                          onClick={() => handleStickerClick(s)}
-                        >
-                          {s}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
               {/* Text Input */}
               <input
                 type="text"
@@ -411,6 +412,7 @@ export default function MessagingPage() {
                 value={inputValue}
                 onChange={handleInputChange}
                 onKeyPress={handleKeyPress}
+                style={{ marginLeft: 0 }}
               />
 
               {/* Send Button */}

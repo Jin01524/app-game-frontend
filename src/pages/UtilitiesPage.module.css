@@ -57,6 +57,7 @@
 }
 
 .iconWrap {
+  position: relative;
   width: 52px;
   height: 52px;
   border-radius: 14px;
@@ -93,4 +94,24 @@
   height: 32px;
   object-fit: contain;
   display: block;
+}
+
+.redDot {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 12px;
+  height: 12px;
+  background-color: #ef4444;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 4px rgba(239, 68, 68, 0.6);
+  animation: pulseRed 1.5s infinite;
+  z-index: 5;
+}
+
+@keyframes pulseRed {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
 }

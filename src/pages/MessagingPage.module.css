@@ -331,14 +331,6 @@
   border-top-left-radius: 2px;
 }
 
-.stickerMsg {
-  font-size: 3rem;
-  line-height: 1;
-  animation: stickerBounce 1.5s ease-in-out infinite;
-  user-select: none;
-  cursor: default;
-}
-
 .msgTime {
   font-size: 0.80rem;
   color: #94a3b8;
@@ -372,70 +364,6 @@
   background: #f8fafc;
   flex-shrink: 0;
   box-sizing: border-box;
-}
-
-.stickerMenuWrap {
-  position: relative;
-}
-
-.stickerToggleBtn {
-  font-size: 1.4rem;
-  border: 2px solid var(--px-border);
-  border-radius: 4px;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #ffffff;
-  cursor: pointer;
-  box-shadow: 2px 2px 0 var(--px-border);
-}
-
-.stickerToggleBtn:active {
-  transform: translate(2px, 2px);
-  box-shadow: 0px 0px 0 var(--px-border);
-}
-
-.stickerBox {
-  position: absolute;
-  bottom: 44px;
-  left: 0;
-  background: #ffffff;
-  border: 3px solid var(--px-border);
-  box-shadow: 3px 3px 0 var(--px-border);
-  padding: 10px;
-  z-index: 10;
-  width: 220px;
-}
-
-.stickerTitle {
-  font-family: var(--font-pixel);
-  font-size: 0.80rem;
-  font-weight: bold;
-  color: #78350f;
-  margin-bottom: 6px;
-  border-bottom: 2px solid #fef08a;
-  padding-bottom: 4px;
-}
-
-.stickerList {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 6px;
-}
-
-.stickerBtn {
-  font-size: 1.5rem;
-  border: 2px solid transparent;
-  background: transparent;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.stickerBtn:hover {
-  background: #fef08a;
-  border-color: var(--px-border);
 }
 
 .chatInput {

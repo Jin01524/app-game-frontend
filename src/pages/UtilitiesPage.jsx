@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import PixelCanvas from '../components/PixelCanvas';
 import BottomNav from '../components/BottomNav';
 import styles from './UtilitiesPage.module.css';
@@ -19,6 +20,27 @@ const UTILITIES = [
 
 export default function UtilitiesPage() {
   const navigate = useNavigate();
+  const { authFetch, user } = useAuth();
+  const [hasUnread, setHasUnread] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    const checkUnread = async () => {
+      try {
+        const res = await authFetch('/api/messages/unread-count');
+        if (res.ok) {
+          const data = await res.json();
+          setHasUnread(data.count > 0);
+        }
+      } catch (e) {
+        console.error('Error fetching unread count:', e);
+      }
+    };
+    
+    checkUnread();
+    const interval = setInterval(checkUnread, 5000); // Check every 5s
+    return () => clearInterval(interval);
+  }, [authFetch, user]);
 
   return (
     <div className={styles.page}>
@@ -61,6 +83,9 @@ export default function UtilitiesPage() {
                       <img src={u.icon} alt={u.name} className={styles.iconImg} />
                     ) : (
                       <span className={styles.icon}>{u.icon}</span>
+                    )}
+                    {u.key === 'messaging' && hasUnread && (
+                      <div className={styles.redDot} />
                     )}
                   </div>
                   <span className={styles.label}>{u.name}</span>
