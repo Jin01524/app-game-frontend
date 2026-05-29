@@ -16,6 +16,7 @@ import PhotosPage from './pages/PhotosPage';
 import WeatherPage from './pages/WeatherPage';
 import TarotPage from './pages/TarotPage';
 import SpyPage from './pages/SpyPage';
+import GoldPage from './pages/GoldPage';
 
 
 // Guard: only admin can access, others redirect to /
@@ -62,6 +63,9 @@ export default function App() {
           />
           <Route path="/utilities/spy"
             element={<ProtectedRoute><SpyPage /></ProtectedRoute>}
+          />
+          <Route path="/utilities/gold"
+            element={<ProtectedRoute><GoldPage /></ProtectedRoute>}
           />
 
           <Route path="/lobby"
