@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import PlayingCard from './PlayingCard';
 import { evaluateCombo, canBeat } from '../../utils/tienLenLogic';
+import { toast } from '../../utils/toast';
 
 export default function TienLenGame({ onClose, user, socket }) {
   const [gameState, setGameState] = useState(null);
@@ -30,11 +31,16 @@ export default function TienLenGame({ onClose, user, socket }) {
       alert(msg);
     });
 
+    socket.on('tl_announcement', (msg) => {
+      toast.success(msg);
+    });
+
     return () => {
       socket.off('tl_state');
       socket.off('tl_hand');
       socket.off('tl_slot');
       socket.off('tl_error');
+      socket.off('tl_announcement');
     };
   }, [socket, user]);
 
@@ -318,7 +324,7 @@ export default function TienLenGame({ onClose, user, socket }) {
 
         {/* Action Buttons */}
         {!isSpectator && (
-          <div style={{ position: 'absolute', bottom: '20px', right: '20px', display: 'flex', gap: '1vw', zIndex: 30 }}>
+          <div style={{ position: 'absolute', bottom: '130px', right: '20px', display: 'flex', gap: '1vw', zIndex: 30 }}>
             {getPlayerTurn(bottomPlayer) && (gameState.lastCombo !== null && gameState.lastPlayerIdx !== mySlot) && (
               <button onClick={handlePassClick} style={{ backgroundColor: '#64748b', color: 'white', border: '2px solid #334155', borderRadius: '8px', padding: '1.5vh 3vw', fontSize: 'clamp(14px, 2vh, 24px)', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}>
                 Bỏ qua
