@@ -1,0 +1,206 @@
+.page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--px-bg);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.main {
+  flex: 1;
+  padding: 16px 16px 90px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 480px;
+  width: 100%;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.header {
+  overflow: hidden;
+}
+
+.tarotCardContainer {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: linear-gradient(135deg, #1e1b4b 0%, #311042 50%, #090514 100%);
+  border: 3px solid var(--px-border);
+  box-shadow: 4px 4px 0 var(--px-border);
+  color: #ffffff;
+}
+
+/* Card Spread Styling */
+.spread {
+  display: flex;
+  justify-content: space-around;
+  gap: 12px;
+  perspective: 1000px;
+  padding: 10px 0;
+}
+
+.cardSlot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.slotLabel {
+  font-family: var(--font-pixel);
+  font-size: 0.80rem;
+  font-weight: bold;
+  opacity: 0.9;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+/* 3D Card Flip CSS */
+.tarotCard {
+  width: 90px;
+  height: 140px;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: crosshair;
+  user-select: none;
+}
+
+.tarotCard:hover {
+  transform: translateY(-8px) scale(1.05);
+}
+
+.flipped {
+  transform: rotateY(180deg);
+}
+
+.flipped:hover {
+  transform: rotateY(180deg) translateY(-8px) scale(1.05);
+}
+
+.cardFace {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 6px;
+  border: 3px solid var(--px-border);
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.cardBack {
+  background: repeating-linear-gradient(
+    45deg,
+    #312e81,
+    #312e81 10px,
+    #1e1b4b 10px,
+    #1e1b4b 20px
+  );
+  border-color: #fbbf24;
+  color: #fbbf24;
+}
+
+.cardBackContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.mysticSymbol {
+  font-size: 1.8rem;
+  animation: pulseSymbol 2s infinite ease-in-out;
+}
+
+.cardFront {
+  background: #ffffff;
+  color: var(--px-text);
+  border-color: var(--px-border);
+  transform: rotateY(180deg);
+  padding: 6px;
+  gap: 4px;
+}
+
+.cardName {
+  font-family: var(--font-pixel);
+  font-size: 0.80rem;
+  font-weight: bold;
+  text-align: center;
+  line-height: 1.1;
+  word-break: break-word;
+}
+
+.cardEmoji {
+  font-size: 2.2rem;
+  filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.1));
+}
+
+.cardNumber {
+  font-family: var(--font-pixel);
+  font-size: 0.80rem;
+  opacity: 0.7;
+}
+
+/* Ancient RPG Message/Interpretation Scroll */
+.scrollContainer {
+  background: #fffbeb;
+  border: 3px solid var(--px-border);
+  box-shadow: 4px 4px 0 var(--px-border);
+  padding: 16px;
+  color: var(--px-text);
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: 35vh;
+  overflow-y: auto;
+  border-radius: 4px;
+}
+
+.scrollTitle {
+  font-family: var(--font-pixel);
+  font-size: 0.80rem;
+  font-weight: bold;
+  color: #7c2d12;
+  border-bottom: 2px dashed #ea580c;
+  padding-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.scrollBlock {
+  font-family: var(--font-pixel);
+  font-size: 0.80rem;
+  line-height: 1.5;
+  border-bottom: 1px dashed rgba(0,0,0,0.1);
+  padding-bottom: 8px;
+}
+
+.scrollBlock:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.blockTitle {
+  font-weight: bold;
+  color: #c2410c;
+  margin-bottom: 4px;
+}
+
+/* Animations */
+@keyframes pulseSymbol {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
