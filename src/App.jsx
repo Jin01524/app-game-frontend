@@ -10,6 +10,7 @@ import AdminPage   from './pages/AdminPage';
 import HousePage   from './pages/HousePage';
 import MarketPage  from './pages/MarketPage';
 import LobbyPage   from './pages/LobbyPage';
+import UtilitiesPage from './pages/UtilitiesPage';
 
 // Guard: only admin can access, others redirect to /
 function AdminOnly({ children }) {
@@ -37,6 +38,9 @@ export default function App() {
           />
           <Route path="/market"
             element={<ProtectedRoute><MarketPage /></ProtectedRoute>}
+          />
+          <Route path="/utilities"
+            element={<ProtectedRoute><UtilitiesPage /></ProtectedRoute>}
           />
           <Route path="/lobby"
             element={<ProtectedRoute><LobbyPage /></ProtectedRoute>}

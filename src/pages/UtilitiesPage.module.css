@@ -1,0 +1,89 @@
+.page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--px-bg);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.main {
+  flex: 1;
+  padding: 16px 16px 90px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 480px;
+  width: 100%;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.header {
+  overflow: hidden;
+}
+
+.gridCard {
+  padding: 16px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px 8px;
+}
+
+.gridItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 4px;
+  border-radius: 8px;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.gridItem:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
+}
+
+.gridItem:active {
+  transform: translateY(1px);
+}
+
+.iconWrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--util-color, var(--px-border));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  transition: box-shadow 0.15s;
+}
+
+.gridItem:hover .iconWrap {
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 12px color-mix(in srgb, var(--util-color) 40%, transparent);
+}
+
+.icon {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.label {
+  font-family: var(--font-pixel);
+  font-size: 0.45rem;
+  color: var(--px-text);
+  text-align: center;
+  font-weight: bold;
+  line-height: 1.3;
+  word-break: break-word;
+}
