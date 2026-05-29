@@ -134,7 +134,7 @@ input, textarea, select { cursor: text !important; }
   color: #fff;
   font-family: var(--font-pixel);
   font-weight: 700;
-  font-size: 0.5rem;
+  font-size: 0.80rem;
   padding: 8px 12px;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -171,7 +171,7 @@ input, textarea, select { cursor: text !important; }
   gap: 8px;
   font-family: var(--font-pixel);
   font-weight: 700;
-  font-size: 0.55rem;
+  font-size: 0.80rem;
   letter-spacing: 1px;
   text-transform: uppercase;
   padding: 12px 18px;
@@ -230,7 +230,7 @@ input, textarea, select { cursor: text !important; }
 
 .input-label {
   font-family: var(--font-pixel);
-  font-size: 0.5rem;
+  font-size: 0.80rem;
   color: var(--px-text-dim);
   letter-spacing: 1px;
   text-transform: uppercase;

@@ -24,7 +24,7 @@
 
 .statLabel {
   font-family: var(--font-pixel);
-  font-size: 0.4rem;
+  font-size: 0.80rem;
   color: var(--px-text-dim);
   letter-spacing: 1px;
 }
@@ -135,7 +135,7 @@
 .shootBtn {
   width: 100%;
   padding: 14px;
-  font-size: 0.6rem;
+  font-size: 0.80rem;
   letter-spacing: 2px;
 }
 

@@ -47,7 +47,7 @@
 .headerTitle {
   font-family: var(--font-pixel);
   font-weight: 700;
-  font-size: 0.55rem;
+  font-size: 0.80rem;
   color: var(--px-text);
   letter-spacing: 2px;
 }
@@ -114,19 +114,19 @@
 
 .avatarHint {
   font-family: var(--font-pixel);
-  font-size: 0.4rem;
+  font-size: 0.80rem;
   color: var(--px-text-dim);
   letter-spacing: 1px;
   text-align: center;
 }
 
 .avatarActions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
-.avatarActions .btn { width: auto; font-size: 0.45rem !important; padding: 10px 14px !important; }
+.avatarActions .btn { width: auto; font-size: 0.80rem !important; padding: 10px 14px !important; }
 
 /* ── Read-only info ── */
 .readOnlyNote {
   font-family: var(--font-pixel);
-  font-size: 0.42rem;
+  font-size: 0.80rem;
   color: var(--px-text-dim);
   letter-spacing: 1px;
   margin-bottom: 14px;
@@ -158,7 +158,7 @@
 .infoRowLabel {
   display: block;
   font-family: var(--font-pixel);
-  font-size: 0.4rem;
+  font-size: 0.80rem;
   color: var(--px-text-dim);
   letter-spacing: 1px;
   margin-bottom: 3px;
@@ -177,7 +177,7 @@
 
 .infoRowLock {
   font-family: var(--font-pixel);
-  font-size: 0.4rem;
+  font-size: 0.80rem;
   color: var(--px-text-dim);
   flex-shrink: 0;
 }
@@ -194,7 +194,7 @@
   z-index: 200;
   padding: 12px 20px;
   font-family: var(--font-pixel);
-  font-size: 0.48rem;
+  font-size: 0.80rem;
   letter-spacing: 1px;
   white-space: nowrap;
   max-width: calc(100vw - 32px);
