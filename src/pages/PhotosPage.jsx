@@ -99,9 +99,7 @@ export default function PhotosPage() {
                   {/* Append =w300 dynamic width modifier for fast thumbnail loading */}
                   <img src={`${p.url}=w300`} alt={p.location ? `Ảnh chụp tại ${p.location}` : "Ảnh kỷ niệm"} referrerPolicy="no-referrer" className={styles.thumbnail} loading="lazy" />
                   {p.isVideo && (
-                    <div className={styles.videoOverlay}>
-                      <span>▶️</span>
-                    </div>
+                    <div className={styles.videoOverlay} />
                   )}
                 </div>
                 <div className={styles.caption}>
