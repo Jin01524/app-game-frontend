@@ -34,7 +34,11 @@ export default function UtilitiesPage() {
               <button
                 key={u.key}
                 className={styles.gridItem}
-                onClick={() => {/* TODO: navigate to utility */}}
+                onClick={() => {
+                  if (u.key === 'calculator') {
+                    navigate('/utilities/calculator');
+                  }
+                }}
               >
                 <div className={styles.iconWrap} style={{ '--util-color': u.color }}>
                   <span className={styles.icon}>{u.icon}</span>
