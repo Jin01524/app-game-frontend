@@ -140,10 +140,10 @@ export default function BottomNav() {
             alignItems: 'center',
             justifyContent: 'center',
             transform: isUtilities
-              ? 'translateY(-8px)'
+              ? 'translateY(2px)'
               : hoveredIdx === 2
-                ? 'translateY(-10px) scale(1.05)'
-                : 'translateY(-12px)',
+                ? 'translateY(0px) scale(1.05)'
+                : 'translateY(-2px)',
             transition: 'transform 0.15s steps(2), box-shadow 0.15s steps(2)',
             flexShrink: 0,
           }}
