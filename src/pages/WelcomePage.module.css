@@ -440,6 +440,7 @@
   user-select: none;
   flex-shrink: 0;
   margin-top: 2px;
+  font-weight: bold;
 }
 
 .questCheckboxCompleted {
@@ -459,6 +460,7 @@
   font-size: 0.52rem;
   color: var(--px-text);
   line-height: 1.5;
+  font-weight: bold;
 }
 
 .questTextCompleted {
@@ -481,6 +483,7 @@
   font-size: 0.42rem;
   color: var(--px-text-dim);
   margin-top: 2px;
+  font-weight: bold;
 }
 
 .questClaimBtn {

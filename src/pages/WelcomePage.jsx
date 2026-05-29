@@ -97,8 +97,12 @@ export default function WelcomePage() {
       });
       const data = await res.json();
       if (res.ok) {
-        toast.success(`Nhận thành công ${rewardAmount} xu!`);
-        addXu(rewardAmount);
+        if (rewardAmount > 0) {
+          toast.success(`Nhận thành công ${rewardAmount} xu!`);
+          addXu(rewardAmount);
+        } else {
+          toast.success('Hoàn thành nhiệm vụ!');
+        }
         refreshQuests();
       } else {
         toast.error(data.error || 'Nhận thưởng thất bại');
@@ -291,64 +295,57 @@ export default function WelcomePage() {
         </div>
 
         {/* ── Starter Quests ── */}
-        {quests && quests.length > 0 && (
-          <div className={`${styles.questsCard} rpg-box fade-in fade-in-delay-1`}>
-            <div className="px-titlebar">
-              <span>◄ NHIỆM VỤ KHỞI ĐẦU ►</span>
-              <span className={styles.blinkDot}>█</span>
-            </div>
-            <div className={styles.cardBody}>
-              <div className={styles.questsList}>
-                {quests.map((q) => {
-                  const isCompleted = q.completed;
-                  const isClaimed = q.claimed;
-                  
-                  const renderQuestText = (quest) => {
-                    if (quest.key === 'mua_ruong') {
-                      return (
-                        <>
-                          Mua ruộng ở <span className={styles.questLink} onClick={() => navigate('/farm')}>nông trại</span> của bạn
-                        </>
-                      );
-                    }
-                    return quest.title;
-                  };
+        {(() => {
+          const activeQuest = quests?.find(q => !q.claimed);
+          if (!activeQuest) return null;
 
-                  return (
-                    <div key={q.key} className={styles.questItem}>
-                      <span className={`${styles.questCheckbox} ${isCompleted || isClaimed ? styles.questCheckboxCompleted : ''}`}>
-                        {isCompleted || isClaimed ? '[x]' : '[ ]'}
+          const renderQuestText = (quest) => {
+            if (quest.key === 'mua_ruong') {
+              return (
+                <>
+                  Mua ruộng ở <span className={styles.questLink} onClick={() => navigate('/farm')}>nông trại</span> của bạn
+                </>
+              );
+            }
+            return quest.title;
+          };
+
+          return (
+            <div className={`${styles.questsCard} rpg-box fade-in fade-in-delay-1`}>
+              <div className="px-titlebar">
+                <span>◄ NHIỆM VỤ KHỞI ĐẦU ►</span>
+                <span className={styles.blinkDot}>█</span>
+              </div>
+              <div className={styles.cardBody}>
+                <div className={styles.questsList}>
+                  <div className={styles.questItem}>
+                    <span className={`${styles.questCheckbox} ${activeQuest.completed ? styles.questCheckboxCompleted : ''}`}>
+                      {activeQuest.completed ? '[x]' : '[ ]'}
+                    </span>
+                    <div className={styles.questBody}>
+                      <span className={styles.questText}>
+                        {renderQuestText(activeQuest)}
                       </span>
-                      <div className={styles.questBody}>
-                        <span className={`${styles.questText} ${isCompleted || isClaimed ? styles.questTextCompleted : ''}`}>
-                          {renderQuestText(q)}
-                        </span>
-                        <div className={styles.questMeta}>
-                          {q.reward > 0 ? `Thưởng: ${q.reward} xu` : 'Không có thưởng'}
-                          {q.maxProgress > 1 && ` | Tiến độ: ${q.progress}/${q.maxProgress}`}
-                        </div>
+                      <div className={styles.questMeta}>
+                        {activeQuest.reward > 0 ? `Thưởng: ${activeQuest.reward} xu` : 'Không có thưởng'}
+                        {activeQuest.maxProgress > 1 && ` | Tiến độ: ${activeQuest.progress}/${activeQuest.maxProgress}`}
                       </div>
-                      
-                      {isCompleted && !isClaimed && q.reward > 0 && (
-                        <button 
-                          className={styles.questClaimBtn} 
-                          onClick={() => handleClaimReward(q.key, q.reward)}
-                        >
-                          [ NHẬN ]
-                        </button>
-                      )}
-                      {isClaimed && q.reward > 0 && (
-                        <span className={styles.questClaimedText}>
-                          [ ĐÃ NHẬN ]
-                        </span>
-                      )}
                     </div>
-                  );
-                })}
+
+                    {activeQuest.completed && (
+                      <button
+                        className={styles.questClaimBtn}
+                        onClick={() => handleClaimReward(activeQuest.key, activeQuest.reward)}
+                      >
+                        {activeQuest.reward > 0 ? '[ NHẬN ]' : '[ XONG ]'}
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* ── Penalty Game ── */}
         <div className={`${styles.welcomeCard} rpg-box fade-in fade-in-delay-2`}>
