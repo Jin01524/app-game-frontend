@@ -174,3 +174,19 @@
   from { transform: scale(0.95); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
+
+.loadingTrigger {
+  grid-column: span 2;
+  text-align: center;
+  padding: 16px 0 8px;
+  font-family: var(--font-pixel);
+  font-size: 0.65rem;
+  color: var(--px-text-mid);
+  animation: loadingBlink 1.5s infinite steps(2);
+  user-select: none;
+}
+
+@keyframes loadingBlink {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}

@@ -2,52 +2,48 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PixelCanvas from '../components/PixelCanvas';
 import BottomNav from '../components/BottomNav';
+import { ALL_PHOTOS } from '../utils/photosData';
 import styles from './PhotosPage.module.css';
-
-const PHOTOS = [
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczMQQmc6xDgfT-a2mMaNEKncnNtxPXatvK1ciZAfkkuGDPHfyeFEjYk1fpC7A54WebS31PKLE05oayiNQG9dJ_0kJS4xrk-1-C9Pc_GvqGbLQOAxu-PG", location: null, date: "26/04/2026 13:56" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczN6OygYX359UyGiVyucIbvn9wEkLOZ6Vnl6flKy5KlZweFuVV6JFVe_4izaVv_4_VrVDl4Q98LEd5K5_9vD5BSyF3EA759fFKb5KrOIoV-RhlyL11qx", location: null, date: "28/02/2026 22:30" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczNzygCsyZ2a85yrvo6teph9eM-WWpcg5ADWdEsEgdbm7QRsMbh2IC_0m6sLmlUa85AzjTzs_z2zdLJ0onY0W-fAeIIAMGUhNPscC0HdfHtGYl965efC", location: null, date: "05/02/2026 04:28" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczNOUerM9hkU1ILBpEP5PiIT7z97NK1ai1WYialFnL4apvXn4XEqtkNytjDZbbXrV-Y2dp1useOp7INxDHrt_wXLXsKC39RuOXHPgBDfAgS1dVKBuLHc", location: null, date: "27/04/2026 17:42" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczOZuK_1S6E0-SVff_nwuCmFcvccbJRiDIvzESXFvCaNd8hjTXgjz17HNuK7N4H1AY-w1JTohfKfX4m8QdZ7G82URshi6oaL6xH3Y7z-trpyK7x6il3t", location: null, date: "28/02/2026 21:35" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczN1EoWqcpYCmHfaXHQjPehyA4jD_PfTx-b_41v70YXqmRH4Y6hMLJXc78tu4_pISrwESKEkRv-EduGMA4gaVSvwwsfY5In-7W3pPj67qZBnrZmWyw2v", location: null, date: "28/02/2026 21:36" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczNTqqV134wNdaQBImGSnyhYZQfVtjVASVJOdwHgBTQM8mPgDySvG3KOiN_I7QATyr6GKerozPVcs5XZDmd1T1KFcDqphJVvqKMcQ91yhaiqYguLBe4", location: null, date: "21/01/2025 01:17" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczPsM8-1JhDm1oo6xeDps2DB441_dpZV-QRqFzvAzzgWzeItl7mnByQWiQ1ONeVPsbGMq4FV8P2UqvPKEhooYBrwM6i8wG3WV39gOESc5N2oIBxehaL1", location: null, date: "01/02/2025 23:13" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczPlto6WHj7nX7DFRgvS0Dyl6dOC03oJ-CFgH8IKL0100fAZJuc_yhOhE2jcTnsyTM7Cmf41hjy-E55Y8ZBcFIRp7zWAuQsYdDM09yPPimHKQEhkimcR", location: null, date: "02/03/2026 16:59" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczMerF1ojewC76S8Ks8M54N1yKGD-Wwg3sLv-FGPxxXczig7pv64ppjUKxrVxc113NET5_yxJOea4fkjZbq3k4c7QYjOIpXl8UapYeLwFfVsHolLlhUr", location: null, date: "27/02/2026 04:47" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczO6jvetKa6cMHSxt7hnV_SbDHGNT5NQPNS7N8D2kXVebfBXSUDVI4msFmKaBTOSJjZhskZKA3-fUKILrmcKaRrAgd_47U0_RaUZKGMPXaQT6y1tDALq", location: null, date: "27/01/2025 06:19" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczO1TTihYv3rIyJAqqzkYKYvoTCJGEc83yXWQSh4EMgc6Yjr3IS_V9P4SyDi6DxP4ZwpLOVmpRtcN8tz7tcDBw0sffXReWaHA8LdPx6aDLJ047NYYNVe", location: null, date: "02/03/2026 17:00" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczOV2sG35UzJb_hj5o1DYw33xJe-oVLqdS484Vx2sODiVFbskWLkyccmdK4sF08WbCMHbENPql-EsZSpV6Lw0y5n1EtkqsWC-h_iw_Mt12VI3g69qI0F", location: null, date: "28/02/2026 22:35" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczMMaZ3ygWysPGufaS3eOWUGa21ijHYNn83OjHQiAKydZsP5VcA_dLjCZVpvHvpNSs4yUl6nMagP8Muc30Cgj-u7CL_il2IVmZcOp7jXlMViNVwuFxuX", location: null, date: "28/02/2026 22:34" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczNPV1qB62KTBOcTrW52oLHgHrlyopyDt7qE9rme6qsQe5KVxvhNiL1rbVkF91SHL4VX5fFwBq84Qe59XTuadEnJwidtB1b8wJsU3mXVbgmyLqr7NLFq", location: null, date: "27/02/2026 07:49" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczOi5kI8SWoguPDrBpEClmhqJbpkStg-IqxD5CWC_mIkvY1d5M_xzIDsnpA7318ALTpvc1WSfzc4vBqeN3TEsNVaPSrLvgXCesk-XNkyWtZAd7KIHTc", location: null, date: "27/02/2026 04:58" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczNYzg2b-n_69ckwwONnpa05p6Dm5oK48gPY_mmUgWiIe__nw9e6bhWFyPd2_3eXPxAyv_12cFzXryOzr2OLnpfWVdEjpuKgtU0Z96GNSansqGoeDg29", location: null, date: "28/02/2026 23:10" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczOWxjpnTiNcyNyZZWIYy2ugMh9pC1qtXv5H1Q8aWfcW7r6og76lzmToU7gPNWlxIxvMAHg7PtDfZUYDsZDn0sotrLzZjCuZd3-EDAq1NclzrwoWTV7a", location: null, date: "20/02/2026 22:15" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczPAEmfrCcKlQmOdP51aEXfmRnNI7jQojKF3AO6q8UEobDG3EOlHa2uvwc8ZPFU-qpNMJKpnSa-w1fBungJkWCwOx-xRRIQsnb-1r2W8gxYH-RBfQX5W", location: null, date: "20/03/2025 02:38" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczNmukRE8fFRLX_kaS5sZ43lK-vn7vEbnjGm2ZXSlAkZnim7eQ3MxKWSqUOBLAV0juc9WWTPglGgzb7laI3Q01o3Uz98oFUbWLKGVK2OFpzkFkGUX9Fe", location: null, date: "20/02/2026 21:08" }
-];
 
 export default function PhotosPage() {
   const navigate = useNavigate();
+  const [visibleCount, setVisibleCount] = useState(20);
   const [selectedIdx, setSelectedIdx] = useState(null);
   const [slideshowActive, setSlideshowActive] = useState(false);
 
-  // Slideshow Auto-play logic
+  // Sync visibleCount if the user navigates beyond visible range in lightbox
+  useEffect(() => {
+    if (selectedIdx !== null && selectedIdx >= visibleCount) {
+      setVisibleCount(selectedIdx + 1);
+    }
+  }, [selectedIdx, visibleCount]);
+
+  // Slideshow Auto-play logic operating on ALL_PHOTOS
   useEffect(() => {
     if (!slideshowActive || selectedIdx === null) return;
     const interval = setInterval(() => {
-      setSelectedIdx(prev => (prev + 1) % PHOTOS.length);
+      setSelectedIdx(prev => (prev + 1) % ALL_PHOTOS.length);
     }, 3000);
     return () => clearInterval(interval);
   }, [slideshowActive, selectedIdx]);
 
   const handlePrev = () => {
-    setSelectedIdx(prev => (prev === 0 ? PHOTOS.length - 1 : prev - 1));
+    setSelectedIdx(prev => (prev === 0 ? ALL_PHOTOS.length - 1 : prev - 1));
   };
 
   const handleNext = () => {
-    setSelectedIdx(prev => (prev === PHOTOS.length - 1 ? 0 : prev + 1));
+    setSelectedIdx(prev => (prev === ALL_PHOTOS.length - 1 ? 0 : prev + 1));
   };
+
+  const handleScroll = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    // Load more when scrolled near the bottom (within 120px)
+    if (scrollHeight - scrollTop - clientHeight < 120) {
+      setVisibleCount(prev => Math.min(prev + 20, ALL_PHOTOS.length));
+    }
+  };
+
+  const displayedPhotos = ALL_PHOTOS.slice(0, visibleCount);
 
   return (
     <div className={styles.page}>
@@ -57,14 +53,14 @@ export default function PhotosPage() {
         {/* Header */}
         <header className={`${styles.header} rpg-box fade-in`}>
           <div className="px-titlebar">
-            <span>◄ ALBUM KỶ NIỆM TỆ LẠN 4.2 ►</span>
+            <span>◄ ALBUM KỶ NIỆM TỆ LẠN 4.2 ({ALL_PHOTOS.length}) ►</span>
           </div>
         </header>
 
         {/* Photos Grid Card */}
         <div className={`${styles.photosCard} rpg-box fade-in fade-in-delay-1`}>
-          <div className={styles.grid}>
-            {PHOTOS.map((p, idx) => (
+          <div className={styles.grid} onScroll={handleScroll}>
+            {displayedPhotos.map((p, idx) => (
               <div 
                 key={idx}
                 className={styles.polaroid}
@@ -83,6 +79,12 @@ export default function PhotosPage() {
                 </div>
               </div>
             ))}
+
+            {visibleCount < ALL_PHOTOS.length && (
+              <div className={styles.loadingTrigger}>
+                [ ĐANG TẢI THÊM ẢNH... ]
+              </div>
+            )}
           </div>
 
           <button 
@@ -100,7 +102,7 @@ export default function PhotosPage() {
         <div className={styles.overlay} onClick={() => setSelectedIdx(null)}>
           <div className={`${styles.modal} rpg-box`} onClick={e => e.stopPropagation()}>
             <div className="px-titlebar">
-              <span>◄ CHI TIẾT ẢNH ({(selectedIdx + 1)}/{PHOTOS.length}) ►</span>
+              <span>◄ CHI TIẾT ẢNH ({(selectedIdx + 1)}/{ALL_PHOTOS.length}) ►</span>
               <span style={{ cursor: 'pointer', fontWeight: 'bold' }} onClick={() => setSelectedIdx(null)}>[X]</span>
             </div>
 
@@ -108,16 +110,16 @@ export default function PhotosPage() {
               <div className={styles.largeImgWrapper}>
                 {/* Append =w800 dynamic width modifier for full size high quality image */}
                 <img 
-                  src={`${PHOTOS[selectedIdx].url}=w800`} 
-                  alt={PHOTOS[selectedIdx].location ? `Ảnh chụp tại ${PHOTOS[selectedIdx].location}` : "Ảnh kỷ niệm"} 
+                  src={`${ALL_PHOTOS[selectedIdx].url}=w800`} 
+                  alt={ALL_PHOTOS[selectedIdx].location ? `Ảnh chụp tại ${ALL_PHOTOS[selectedIdx].location}` : "Ảnh kỷ niệm"} 
                   className={styles.largeImg} 
                 />
               </div>
 
               {/* Location & Date Details Box */}
               <div className={styles.metadataBox}>
-                <div>📍 Địa điểm: <strong>{PHOTOS[selectedIdx].location || 'Không rõ'}</strong></div>
-                <div style={{ marginTop: '4px' }}>📅 Ngày chụp: <strong>{PHOTOS[selectedIdx].date || 'Không rõ'}</strong></div>
+                <div>📍 Địa điểm: <strong>{ALL_PHOTOS[selectedIdx].location || 'Không rõ'}</strong></div>
+                <div style={{ marginTop: '4px' }}>📅 Ngày chụp: <strong>{ALL_PHOTOS[selectedIdx].date || 'Không rõ'}</strong></div>
               </div>
 
               {/* Navigation & Slideshow Controls */}
