@@ -43,6 +43,8 @@ export default function UtilitiesPage() {
                       navigate('/utilities/calculator');
                     } else if (u.key === 'photos') {
                       navigate('/utilities/photos');
+                    } else if (u.key === 'messaging') {
+                      navigate('/utilities/messaging');
                     } else if (u.key === 'weather') {
                       navigate('/utilities/weather');
                     } else if (u.key === 'tarot') {
