@@ -138,22 +138,15 @@ export default function PhotosPage() {
             <div className={styles.modalContent}>
               <div className={styles.largeImgWrapper}>
                 {ALL_PHOTOS[selectedIdx].isVideo ? (
-                  <div 
-                    className={styles.videoPlaceholder} 
-                    onClick={() => window.open(getDeepLink(ALL_PHOTOS[selectedIdx].id), '_blank')}
-                    title="Bấm để xem video chất lượng gốc trên Google Photos"
-                  >
-                    <img 
-                      src={`${ALL_PHOTOS[selectedIdx].url}=w800`} 
-                      alt="Ảnh đại diện video" 
-                      referrerPolicy="no-referrer"
-                      className={styles.largeImg} 
-                    />
-                    <div className={styles.playButtonOverlay}>
-                      <div className={styles.playButtonIcon}>▶️</div>
-                      <div className={styles.playButtonText}>XEM VIDEO TRÊN GOOGLE PHOTOS</div>
-                    </div>
-                  </div>
+                  <video
+                    key={videoSrc}
+                    src={`/api/proxy-video?url=${encodeURIComponent(videoSrc)}`}
+                    controls
+                    autoPlay
+                    playsInline
+                    className={styles.largeVideo}
+                    onError={handleVideoError}
+                  />
                 ) : (
                   <img 
                     src={`${ALL_PHOTOS[selectedIdx].url}=w800`} 
