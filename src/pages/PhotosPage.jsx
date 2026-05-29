@@ -5,26 +5,26 @@ import BottomNav from '../components/BottomNav';
 import styles from './PhotosPage.module.css';
 
 const PHOTOS = [
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczMQQmc6xDgfT-a2mMaNEKncnNtxPXatvK1ciZAfkkuGDPHfyeFEjYk1fpC7A54WebS31PKLE05oayiNQG9dJ_0kJS4xrk-1-C9Pc_GvqGbLQOAxu-PG", location: "Hải Dương", date: "15/05/2026" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczN6OygYX359UyGiVyucIbvn9wEkLOZ6Vnl6flKy5KlZweFuVV6JFVe_4izaVv_4_VrVDl4Q98LEd5K5_9vD5BSyF3EA759fFKb5KrOIoV-RhlyL11qx", location: null, date: "18/05/2026" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczNzygCsyZ2a85yrvo6teph9eM-WWpcg5ADWdEsEgdbm7QRsMbh2IC_0m6sLmlUa85AzjTzs_z2zdLJ0onY0W-fAeIIAMGUhNPscC0HdfHtGYl965efC", location: "Hà Nội", date: "20/05/2026" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczNOUerM9hkU1ILBpEP5PiIT7z97NK1ai1WYialFnL4apvXn4XEqtkNytjDZbbXrV-Y2dp1useOp7INxDHrt_wXLXsKC39RuOXHPgBDfAgS1dVKBuLHc", location: "Đà Lạt", date: "21/05/2026" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczOZuK_1S6E0-SVff_nwuCmFcvccbJRiDIvzESXFvCaNd8hjTXgjz17HNuK7N4H1AY-w1JTohfKfX4m8QdZ7G82URshi6oaL6xH3Y7z-trpyK7x6il3t", location: "Sapa", date: "22/05/2026" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczN1EoWqcpYCmHfaXHQjPehyA4jD_PfTx-b_41v70YXqmRH4Y6hMLJXc78tu4_pISrwESKEkRv-EduGMA4gaVSvwwsfY5In-7W3pPj67qZBnrZmWyw2v", location: null, date: "23/05/2026" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczNTqqV134wNdaQBImGSnyhYZQfVtjVASVJOdwHgBTQM8mPgDySvG3KOiN_I7QATyr6GKerozPVcs5XZDmd1T1KFcDqphJVvqKMcQ91yhaiqYguLBe4", location: "Hà Giang", date: "24/05/2026" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczPsM8-1JhDm1oo6xeDps2DB441_dpZV-QRqFzvAzzgWzeItl7mnByQWiQ1ONeVPsbGMq4FV8P2UqvPKEhooYBrwM6i8wG3WV39gOESc5N2oIBxehaL1", location: "Hội An", date: "25/05/2026" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczPlto6WHj7nX7DFRgvS0Dyl6dOC03oJ-CFgH8IKL0100fAZJuc_yhOhE2jcTnsyTM7Cmf41hjy-E55Y8ZBcFIRp7zWAuQsYdDM09yPPimHKQEhkimcR", location: "Mù Căng Chải", date: "26/05/2026" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczMerF1ojewC76S8Ks8M54N1yKGD-Wwg3sLv-FGPxxXczig7pv64ppjUKxrVxc113NET5_yxJOea4fkjZbq3k4c7QYjOIpXl8UapYeLwFfVsHolLlhUr", location: null, date: "27/05/2026" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczO6jvetKa6cMHSxt7hnV_SbDHGNT5NQPNS7N8D2kXVebfBXSUDVI4msFmKaBTOSJjZhskZKA3-fUKILrmcKaRrAgd_47U0_RaUZKGMPXaQT6y1tDALq", location: "Đà Lạt", date: "28/05/2026" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczO1TTihYv3rIyJAqqzkYKYvoTCJGEc83yXWQSh4EMgc6Yjr3IS_V9P4SyDi6DxP4ZwpLOVmpRtcN8tz7tcDBw0sffXReWaHA8LdPx6aDLJ047NYYNVe", location: "Nha Trang", date: "29/05/2026" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczOV2sG35UzJb_hj5o1DYw33xJe-oVLqdS484Vx2sODiVFbskWLkyccmdK4sF08WbCMHbENPql-EsZSpV6Lw0y5n1EtkqsWC-h_iw_Mt12VI3g69qI0F", location: "Mộc Châu", date: "30/05/2026" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczMMaZ3ygWysPGufaS3eOWUGa21ijHYNn83OjHQiAKydZsP5VcA_dLjCZVpvHvpNSs4yUl6nMagP8Muc30Cgj-u7CL_il2IVmZcOp7jXlMViNVwuFxuX", location: null, date: "01/06/2026" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczNPV1qB62KTBOcTrW52oLHgHrlyopyDt7qE9rme6qsQe5KVxvhNiL1rbVkF91SHL4VX5fFwBq84Qe59XTuadEnJwidtB1b8wJsU3mXVbgmyLqr7NLFq", location: "Cao Bằng", date: "02/06/2026" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczOi5kI8SWoguPDrBpEClmhqJbpkStg-IqxD5CWC_mIkvY1d5M_xzIDsnpA7318ALTpvc1WSfzc4vBqeN3TEsNVaPSrLvgXCesk-XNkyWtZAd7KIHTc", location: null, date: "03/06/2026" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczNYzg2b-n_69ckwwONnpa05p6Dm5oK48gPY_mmUgWiIe__nw9e6bhWFyPd2_3eXPxAyv_12cFzXryOzr2OLnpfWVdEjpuKgtU0Z96GNSansqGoeDg29", location: "Ninh Bình", date: "04/06/2026" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczOWxjpnTiNcyNyZZWIYy2ugMh9pC1qtXv5H1Q8aWfcW7r6og76lzmToU7gPNWlxIxvMAHg7PtDfZUYDsZDn0sotrLzZjCuZd3-EDAq1NclzrwoWTV7a", location: "Huế", date: "05/06/2026" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczPAEmfrCcKlQmOdP51aEXfmRnNI7jQojKF3AO6q8UEobDG3EOlHa2uvwc8ZPFU-qpNMJKpnSa-w1fBungJkWCwOx-xRRIQsnb-1r2W8gxYH-RBfQX5W", location: null, date: "06/06/2026" },
-  { url: "https://lh3.googleusercontent.com/pw/AP1GczNmukRE8fFRLX_kaS5sZ43lK-vn7vEbnjGm2ZXSlAkZnim7eQ3MxKWSqUOBLAV0juc9WWTPglGgzb7laI3Q01o3Uz98oFUbWLKGVK2OFpzkFkGUX9Fe", location: "Sài Gòn", date: "07/06/2026" }
+  { url: "https://lh3.googleusercontent.com/pw/AP1GczMQQmc6xDgfT-a2mMaNEKncnNtxPXatvK1ciZAfkkuGDPHfyeFEjYk1fpC7A54WebS31PKLE05oayiNQG9dJ_0kJS4xrk-1-C9Pc_GvqGbLQOAxu-PG", location: null, date: "26/04/2026 13:56" },
+  { url: "https://lh3.googleusercontent.com/pw/AP1GczN6OygYX359UyGiVyucIbvn9wEkLOZ6Vnl6flKy5KlZweFuVV6JFVe_4izaVv_4_VrVDl4Q98LEd5K5_9vD5BSyF3EA759fFKb5KrOIoV-RhlyL11qx", location: null, date: "28/02/2026 22:30" },
+  { url: "https://lh3.googleusercontent.com/pw/AP1GczNzygCsyZ2a85yrvo6teph9eM-WWpcg5ADWdEsEgdbm7QRsMbh2IC_0m6sLmlUa85AzjTzs_z2zdLJ0onY0W-fAeIIAMGUhNPscC0HdfHtGYl965efC", location: null, date: "05/02/2026 04:28" },
+  { url: "https://lh3.googleusercontent.com/pw/AP1GczNOUerM9hkU1ILBpEP5PiIT7z97NK1ai1WYialFnL4apvXn4XEqtkNytjDZbbXrV-Y2dp1useOp7INxDHrt_wXLXsKC39RuOXHPgBDfAgS1dVKBuLHc", location: null, date: "27/04/2026 17:42" },
+  { url: "https://lh3.googleusercontent.com/pw/AP1GczOZuK_1S6E0-SVff_nwuCmFcvccbJRiDIvzESXFvCaNd8hjTXgjz17HNuK7N4H1AY-w1JTohfKfX4m8QdZ7G82URshi6oaL6xH3Y7z-trpyK7x6il3t", location: null, date: "28/02/2026 21:35" },
+  { url: "https://lh3.googleusercontent.com/pw/AP1GczN1EoWqcpYCmHfaXHQjPehyA4jD_PfTx-b_41v70YXqmRH4Y6hMLJXc78tu4_pISrwESKEkRv-EduGMA4gaVSvwwsfY5In-7W3pPj67qZBnrZmWyw2v", location: null, date: "28/02/2026 21:36" },
+  { url: "https://lh3.googleusercontent.com/pw/AP1GczNTqqV134wNdaQBImGSnyhYZQfVtjVASVJOdwHgBTQM8mPgDySvG3KOiN_I7QATyr6GKerozPVcs5XZDmd1T1KFcDqphJVvqKMcQ91yhaiqYguLBe4", location: null, date: "21/01/2025 01:17" },
+  { url: "https://lh3.googleusercontent.com/pw/AP1GczPsM8-1JhDm1oo6xeDps2DB441_dpZV-QRqFzvAzzgWzeItl7mnByQWiQ1ONeVPsbGMq4FV8P2UqvPKEhooYBrwM6i8wG3WV39gOESc5N2oIBxehaL1", location: null, date: "01/02/2025 23:13" },
+  { url: "https://lh3.googleusercontent.com/pw/AP1GczPlto6WHj7nX7DFRgvS0Dyl6dOC03oJ-CFgH8IKL0100fAZJuc_yhOhE2jcTnsyTM7Cmf41hjy-E55Y8ZBcFIRp7zWAuQsYdDM09yPPimHKQEhkimcR", location: null, date: "02/03/2026 16:59" },
+  { url: "https://lh3.googleusercontent.com/pw/AP1GczMerF1ojewC76S8Ks8M54N1yKGD-Wwg3sLv-FGPxxXczig7pv64ppjUKxrVxc113NET5_yxJOea4fkjZbq3k4c7QYjOIpXl8UapYeLwFfVsHolLlhUr", location: null, date: "27/02/2026 04:47" },
+  { url: "https://lh3.googleusercontent.com/pw/AP1GczO6jvetKa6cMHSxt7hnV_SbDHGNT5NQPNS7N8D2kXVebfBXSUDVI4msFmKaBTOSJjZhskZKA3-fUKILrmcKaRrAgd_47U0_RaUZKGMPXaQT6y1tDALq", location: null, date: "27/01/2025 06:19" },
+  { url: "https://lh3.googleusercontent.com/pw/AP1GczO1TTihYv3rIyJAqqzkYKYvoTCJGEc83yXWQSh4EMgc6Yjr3IS_V9P4SyDi6DxP4ZwpLOVmpRtcN8tz7tcDBw0sffXReWaHA8LdPx6aDLJ047NYYNVe", location: null, date: "02/03/2026 17:00" },
+  { url: "https://lh3.googleusercontent.com/pw/AP1GczOV2sG35UzJb_hj5o1DYw33xJe-oVLqdS484Vx2sODiVFbskWLkyccmdK4sF08WbCMHbENPql-EsZSpV6Lw0y5n1EtkqsWC-h_iw_Mt12VI3g69qI0F", location: null, date: "28/02/2026 22:35" },
+  { url: "https://lh3.googleusercontent.com/pw/AP1GczMMaZ3ygWysPGufaS3eOWUGa21ijHYNn83OjHQiAKydZsP5VcA_dLjCZVpvHvpNSs4yUl6nMagP8Muc30Cgj-u7CL_il2IVmZcOp7jXlMViNVwuFxuX", location: null, date: "28/02/2026 22:34" },
+  { url: "https://lh3.googleusercontent.com/pw/AP1GczNPV1qB62KTBOcTrW52oLHgHrlyopyDt7qE9rme6qsQe5KVxvhNiL1rbVkF91SHL4VX5fFwBq84Qe59XTuadEnJwidtB1b8wJsU3mXVbgmyLqr7NLFq", location: null, date: "27/02/2026 07:49" },
+  { url: "https://lh3.googleusercontent.com/pw/AP1GczOi5kI8SWoguPDrBpEClmhqJbpkStg-IqxD5CWC_mIkvY1d5M_xzIDsnpA7318ALTpvc1WSfzc4vBqeN3TEsNVaPSrLvgXCesk-XNkyWtZAd7KIHTc", location: null, date: "27/02/2026 04:58" },
+  { url: "https://lh3.googleusercontent.com/pw/AP1GczNYzg2b-n_69ckwwONnpa05p6Dm5oK48gPY_mmUgWiIe__nw9e6bhWFyPd2_3eXPxAyv_12cFzXryOzr2OLnpfWVdEjpuKgtU0Z96GNSansqGoeDg29", location: null, date: "28/02/2026 23:10" },
+  { url: "https://lh3.googleusercontent.com/pw/AP1GczOWxjpnTiNcyNyZZWIYy2ugMh9pC1qtXv5H1Q8aWfcW7r6og76lzmToU7gPNWlxIxvMAHg7PtDfZUYDsZDn0sotrLzZjCuZd3-EDAq1NclzrwoWTV7a", location: null, date: "20/02/2026 22:15" },
+  { url: "https://lh3.googleusercontent.com/pw/AP1GczPAEmfrCcKlQmOdP51aEXfmRnNI7jQojKF3AO6q8UEobDG3EOlHa2uvwc8ZPFU-qpNMJKpnSa-w1fBungJkWCwOx-xRRIQsnb-1r2W8gxYH-RBfQX5W", location: null, date: "20/03/2025 02:38" },
+  { url: "https://lh3.googleusercontent.com/pw/AP1GczNmukRE8fFRLX_kaS5sZ43lK-vn7vEbnjGm2ZXSlAkZnim7eQ3MxKWSqUOBLAV0juc9WWTPglGgzb7laI3Q01o3Uz98oFUbWLKGVK2OFpzkFkGUX9Fe", location: null, date: "20/02/2026 21:08" }
 ];
 
 export default function PhotosPage() {
