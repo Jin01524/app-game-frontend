@@ -42,20 +42,18 @@ export default function PhotosPage() {
     setSelectedIdx(prev => (prev === ALL_PHOTOS.length - 1 ? 0 : prev + 1));
   };
 
-  const [videoSrc, setVideoSrc] = useState('');
+  const [videoQuality, setVideoQuality] = useState('m22');
 
-  // Sync video source whenever selection changes (defaults to high-quality 720p stream)
+  // Reset video quality to m22 when index changes
   useEffect(() => {
-    if (selectedIdx !== null && ALL_PHOTOS[selectedIdx].isVideo) {
-      setVideoSrc(`${ALL_PHOTOS[selectedIdx].url}=m22`);
-    }
+    setVideoQuality('m22');
   }, [selectedIdx]);
 
   const handleVideoError = () => {
     // If the 720p stream fails, fall back to the 360p H.264 stream
-    if (selectedIdx !== null && videoSrc.endsWith('=m22')) {
+    if (videoQuality === 'm22') {
       console.log('m22 stream failed, falling back to m18');
-      setVideoSrc(`${ALL_PHOTOS[selectedIdx].url}=m18`);
+      setVideoQuality('m18');
     }
   };
 
@@ -139,8 +137,8 @@ export default function PhotosPage() {
               <div className={styles.largeImgWrapper}>
                 {ALL_PHOTOS[selectedIdx].isVideo ? (
                   <video
-                    key={videoSrc}
-                    src={`${import.meta.env.VITE_API_URL || ''}/api/proxy-video?url=${encodeURIComponent(videoSrc)}`}
+                    key={`${selectedIdx}-${videoQuality}`}
+                    src={`${import.meta.env.VITE_API_URL || ''}/api/proxy-video?url=${encodeURIComponent(`${ALL_PHOTOS[selectedIdx].url}=${videoQuality}`)}`}
                     controls
                     autoPlay
                     playsInline
