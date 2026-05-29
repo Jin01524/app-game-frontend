@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import PixelCanvas from '../components/PixelCanvas';
 import BottomNav from '../components/BottomNav';
+import { toast } from '../utils/toast';
 import styles from './UtilitiesPage.module.css';
 import tarotIcon from '../../assets/tarot-app.png';
 import spyIcon from '../../assets/spy-app.png';
 import goldIcon from '../../assets/gold-app.png';
+import wolfIcon from '../../assets/wolf-app.png';
 
 const UTILITIES = [
   { key: 'calculator', name: 'Máy tính', icon: '🧮', color: '#f59e0b' },
@@ -16,6 +18,7 @@ const UTILITIES = [
   { key: 'tarot',      name: 'Xem Tarot', icon: tarotIcon, color: '#6366f1' },
   { key: 'spy',        name: 'Gián điệp', icon: spyIcon, color: '#ec4899' },
   { key: 'gold',       name: 'Giá Vàng',  icon: goldIcon, color: '#fbbf24' },
+  { key: 'werewolf',   name: 'Ma Sói',    icon: wolfIcon, color: '#7c3aed' },
 ];
 
 export default function UtilitiesPage() {
@@ -75,6 +78,8 @@ export default function UtilitiesPage() {
                       navigate('/utilities/spy');
                     } else if (u.key === 'gold') {
                       navigate('/utilities/gold');
+                    } else if (u.key === 'werewolf') {
+                      toast.info('Trò chơi Ma Sói đang được phát triển!');
                     }
                   }}
                 >
