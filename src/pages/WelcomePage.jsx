@@ -320,6 +320,27 @@ export default function WelcomePage() {
                 </>
               );
             }
+            if (quest.key === 'ban_lua') {
+              return (
+                <>
+                  Bán 8 lúa ở <span className={styles.questLink} onClick={() => navigate('/market')}>chợ</span>
+                </>
+              );
+            }
+            if (quest.key === 'mua_bo') {
+              return (
+                <>
+                  Mua 1 con bò ở <span className={styles.questLink} onClick={() => navigate('/market')}>chợ</span>
+                </>
+              );
+            }
+            if (quest.key === 'cho_bo_an') {
+              return (
+                <>
+                  Mua 4 bó rơm ở <span className={styles.questLink} onClick={() => navigate('/market')}>chợ</span> và mang về cho bò ăn
+                </>
+              );
+            }
             return quest.title;
           };
 
