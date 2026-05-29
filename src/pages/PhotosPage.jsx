@@ -5,6 +5,13 @@ import BottomNav from '../components/BottomNav';
 import { ALL_PHOTOS } from '../utils/photosData';
 import styles from './PhotosPage.module.css';
 
+const albumBaseUrl = "https://photos.google.com/share/AF1QipMKAT4_MsLhIA5kdLquRrYnMr-qj7sR49XVD-G2BwMqBlLTrEG2UQkhcb5FtkwJvQ";
+const albumKey = "cnczbzRqOHhhNjl0Vm5PbkNIaVVrY2ZZLWVQLWhR";
+
+const getDeepLink = (photoId) => {
+  return `${albumBaseUrl}/photo/${photoId}?key=${albumKey}`;
+};
+
 export default function PhotosPage() {
   const navigate = useNavigate();
   const [visibleCount, setVisibleCount] = useState(20);
@@ -131,18 +138,22 @@ export default function PhotosPage() {
             <div className={styles.modalContent}>
               <div className={styles.largeImgWrapper}>
                 {ALL_PHOTOS[selectedIdx].isVideo ? (
-                  <video 
-                    key={selectedIdx} // Force recreate DOM element on index change to play new video stream
-                    src={videoSrc}
-                    controls 
-                    autoPlay 
-                    playsInline 
-                    referrerPolicy="no-referrer"
-                    onError={handleVideoError}
-                    className={styles.largeVideo}
+                  <div 
+                    className={styles.videoPlaceholder} 
+                    onClick={() => window.open(getDeepLink(ALL_PHOTOS[selectedIdx].id), '_blank')}
+                    title="Bấm để xem video chất lượng gốc trên Google Photos"
                   >
-                    Trình duyệt không hỗ trợ xem video này.
-                  </video>
+                    <img 
+                      src={`${ALL_PHOTOS[selectedIdx].url}=w800`} 
+                      alt="Ảnh đại diện video" 
+                      referrerPolicy="no-referrer"
+                      className={styles.largeImg} 
+                    />
+                    <div className={styles.playButtonOverlay}>
+                      <div className={styles.playButtonIcon}>▶️</div>
+                      <div className={styles.playButtonText}>XEM VIDEO TRÊN GOOGLE PHOTOS</div>
+                    </div>
+                  </div>
                 ) : (
                   <img 
                     src={`${ALL_PHOTOS[selectedIdx].url}=w800`} 
@@ -157,6 +168,15 @@ export default function PhotosPage() {
               <div className={styles.metadataBox}>
                 <div>📍 Địa điểm: <strong>{ALL_PHOTOS[selectedIdx].location || 'Không rõ'}</strong></div>
                 <div style={{ marginTop: '4px' }}>📅 Ngày chụp: <strong>{ALL_PHOTOS[selectedIdx].date || 'Không rõ'}</strong></div>
+                <div style={{ marginTop: '8px', borderTop: '1px dashed #cbd5e1', paddingTop: '8px', textAlign: 'center' }}>
+                  <button 
+                    className="btn btn-outline" 
+                    style={{ padding: '4px 8px', fontSize: '0.55rem', width: '100%' }}
+                    onClick={() => window.open(getDeepLink(ALL_PHOTOS[selectedIdx].id), '_blank')}
+                  >
+                    [ 🌐 XEM GỐC TRÊN GOOGLE PHOTOS ]
+                  </button>
+                </div>
               </div>
 
               {/* Navigation & Slideshow Controls */}
