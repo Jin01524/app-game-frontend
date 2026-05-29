@@ -735,10 +735,13 @@ export default function HousePage() {
             ctx.fillStyle = '#4ade80';
             ctx.fillRect(barX, barY, barWidth * progress, barHeight);
           } else {
-            ctx.font = '10px "Press Start 2P", monospace';
-            ctx.textAlign = 'center';
-            ctx.fillStyle = '#4ade80';
-            ctx.fillText('Xong!', state.farmPlot.x + state.farmPlot.width/2, groundY - 40);
+            // Blink effect for harvest ready
+            if (Math.floor(time / 500) % 2 === 0) {
+              ctx.font = '8px "Press Start 2P", monospace';
+              ctx.textAlign = 'center';
+              ctx.fillStyle = '#fbbf24';
+              ctx.fillText('THU HOẠCH!', state.farmPlot.x + state.farmPlot.width/2, groundY - 40);
+            }
           }
         }
       }
@@ -1094,8 +1097,8 @@ export default function HousePage() {
               <div style={{ textAlign: 'center', fontSize: '1rem', marginBottom: '8px', color: 'var(--px-amber)' }}>
                 {isLocked && "Ruộng đang bỏ hoang."}
                 {!isLocked && farm.state === 'idle' && `Sẵn sàng gieo hạt. (Sản lượng: ${farm.yield} Lúa)`}
-                {!isLocked && farm.state === 'growing' && (farmTimeLeft > 0 ? <span>Đang chờ lúa lớn... <span style={{color: '#4ade80'}}>({farmTimeLeft}s)</span></span> : <span style={{color: '#4ade80'}}>Xong!</span>)}
-                {!isLocked && farm.state === 'ready' && <span style={{color: '#4ade80'}}>Lúa đã chín!</span>}
+                {!isLocked && farm.state === 'growing' && farmTimeLeft > 0 && <span>Đang chờ lúa lớn... <span style={{color: '#4ade80'}}>({farmTimeLeft}s)</span></span>}
+                {!isLocked && ((farm.state === 'growing' && farmTimeLeft <= 0) || farm.state === 'ready') && <span style={{color: '#4ade80'}}>Lúa đã chín!</span>}
               </div>
 
               {isLocked && (
@@ -1110,7 +1113,7 @@ export default function HousePage() {
                 </button>
               )}
 
-              {!isLocked && farm.state === 'ready' && (
+              {!isLocked && ((farm.state === 'growing' && farmTimeLeft <= 0) || farm.state === 'ready') && (
                 <button className="btn btn-primary" onClick={() => handleAction('harvest')} disabled={actionLoading} style={{ background: '#e6c229', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                   {!actionLoading && <img src={sickleIcon} alt="Cái liềm" style={{ width: '20px', imageRendering: 'pixelated' }} />}
                   {actionLoading ? 'ĐANG THU HOẠCH...' : `[ THU HOẠCH +${farm.yield} LÚA ]`}
