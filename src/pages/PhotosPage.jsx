@@ -140,7 +140,7 @@ export default function PhotosPage() {
                 {ALL_PHOTOS[selectedIdx].isVideo ? (
                   <video
                     key={videoSrc}
-                    src={`/api/proxy-video?url=${encodeURIComponent(videoSrc)}`}
+                    src={`${import.meta.env.VITE_API_URL || ''}/api/proxy-video?url=${encodeURIComponent(videoSrc)}`}
                     controls
                     autoPlay
                     playsInline
