@@ -174,9 +174,10 @@ export default function WelcomePage() {
   const handleGoal = async (amount = 2) => {
     addXu(amount);
     try {
+      const goalsCount = Math.floor(amount / 2);
       await authFetch('/api/profile/game/score', {
         method: 'POST',
-        body: JSON.stringify({ goals: 1 }),
+        body: JSON.stringify({ goals: goalsCount }),
       });
       refreshQuests();
     } catch (e) {

@@ -82,7 +82,9 @@ export default function MarketPage() {
   
   const [loading, setLoading] = useState(true);
   const [market, setMarket] = useState(null);
-  const [riceQty, setRiceQty] = useState(0);
+  const [storageRiceQty, setStorageRiceQty] = useState(0);
+  const backpackRiceQty = user?.backpack?.reduce((sum, slot) => sum + (slot && slot.item_id === 'lua' ? slot.quantity : 0), 0) || 0;
+  const riceQty = storageRiceQty + backpackRiceQty;
   const [showMarketMenu, setShowMarketMenu] = useState(false);
   const [showAnimalMenu, setShowAnimalMenu] = useState(false);
   const [sellInput, setSellInput] = useState('');
@@ -188,7 +190,7 @@ export default function MarketPage() {
       if (pRes.ok) {
         const pData = await pRes.json();
         const lua = pData.inventory?.find(i => i.item_id === 'lua');
-        setRiceQty(lua ? lua.quantity : 0);
+        setStorageRiceQty(lua ? lua.quantity : 0);
       }
     } catch (e) {
       console.error(e);
