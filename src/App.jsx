@@ -12,6 +12,7 @@ import MarketPage  from './pages/MarketPage';
 import LobbyPage   from './pages/LobbyPage';
 import UtilitiesPage from './pages/UtilitiesPage';
 import CalculatorPage from './pages/CalculatorPage';
+import PhotosPage from './pages/PhotosPage';
 
 // Guard: only admin can access, others redirect to /
 function AdminOnly({ children }) {
@@ -45,6 +46,9 @@ export default function App() {
           />
           <Route path="/utilities/calculator"
             element={<ProtectedRoute><CalculatorPage /></ProtectedRoute>}
+          />
+          <Route path="/utilities/photos"
+            element={<ProtectedRoute><PhotosPage /></ProtectedRoute>}
           />
           <Route path="/lobby"
             element={<ProtectedRoute><LobbyPage /></ProtectedRoute>}

@@ -37,6 +37,8 @@ export default function UtilitiesPage() {
                 onClick={() => {
                   if (u.key === 'calculator') {
                     navigate('/utilities/calculator');
+                  } else if (u.key === 'photos') {
+                    navigate('/utilities/photos');
                   }
                 }}
               >
