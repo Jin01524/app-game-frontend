@@ -124,33 +124,46 @@
 }
 
 .cardFront {
-  background: #ffffff;
+  background: #000000;
   color: var(--px-text);
   border-color: var(--px-border);
   transform: rotateY(180deg);
-  padding: 6px;
-  gap: 4px;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
 }
 
-.cardName {
+.cardImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.cardLabelOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.75);
+  padding: 4px 2px;
+  text-align: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.cardNameOverlay {
   font-family: var(--font-pixel);
   font-size: 0.80rem;
   font-weight: bold;
-  text-align: center;
+  color: #fbbf24;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
   line-height: 1.1;
-  word-break: break-word;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.cardEmoji {
-  font-size: 2.2rem;
-  filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.1));
-}
-
-.cardNumber {
-  font-family: var(--font-pixel);
-  font-size: 0.80rem;
-  opacity: 0.7;
-}
 
 /* Ancient RPG Message/Interpretation Scroll */
 .scrollContainer {
