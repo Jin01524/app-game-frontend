@@ -91,6 +91,22 @@ const frogAttackSrcs = [
   frogAttack1, frogAttack2, frogAttack3
 ];
 
+const parsePlantedAt = (plantedAt) => {
+  if (!plantedAt) return 0;
+  if (plantedAt instanceof Date) return plantedAt.getTime();
+  
+  let dateStr = plantedAt.toString().trim();
+  if (!dateStr.includes('T')) {
+    dateStr = dateStr.replace(' ', 'T');
+  }
+  if (!dateStr.endsWith('Z') && !dateStr.includes('+') && !/-\d{2}:\d{2}$/.test(dateStr)) {
+    dateStr += 'Z';
+  }
+  
+  const parsed = new Date(dateStr);
+  return isNaN(parsed.getTime()) ? new Date(plantedAt).getTime() : parsed.getTime();
+};
+
 export default function HousePage() {
   const navigate = useNavigate();
   const { width: gameWidth, height: gameHeight } = useGameWindowSize();
@@ -180,7 +196,7 @@ export default function HousePage() {
   // Auto-refresh when crop finishes growing
   useEffect(() => {
     if (farm && farm.state === 'growing' && farm.planted_at) {
-      const diff = (Date.now() - new Date(farm.planted_at + 'Z').getTime());
+      const diff = Date.now() - parsePlantedAt(farm.planted_at);
       const remainingMs = Math.max(0, 30000 - diff);
       
       const timeout = setTimeout(() => {
@@ -188,7 +204,7 @@ export default function HousePage() {
       }, remainingMs + 500); // +500ms buffer to ensure backend is ready
       
       const interval = setInterval(() => {
-        const d = (Date.now() - new Date(farm.planted_at + 'Z').getTime()) / 1000;
+        const d = (Date.now() - parsePlantedAt(farm.planted_at)) / 1000;
         setFarmTimeLeft(Math.max(0, 30 - d));
       }, 100);
 
@@ -720,22 +736,31 @@ export default function HousePage() {
           }
         }
         if (farm.state === 'growing' && farm.planted_at) {
-          const diff = (Date.now() - new Date(farm.planted_at + 'Z').getTime()) / 1000;
-          const remaining = Math.max(0, Math.ceil(30 - diff));
+          const diff = (Date.now() - parsePlantedAt(farm.planted_at)) / 1000;
+          const remaining = Math.max(0, 30 - diff);
           
           if (remaining > 0) {
             const progress = Math.min(1, Math.max(0, diff / 30));
-            const barWidth = 40;
-            const barHeight = 6;
+            const barWidth = 80;
+            const barHeight = 8;
             const barX = state.farmPlot.x + state.farmPlot.width/2 - barWidth/2;
-            const barY = groundY - 45;
+            const barY = groundY - 42;
             
-            ctx.fillStyle = '#000';
-            ctx.fillRect(barX - 1, barY - 1, barWidth + 2, barHeight + 2);
+            // Outer black border (pixel style)
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(barX - 2, barY - 2, barWidth + 4, barHeight + 4);
+            
+            // Inner dark background
             ctx.fillStyle = '#1e293b';
             ctx.fillRect(barX, barY, barWidth, barHeight);
+            
+            // Green progress fill
             ctx.fillStyle = '#4ade80';
             ctx.fillRect(barX, barY, barWidth * progress, barHeight);
+
+            // Subtle highlight line on the progress bar for depth
+            ctx.fillStyle = '#22c55e';
+            ctx.fillRect(barX, barY, barWidth * progress, 2);
           } else {
             // Blink effect for harvest ready
             if (Math.floor(time / 500) % 2 === 0) {
@@ -989,7 +1014,7 @@ export default function HousePage() {
     if (!farm || farm.state !== 'growing' || !farm.planted_at) {
       return { remaining: 0, percent: 0, isReady: farm?.state === 'ready' };
     }
-    const diff = (Date.now() - new Date(farm.planted_at + 'Z').getTime()) / 1000;
+    const diff = (Date.now() - parsePlantedAt(farm.planted_at)) / 1000;
     const remaining = Math.max(0, 30 - diff);
     const percent = Math.min(100, Math.max(0, (diff / 30) * 100));
     const isReady = remaining <= 0;
