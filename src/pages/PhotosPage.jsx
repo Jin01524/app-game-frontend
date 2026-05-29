@@ -4,6 +4,7 @@ import PixelCanvas from '../components/PixelCanvas';
 import BottomNav from '../components/BottomNav';
 import { ALL_PHOTOS } from '../utils/photosData';
 import styles from './PhotosPage.module.css';
+import nextIcon from '../../assets/next.png';
 
 const albumBaseUrl = "https://photos.google.com/share/AF1QipMKAT4_MsLhIA5kdLquRrYnMr-qj7sR49XVD-G2BwMqBlLTrEG2UQkhcb5FtkwJvQ";
 const albumKey = "cnczbzRqOHhhNjl0Vm5PbkNIaVVrY2ZZLWVQLWhR";
@@ -198,7 +199,7 @@ export default function PhotosPage() {
                   onClick={handlePrev}
                   style={{ width: '48px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
                 >
-                  ◀️
+                  <img src={nextIcon} alt="Trước" className={`${styles.navIcon} ${styles.flipped}`} />
                 </button>
                 <button 
                   className={`btn ${slideshowActive ? 'btn-danger' : 'btn-primary'}`} 
@@ -212,7 +213,7 @@ export default function PhotosPage() {
                   onClick={handleNext}
                   style={{ width: '48px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
                 >
-                  ▶️
+                  <img src={nextIcon} alt="Tiếp theo" className={styles.navIcon} />
                 </button>
               </div>
 

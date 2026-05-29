@@ -272,3 +272,14 @@
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.15); }
 }
+
+.navIcon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  display: block;
+}
+
+.flipped {
+  transform: scaleX(-1);
+}
