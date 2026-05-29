@@ -1,4 +1,17 @@
-export const ALL_PHOTOS = [
+// Dynamic Photo Geo-location Mapping Engine
+const LOCATION_RULES = [
+  { start: "26/04/2026", end: "28/04/2026", location: "Kon Tum" },
+  // Add other trips here as you provide them!
+  // Example: { start: "27/02/2026", end: "02/03/2026", location: "Đà Lạt" }
+];
+
+const parseDate = (dateStr) => {
+  if (!dateStr || dateStr === "Không rõ") return null;
+  const parts = dateStr.split(" ")[0].split("/");
+  return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+};
+
+const RAW_PHOTOS = [
   {
     "url": "https://lh3.googleusercontent.com/pw/AP1GczOcL805b42--TpbZBz2BIxVtPZQLUtcSD5aAv7eUbfb7FuFpom1ajTEnrTowHfmFch2_-BDH_AZg5EfzSClY60Xklty9q3OBCNXsgV7DCojZpIKWiiu",
     "location": null,
@@ -1500,3 +1513,25 @@ export const ALL_PHOTOS = [
     "date": "28/08/2024 02:45"
   }
 ];
+
+export const ALL_PHOTOS = RAW_PHOTOS.map(p => {
+  let location = null;
+  const pDate = parseDate(p.date);
+  if (pDate) {
+    for (const rule of LOCATION_RULES) {
+      const startParts = rule.start.split("/");
+      const endParts = rule.end.split("/");
+      const startDate = new Date(parseInt(startParts[2]), parseInt(startParts[1]) - 1, parseInt(startParts[0]));
+      const endDate = new Date(parseInt(endParts[2]), parseInt(endParts[1]) - 1, parseInt(endParts[0]));
+      
+      if (pDate >= startDate && pDate <= endDate) {
+        location = rule.location;
+        break;
+      }
+    }
+  }
+  return {
+    ...p,
+    location: location
+  };
+});
