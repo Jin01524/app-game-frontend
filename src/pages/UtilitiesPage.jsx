@@ -4,6 +4,7 @@ import PixelCanvas from '../components/PixelCanvas';
 import BottomNav from '../components/BottomNav';
 import styles from './UtilitiesPage.module.css';
 import tarotIcon from '../../assets/tarot-app.png';
+import spyIcon from '../../assets/spy-app.png';
 
 const UTILITIES = [
   { key: 'calculator', name: 'Máy tính', icon: '🧮', color: '#f59e0b' },
@@ -11,6 +12,7 @@ const UTILITIES = [
   { key: 'messaging',  name: 'Nhắn tin', icon: '💬', color: '#3b82f6' },
   { key: 'weather',    name: 'Thời tiết', icon: '🌤️', color: '#06b6d4' },
   { key: 'tarot',      name: 'Xem Tarot', icon: tarotIcon, color: '#6366f1' },
+  { key: 'spy',        name: 'Gián điệp', icon: spyIcon, color: '#ec4899' },
 ];
 
 export default function UtilitiesPage() {
@@ -43,6 +45,8 @@ export default function UtilitiesPage() {
                       navigate('/utilities/weather');
                     } else if (u.key === 'tarot') {
                       navigate('/utilities/tarot');
+                    } else if (u.key === 'spy') {
+                      navigate('/utilities/spy');
                     }
                   }}
                 >
@@ -64,3 +68,4 @@ export default function UtilitiesPage() {
     </div>
   );
 }
+

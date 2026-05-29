@@ -15,6 +15,8 @@ import CalculatorPage from './pages/CalculatorPage';
 import PhotosPage from './pages/PhotosPage';
 import WeatherPage from './pages/WeatherPage';
 import TarotPage from './pages/TarotPage';
+import SpyPage from './pages/SpyPage';
+
 
 // Guard: only admin can access, others redirect to /
 function AdminOnly({ children }) {
@@ -58,6 +60,10 @@ export default function App() {
           <Route path="/utilities/tarot"
             element={<ProtectedRoute><TarotPage /></ProtectedRoute>}
           />
+          <Route path="/utilities/spy"
+            element={<ProtectedRoute><SpyPage /></ProtectedRoute>}
+          />
+
           <Route path="/lobby"
             element={<ProtectedRoute><LobbyPage /></ProtectedRoute>}
           />
