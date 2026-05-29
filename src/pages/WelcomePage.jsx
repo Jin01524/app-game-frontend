@@ -37,6 +37,17 @@ function getGreeting() {
   return 'BUỔI TỐI';
 }
 
+const parseDateSafely = (dateString) => {
+  if (!dateString) return null;
+  if (typeof dateString !== 'string') return new Date(dateString);
+  
+  if (dateString.endsWith('Z') || dateString.includes('+') || (dateString.includes('-') && dateString.includes('T'))) {
+    return new Date(dateString);
+  }
+  const formatted = dateString.replace(' ', 'T') + 'Z';
+  return new Date(formatted);
+};
+
 // ── Dropdown ──────────────────────────────────────────────────────────────────
 function Dropdown({ open, onClose, onProfile, onAdmin, onLogout, isAdmin }) {
   const ref = useRef(null);
@@ -143,8 +154,8 @@ export default function WelcomePage() {
   }, [authFetch]);
 
   function getRelativeTime(dateString) {
-    if (!dateString) return 'Chưa từng online';
-    const d = new Date(dateString + 'Z');
+    const d = parseDateSafely(dateString);
+    if (!d || isNaN(d.getTime())) return 'Chưa từng online';
     const diff = (now - d) / 1000;
     if (diff < 300) return 'Đang online';
     if (diff < 3600) return `${Math.floor(diff/60)} phút trước`;
@@ -246,7 +257,8 @@ export default function WelcomePage() {
         <div className={`${styles.userList} rpg-box fade-in fade-in-delay-1`} style={{ margin: '0', display: 'flex', alignItems: 'center' }}>
           <div style={{ display: 'flex', flex: 1, overflowX: 'auto', gap: '0' }}>
             {usersStatus.map(u => {
-              const diff = u.last_online ? (now - new Date(u.last_online + 'Z')) / 1000 : Infinity;
+              const d = parseDateSafely(u.last_online);
+              const diff = d && !isNaN(d.getTime()) ? (now - d) / 1000 : Infinity;
               const isOnline = diff < 300;
               return (
                 <div key={u.id} className={styles.userListItem} title={u.display_name || u.username} onClick={() => navigate(`/home2d/${u.username}`)} style={{ cursor: 'pointer' }}>
