@@ -17,21 +17,21 @@ const RAW_MEDIA = [
     "url": "https://lh3.googleusercontent.com/pw/AP1GczOcL805b42--TpbZBz2BIxVtPZQLUtcSD5aAv7eUbfb7FuFpom1ajTEnrTowHfmFch2_-BDH_AZg5EfzSClY60Xklty9q3OBCNXsgV7DCojZpIKWiiu",
     "location": null,
     "date": "28/04/2026 01:10",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipPDhdrhmt3oswoOdajMeIWAfgQ6rdFECQY_0RiP",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczM11Yjp2jgq7BJQRmXYIOlq5sxgkOR77Iok4zOJ-OcidPksQl3yrcvU6w4xmwaEd9mQNPw-N9a5jq1O9pHw_grF4B3EAj_suYD4APGNx7sgm1PFNY2n",
     "location": null,
     "date": "28/04/2026 01:10",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipPt4VBZj_WHrEVqhQnpW5vPhiap995coLE5USVb",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczO9hL-N59_P6uwLXqTh_BjC4E53l0remNuXwxTXTSden89_I17IiaN8ZpvPkBoDHo2BvEhTaukoosuvg5sRxhUJh2mZjvumnm7tGb6ElUbtJkqJUo-E",
     "location": null,
     "date": "28/04/2026 00:53",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipPbVLTbMIyx9i2-KzVKzP5Zxeqst7mg4UYy0y-1",
@@ -45,21 +45,21 @@ const RAW_MEDIA = [
     "url": "https://lh3.googleusercontent.com/pw/AP1GczMZ4eVxXCWV7dP9Qmd0r78uS9SniZWE5Sey73LjtpA7VBzs479hTYSIQNjX98Q63kauViZrf70EOSCIDRT4EV0sFBTNhMX9FoHlkbBwhtaEX1oMDfUq",
     "location": null,
     "date": "27/04/2026 21:44",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipNZbnRT2YnkmORdCZuOjedKzveBuuVOEh76WoBA",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczPRNmtiSLgxb_6bwRR24Xzs0OLRbWy4LsPXJyVJ1GJm8LNC_i_emXqkENLxy1vJEOeeWFtn4FyVBcRrjKwN5VFYdBCPM1Utc245MFcjecai5bz7gcB5",
     "location": null,
     "date": "27/04/2026 17:43",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipMImvEJKk6t4CIwVMvIMTonXZhV3K-tEkmPle-Z",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczNOUerM9hkU1ILBpEP5PiIT7z97NK1ai1WYialFnL4apvXn4XEqtkNytjDZbbXrV-Y2dp1useOp7INxDHrt_wXLXsKC39RuOXHPgBDfAgS1dVKBuLHc",
     "location": null,
     "date": "27/04/2026 17:42",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipMtaGQmF8dgVhZ9TXE1D3dF46EXeSpWCJmSLPq6",
@@ -94,7 +94,7 @@ const RAW_MEDIA = [
     "url": "https://lh3.googleusercontent.com/pw/AP1GczM7xZQAOGMAYSxAW4WTM5hUowu6YcGlFxx70awlc2g7Dj_bI5aZomeV76TzMXQlTpFPvnbNPZCPoCX81hYkFoNEYyomYDn5UwabBBlOVeqBwKoN_88j",
     "location": null,
     "date": "27/04/2026 08:45",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipPORJu4PJ8GB9wXN8rSVFaDCVPrnIlwmvM5WRnZ",
@@ -115,7 +115,7 @@ const RAW_MEDIA = [
     "url": "https://lh3.googleusercontent.com/pw/AP1GczPAYO8sewGsQKpA37-7oS_SQljALDyO750Z9g6PDBO_3c0sLryJixzw2RiugP6ZtvX1lgmmqoJM5F04qfm8bT2pGFqBr5b-hDjkZyz9N_BMqv-WeAHK",
     "location": null,
     "date": "26/04/2026 20:50",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipMb9jIQHChA0DKrhsozIn3NHbBXbNpo5qFKPrK1",
@@ -136,63 +136,63 @@ const RAW_MEDIA = [
     "url": "https://lh3.googleusercontent.com/pw/AP1GczPJPrMU2eO6RGEYCdRM6Favf_t5d50puSQwJcCvETaaPjsQtFFHWhSt2G69oXmg73ZBdrBb1-sBahj95CS7fa3YQBKQ8UYsrk8jEylLObSZZV45jefs",
     "location": null,
     "date": "26/04/2026 17:42",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipMO5AZJCMpsTYswzqoM34pSBBxuSVurKewhcko5",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczMBvNiss9HJZzH_HGdv_mkAg2h5RtOQhqbbK_sd6XxeZlsnV5GpsRdTHjFOgit8Bw4NuWboggVPNlhGUMI95ACP1_iR1rQJdOJaLI_Htqw8IE1GS5Rm",
     "location": null,
     "date": "26/04/2026 17:41",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipNcxioZjGzfh-EKq1Bw6mIZ2c01sAWozZ3dAtHG",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczPlT00vKbMwjw1G6ITOc7k0-jaz59tRJgFxNVPQw1ukGxIcsHPOJGMPzz9u7xcghElDf7ZBHa6nHtzKa7iXa443sMd18WL2wgdeQT2C81u03cG0CV0V",
     "location": null,
     "date": "26/04/2026 17:41",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipMgdCYiJiJkPv9RIkanxfCruRQ8SIpOx0C3oLnn",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczN-Rg9ETnFqhFt0HtmirMgMA-5HvuJ7hX3akm0wILnTcTcUYBKvbj_VABl5aQ5Apkfox8qC2CiWb7tS1NlHjXmheuM1-bKB3ADRgh0HxaZfYM8nIV-g",
     "location": null,
     "date": "26/04/2026 17:39",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipMvT_fM2PxR-Xv9jtHffSkVaJMtIiOghVxYLIry",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczOtbL8KvisC1PLGoUNMn3XpA_EoIcz1_vd0oKmGNBmdAJyvv883tWJNk3Z4ke5tVh9Bhx8-Ny0Fukwnsqj22x_9JSrEa2ueVbxJOmL3ShSoiM_ecoof",
     "location": null,
     "date": "26/04/2026 15:44",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipMrlCq2IzS_yqzdDOCCybW2ZQOeJiRnQE2KoAB8",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczPa4CBJsK87OLq0d1Q-Nme3GyusmdRcQSh_R40ceYbIHMmVoR5eAn6Lukb1lLBrNQjQcfMH73LhSx5NoKcT3BouqR4RqFb-kVmsQYtN7KyXYrozNwxt",
     "location": null,
     "date": "26/04/2026 15:41",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipNNIY2TNlocg6yrxSfFvB20cBf_rSA1dWcX-Ydv",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczO2ZRKa8DU739RtYLMljNtSUXxEi7C_SJqynEJh3130mLev4pNhw266vlzOFBPuwC5hP6ZHovLvNevI48SmGVgXHQEn3hnKRU7ZyfaDEqc48-8SVl2h",
     "location": null,
     "date": "26/04/2026 15:38",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipO6Sgz5Nxt5xGa1g1mU6FnAdL3BIXP1xoRbdANk",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczOm5Lf4s1Sg8ek01I4MSn2s87iFY69KQ2wlTR8mYWx2T6Cr6SS7OXgghAz8nDsJJE8hUhx39ZHr3rH0UfpN6Zn-cIYdUepDSEikrZSwFrj1TY8kiOUE",
     "location": null,
     "date": "26/04/2026 15:35",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipPA8qfOsgehxaiy73V3Li6KnJJM2dc5p0DP-Ms0",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczO1bwxHjTgFYfmGltncAGIrHLt5oERbDx8TZBc3V8qUGy-ywdpFK4q0Wm_K16DF1YEJ-jg6JQNpQV2GiR_jvlfQsPWSjtVCJ1OL9dW3sK8xlXt2Piq8",
     "location": null,
     "date": "26/04/2026 15:26",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipMOxBwk7pd4NcEq0CGQ33LxCUEazJevrodeEhfY",
@@ -206,84 +206,84 @@ const RAW_MEDIA = [
     "url": "https://lh3.googleusercontent.com/pw/AP1GczPvfxHtmol-AcGCqwaQ0Pg_LYPYKBqSkFZtPmD1Ak-wl5H2cFmojXyjlg07pQ_rEqDxyX-Mf9EQzhgKZJMJFDuMdNPzRDp_p_g1bSPDO_cMCDv6n-cY",
     "location": null,
     "date": "26/04/2026 14:38",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipNUUF-giOkElemjriVCG-OxUkiggeq0l1Bo-mHC",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczOer1LDgowzQqNay0AKURwo8hTRFa4wO2tj16Ux8oeC6V-0JywnrlUcXO3kN0Y261si69zKidEHobHj-hRBxSvXB_VvI5rSjyUBrk8kuMQf_CB3iFZ1",
     "location": null,
     "date": "26/04/2026 14:35",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipNNMEpAiCz-AZwCDZrOILhEuYipY2UsuwpKH8B6",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczNwwF1HjnsuqFbN6Tm92mqhLonDhX1UwWnrCirSt09xG_8zSTJAxirYN_jtPHu2MjwnyZox_mev3P_VclUX2hENs5vw-I6ig5MpPB6JKM8yOgg4Pz1V",
     "location": null,
     "date": "26/04/2026 14:34",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipORQ2B4e4tRImfW6IV_7_bdj4LtMWhnVZ4Zdiro",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczPOfs4aUU44bS_VC0Ed9hoIBpkwgnwCIaiLkrtq8puOdaF74Xsxhp2Ns5DXxSY0U5SKLfqLVmVAPxtdESNuprzvd7YtCbMF0B1Mf78Tx5m8WnACrKXt",
     "location": null,
     "date": "26/04/2026 14:33",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipP1mfft8k2oqWFzDgaDweg1dm46-X83Cf2CthYD",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczO2tIJzs7cLJR1VWcNsR8zgvDGgtLoqJ6WWDMEKNIM8rG0kEzaN7vRKn-0RK3srNkBJSm-59QdYYHpIcLar4k_SJ5AQwJpHKCOUhMBz3YpSkiTlJxkw",
     "location": null,
     "date": "26/04/2026 14:28",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipMyjxy2mTfCby7FZDXpUIiwFqEyxeX5cADD3LH4",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczPy8ssUR591QU_RvgLwKX6zm9we3VZbidAJji2FDKJPx0ngGPuBxShikMFooclHCesAyc2eRjcZcpXLupFXpoZcw9Bv-ZqY5lloCvNXxqGz_ZPBUDTM",
     "location": null,
     "date": "26/04/2026 14:00",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipOINinaeT8J3ogboJwJ16LIZkTeAxYbXyXDMFBm",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczNqkRNcnnpMZecQ42Yxm_dkOPBddPAOM4jvoMShDrAieRV1MGM3r8TLmIA4HmOeSvgLM5_hx_MQTDMmGCo6oPDPGVF32OrS4OwLMopf8JN5vsOu71Um",
     "location": null,
     "date": "26/04/2026 13:59",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipOaRc-XvI-gYJwneEVucaalHnxjhvBqR8Nog-Ka",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczPmcZuBioBCguCo3jqw6FJxsEvAvhGA22VL8U04vfrdExEngvnhaNUFSN-nqF8jTDVjHuwFn08ZDTwfe-RPXp3fJenE5WG8c87HZXAFiVuV1lISb2C9",
     "location": null,
     "date": "26/04/2026 13:57",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipMcQ4yD91ZU8RB2jPnj0M8DtuC5zKAZSqeWnu8l",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczObBND_G8ha_Mz8dO50a1u8QtUyEfwUS91ShLTeO8NhPmWaL3pbK_I37pHvbNImVGYaxcgWmdS6QWPPYgdysL5t7CQLSmXEOgqHRR3P_8bIDC6IydaK",
     "location": null,
     "date": "26/04/2026 13:57",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipMTLxMK89MeYl_7uS8kmAl51oa0p54MTcteBMDC",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczMQQmc6xDgfT-a2mMaNEKncnNtxPXatvK1ciZAfkkuGDPHfyeFEjYk1fpC7A54WebS31PKLE05oayiNQG9dJ_0kJS4xrk-1-C9Pc_GvqGbLQOAxu-PG",
     "location": null,
     "date": "26/04/2026 13:56",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipPC7nt1OSu7aZWI4H3Pen0yChMnUWrJsAYckPto",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczM25P32ilCDwO6RDatEmZlZgjvHjbhZNyA7nWO5VWLPjqKUoux2tIlWvMW_mDhdIUkIyvdh_iCParYECZdIzCKTWUEtSCSjRDkWQUFFM81WVpxRrs7T",
     "location": null,
     "date": "26/04/2026 13:55",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipMaxZpW9YZJM35Xm3R8RgfURftHo8Ewg74-ONMj",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczMMsFM6qFmeVxGLCVFGYnescWKCwG5NVEm6GdJLh7sq-SQp27VT3xWdtZuQ6gtuOoVOuBuPUylSCLhAhCxDRQg25H3RsUPrNkJ3KANC-POytNQa_HcE",
     "location": null,
     "date": "26/04/2026 13:54",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipN7AIWrinQE2MORJUOMM-kjRc4O006Kb6W6Dgyy",
@@ -297,28 +297,28 @@ const RAW_MEDIA = [
     "url": "https://lh3.googleusercontent.com/pw/AP1GczPVRRKc2OeqOEAAIMUzrxp6tIIWVTox85sSjVOMpWM3eEFGNpAJpb9GWqdqk8FWdEg89DvQaBBg8Z8MycMn2KoZObOlRA0iVyJyj3EKs2ZNAcPXn_JT",
     "location": null,
     "date": "26/04/2026 12:12",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipMZxuMJ6tL_x3v6KwHPEPUO7PEnSJGvDZ_KJ1PT",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczOV-0ys0Tq3GgzoQPjLOxsELAc3tIYK9LaVjTc7PZKTwoLOFJw0nZwQDagDj0U6f9D-MxYgI8jkvb9AEQWrIqyIAP_BEdm7SHJ-dda12tNAUP_O1Soz",
     "location": null,
     "date": "26/04/2026 12:08",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipNmv-DOKsKSZDGhp3WSfTJviE6O6qSZc5tMcSEx",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczNHHWmak-iTuT0T9txLVHY30zp3RFoD5ccCHYg5tyJFTv-cuAlJM-oAccXHDDis7S0MJLvOArKo5kL2hvCzkeB_Yk1PlfAyn4VonkVJnt_beqTc-JPj",
     "location": null,
     "date": "26/04/2026 12:07",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipOJsJR2vZKsED4FX3iPtlHjkiP1LZY1uXMxMs94",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczOuCMyUA_CsIk9TmOGCgvb3pnsiv6fbBNWxEkwQvAYBh1frPU41JWGSit7ntwapLPFa6CbtgjntivAM5Bxxkz2-qh3E4NifOoOf6vmd-vAWr52xwzx6",
     "location": null,
     "date": "26/04/2026 11:51",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipMdM0YYUGWwEabbIXcTwzAvBXZFld2e6_VKTCxy",
@@ -332,42 +332,42 @@ const RAW_MEDIA = [
     "url": "https://lh3.googleusercontent.com/pw/AP1GczN1xaxmTRgMFR_nyNGYktHmfhpc8Ek90D5Y9dCSMMpAYsPZR982qK7OmecHX3AaYxBBJeheqCfjZ0nJc-W4fch8OZflKQKg8C-JLXVN5GVkXHyXgkd1",
     "location": null,
     "date": "26/04/2026 09:47",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipNMmL0zS9mHO7UQpXZGbzVvuMX0DmcXjhTGLqlX",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczMm5u6tmWh2hvrVA25mK8ReXaQt3T7mXwq-xbCUy6M8H5dyGcDmHA5-1iMo40k-6cai0fD5RKRs1VrXoFwTuoBhWlntRy7W3yBL9VDv1uLPW9eJB90g",
     "location": null,
     "date": "26/04/2026 09:47",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipN7q4t1G8LFyWWgmn0KFXOWL-X4xyCML_AJZFI7",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczNm_1bX2LU5ZVTP-FiRNzKsSfnROX2R_1DurlMcPo1Ie5xCfw_zO9YAT6U1PNwUXdNdkDEozh-dOqVdx8VlMl7kWMfXNmP_aDLQPJ_VHPC9Q6Cd1V0i",
     "location": null,
     "date": "26/04/2026 09:36",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipMsA6uxO822yz3c6WO_idsckH3dlyGBRi7RoMqn",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczNPptvpmHnhk7z6rRpF4NQgie9kRq4Eyd406BvFaWrJTrQwiNg-a-Q0oNIH_RsMv7enUCzBR3HshDKz5-9-HUmeE8dJ-WIKIbZ5af0WAkcbCobOhINf",
     "location": null,
     "date": "26/04/2026 09:35",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipNaLCalrqJr7PzSdhis0xDqNZsIwM2ZfjVWGefT",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczNqZrc-m7OPAl2BSzGGJddNo4rr4GWFJ8XbeKngvp3VB2vOiz-6LBHUolrR2VVnpePXU6Hq6PZ7aA_IS_1blhKlpAFpv704Jn236q5fAXgDkolZ11AX",
     "location": null,
     "date": "26/04/2026 09:25",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipPA_PvDT1VOmIY_ygXms-Fd1LjV3YTxfiqMD_tF",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczPjXypZMyeI6_xVXbPEESLSCcTMzoKjgSzVFykZLn_tD2x34Gmod1WmL2V1d3g_xvUdG-9GFwwXwUJ5qYQQ9sIIrzXO9m3GLugLIct0-IR89Ixzm9LJ",
     "location": null,
     "date": "26/04/2026 09:22",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipNzCBKdkIg2aikNTn5qsRNzIFX3mNl6nzH2k5EW",
@@ -591,7 +591,7 @@ const RAW_MEDIA = [
     "url": "https://lh3.googleusercontent.com/pw/AP1GczME9ehpDj-G3OwlPQxWvtLET5sJneDKhEw6n2ny_2VSLQxyYmPEFTvyt8dApTmVpTNcz3qDgnRk_idE5SKGxDiz3x8C8qH4FhVmfyeFI56CLU-pwQTm",
     "location": null,
     "date": "02/03/2026 16:59",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipMV0r690YCxI2OBWp99Fi5OYwPikotaBo4vpy98",
@@ -619,14 +619,14 @@ const RAW_MEDIA = [
     "url": "https://lh3.googleusercontent.com/pw/AP1GczNCtg0tujVIIBNjqNFHiJArCtjiE85vrRLnjIC4AGrIyAH19-SwoTZq3AMUme8ra71biLasXmEH9NTje5vcMW10EqCLSVYn9vvQW_z8iixu31b1Moek",
     "location": null,
     "date": "01/03/2026 18:17",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipM06271f0T_0I5lblGbdoFCTJUDDDjd5rRmxDj3",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczN5c7yGwbNOdcF_4qtpIiFNgS-OUqBetWFyg4rMDAqsHEPI6Y23qjc0Ms_XrLRcdQ0dv3AVtgrVuwAqQBewj_eoYDiJfP-Q_6NyvWCNhZkjvwVdftk",
     "location": null,
     "date": "01/03/2026 07:48",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipOrr4QJwS4kIw9Og0jgjlVrypsg3K0hj04TuKxU",
@@ -640,7 +640,7 @@ const RAW_MEDIA = [
     "url": "https://lh3.googleusercontent.com/pw/AP1GczOozfPV1ejJglEujtWoYDsaYYb5RF2bJwRYXte2OJgVEBPEx_2tVOXzATTqrrNB0QOEoGXUS4GDngsc8-RzBbRm8eFzPY9ez1aBfBpQqNHGUfFCfeOG",
     "location": null,
     "date": "01/03/2026 05:16",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipNFqsgNIc3DrWXX8y4FqCzT9i2sZl0ymoY0lJ9F",
@@ -710,14 +710,14 @@ const RAW_MEDIA = [
     "url": "https://lh3.googleusercontent.com/pw/AP1GczPQuSrb9VGELZfwP4CQg3cLJovMQkWqvowZoro_zAp8ws3DkUUXLRKSv9ue9r4Z1DJasMxpk58pUTJKABRURXbmxVJjEwcttCuXxxBJbrDFiVOK-V1C",
     "location": null,
     "date": "28/02/2026 23:10",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipP7ROx9p47WjEXU3FXw_XyovMQ0MYwbppkQr4mw",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczNYzg2b-n_69ckwwONnpa05p6Dm5oK48gPY_mmUgWiIe__nw9e6bhWFyPd2_3eXPxAyv_12cFzXryOzr2OLnpfWVdEjpuKgtU0Z96GNSansqGoeDg29",
     "location": null,
     "date": "28/02/2026 23:10",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipM2TvM6JxuwcQ9YhvNGTjqoBZ4StlV2hRm0mVYL",
@@ -731,21 +731,21 @@ const RAW_MEDIA = [
     "url": "https://lh3.googleusercontent.com/pw/AP1GczONbEeGM7IsYYtb08M2fBmohWsBjZmbZqBCshT5K9TTGY4usF9aiGHrce0steActqJvriqrceqVrXQCtTxB3_OQDiry-3eXmSNu5Cbc_dDDBnM0U9bs",
     "location": null,
     "date": "28/02/2026 22:59",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipNodUHn2L0fvA-NuF5H8B79CFn92YoIjKkDFTkY",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczMpkxfh_xj38dcVgFcbDItux6i2JslZepRC_l0thEUiuodJBQETi7nD5Pn7EOiAD2UJymUygW69Rq0BOkADZHSs6M3Iu5lJlFYbJFBAB2qPRDicbAuj",
     "location": null,
     "date": "28/02/2026 22:58",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipOXVEwJfjX2bXKOYfM08V0ZXn9a86KAWw3VcxgG",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczPujdiSo7T5P9DKQDluIo2m9Baoag4_1R8zltpx3jOz-PRV9ctjOU-zDtTeEiG9GIdH9eW997ucSon88WFPMQEwKRvqNXqeIf_CONS9dGcdo28SKZf9",
     "location": null,
     "date": "28/02/2026 22:57",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipP0kffcDg7MohWjr72t8djl4VMYftDw3KXWggFa",
@@ -759,7 +759,7 @@ const RAW_MEDIA = [
     "url": "https://lh3.googleusercontent.com/pw/AP1GczP2iQ_CW9ERXO-0arToKaLq1iL8Mp9zNmz0BNZj_1hgIOPnKBkbeAqH53lT2kxE9ElecKTaBRO-LZUXQ_wnTNtTsU1Vxl7bgBGonNbTGGTKRsN0FMDl",
     "location": null,
     "date": "28/02/2026 22:54",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipMFUX6ioroHtsbs_IWJC0YMpJjG333Xs04cF5Y1",
@@ -780,7 +780,7 @@ const RAW_MEDIA = [
     "url": "https://lh3.googleusercontent.com/pw/AP1GczMmY5p4-nfZ5b6YSRWhmr1AaSxpbRREA-gdsyL1Fx9gxG_SFoiq_qlShW8nPRDfRAAa1NEtom0MSdWgctXWLN_uD8j5fUOQEMh98Ua2liYpslAa6C3s",
     "location": null,
     "date": "28/02/2026 22:38",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipM_vCXXLORoZY5M1AbGMF1BNz12NRezkewVo96s",
@@ -850,7 +850,7 @@ const RAW_MEDIA = [
     "url": "https://lh3.googleusercontent.com/pw/AP1GczNrflX1ET5gAekr6oYglVIrbjPRvfrX1Vph5N850Bed76Rec3g15PjyTpvCvpxWL6yWbkHyITeY5Rg2XmysWyWO7XtuaYYNEEMzJpdAQJBZdYnQTuX_",
     "location": null,
     "date": "28/02/2026 22:34",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipNDPvjulVYGywgBp9scIWYY_nSIK6e4hDKsspCq",
@@ -906,7 +906,7 @@ const RAW_MEDIA = [
     "url": "https://lh3.googleusercontent.com/pw/AP1GczPwZL6Hon7sax4ctqNyX04ie-WlDqpt01-RYUO83xg7KH35XM8Ea0IEJ0_nqr02o_V8WsZy-mVRMdLL-HdboUqg2MeV49tdSNX-6K8u2c5Zpsjyxn1A",
     "location": null,
     "date": "28/02/2026 22:30",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipOx0GBLVQJJHWrKX6ih7FRugYMGa-BsZzMuVThM",
@@ -948,7 +948,7 @@ const RAW_MEDIA = [
     "url": "https://lh3.googleusercontent.com/pw/AP1GczNLz-kuvkEOYOrJqAg7AujV_uvhpO3DhhTE9dJP75xJXgm2rxzE-JWDB55lbocUYJUk5YMuhXiwNMkfMNYs_ICa-49BV1cXy34GICZ2mwfK2sfMHC8",
     "location": null,
     "date": "28/02/2026 22:27",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipObUkQCrcpxKOSvLGH0RraScCQyeRh3MHz7vaoh",
@@ -1018,7 +1018,7 @@ const RAW_MEDIA = [
     "url": "https://lh3.googleusercontent.com/pw/AP1GczN3-pm31aUznVdNNsAjuIWBiUTE3ixGSq080ZkWTk0NaBGjD5N4Bgz1OXcOsr1CnH6zo5OmfrsRtX5g2zRVJxf3a7biZ-8n7g_ew6nEnkU49Yhwjiil",
     "location": null,
     "date": "28/02/2026 22:06",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipPeu-x2HWd1MsfCgoXd421DM-4aKqDarqAwlsDj",
@@ -1081,7 +1081,7 @@ const RAW_MEDIA = [
     "url": "https://lh3.googleusercontent.com/pw/AP1GczPq_ajhT5LPooyJERcadcD8l2r3rn_Eq1lt0pS8wBrL6nGgCrlkTj5EerNsnVuiJ2_wBE04Mp8asU4QKVEfywKYyMGcidQzwZ7by5zp-eqytTUrK4k",
     "location": null,
     "date": "28/02/2026 21:42",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipNI7KEC-iNpJN0KdQd91CUXOQYbh1okd-YQMAM_",
@@ -1144,14 +1144,14 @@ const RAW_MEDIA = [
     "url": "https://lh3.googleusercontent.com/pw/AP1GczNgCv1HlC1G02YdGY2zIivqwqBfGWZJheRHmTjgCOUg-plRx2Wn396Vt8kEAiJkLWkQZjtj2Ae0XQSCXAlGKQek8YVtjCTYLR2lM1BTYG8ZETCMrYA",
     "location": null,
     "date": "28/02/2026 21:34",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipMRivT5TQklUbkqa6FITuHA8CiDlzBPMzLOJTWF",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczNLFqZbywN-deGqL0gx4Abf03YyCACh7iewTiOuzDsRAyN1hc6DdyhTrcnFTjw1hSS-Z-h3YCkT5pD56AZUy2o5Yalv78gy3aRWX-wcssbX7_824Ww",
     "location": null,
     "date": "28/02/2026 21:33",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipMR8c0DeAtLq1lxte7KJSo7aCaPeLfQDof-2zPV",
@@ -1165,7 +1165,7 @@ const RAW_MEDIA = [
     "url": "https://lh3.googleusercontent.com/pw/AP1GczPNtxgpoZABgRIVJ9qBH7LuSdLNEO57SHSbKi8PEHvuKZHu_vkg6t1gdLt6HETuC35eyrM0B2xyciXU_bwHIaD9zWwjVRvmvQ6pYnUFQBjE2VRLvYc",
     "location": null,
     "date": "28/02/2026 21:29",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipOn00O9135eXKNWyf3kAiVeIFRsJlr713JKU-Z8",
@@ -1186,14 +1186,14 @@ const RAW_MEDIA = [
     "url": "https://lh3.googleusercontent.com/pw/AP1GczM4Gp7Kz4Tk7LHdL7yi44KOnQEOcvAYOmm9bjd0ayQa67QzXO7Z3WFmY1uEgioPGRPdRaOXm1-5VMw3YeSN2qOvzmMiOg8zDeA1LKvtNPWmGpAaEP8",
     "location": null,
     "date": "28/02/2026 21:28",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipPu176i4KLx0pG2VZGuxMdpsVnpj1uGxVJq1tce",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczMzjSCrquQNWM-fEJqf8rBAny9b7cctMUwrVEmHQhbKr1b_-zqno1lqebGj5eMG1SZYKLJrH5T5cPSkBfDxkDXonmKNxzOBleLvoADd-SF7rOw3aqsl",
     "location": null,
     "date": "28/02/2026 21:27",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipO7xoXOT38Af_1DNPqlY8YbbHr46qqQ2IGaH9cC",
@@ -1473,7 +1473,7 @@ const RAW_MEDIA = [
     "url": "https://lh3.googleusercontent.com/pw/AP1GczNLTzPqXcg6a7aHRauhCLdJ80PmE2syAyu6oHOBoVh9D7aTuRpG0N2AfmDMNiSdw0_hFr5pgeESXTjHa3IMU7YsVab8hZtHJNA8sJm1UDo7sJeUt15e",
     "location": null,
     "date": "20/02/2026 17:51",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipMD-8tQfFWmgHo9WDrrK4aoPBYNq0rcNeKrBs_m",
@@ -1501,14 +1501,14 @@ const RAW_MEDIA = [
     "url": "https://lh3.googleusercontent.com/pw/AP1GczMkaRkGPwZRZvdH0ogjGHqa1Pght9totHkawB4UlyYQJBPI3bsERw3snKSmktwQ8fL6WKY4X0M8n-rlxURwxak9RKOdmKWWPPyi6nEcJnk3TgzXJp1p",
     "location": null,
     "date": "19/02/2026 22:17",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipO9r3tYKxG3Y2NIuw7g3c2oAPJ9xZeHbdqJwe7w",
     "url": "https://lh3.googleusercontent.com/pw/AP1GczMbLF4apc2F1eyRTKOolMX9UjlTugCxgGTRDwHqr8lCzRMBDkb43nhazwv-76IICQ36E_sGpeCinR0ZlB6vcym5n85cYAgNmopPACnJlI3NEQfQ7fUO",
     "location": null,
     "date": "05/02/2026 04:29",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipMigjhYMVQSDEPUe3uYxhEeqxavVlRUBdwlgsA2",
@@ -1851,7 +1851,7 @@ const RAW_MEDIA = [
     "url": "https://lh3.googleusercontent.com/pw/AP1GczMS75JKTwVlbjMh9Yo__SXIjbpL4A1RbcVEEbkQ5Me9VatladqTqGSDDaVvShsEFmXGTlOjpYLv_n5zGPB5pYOKgsqPjC6nTn9sV9pf2sVYTp2o-lr0",
     "location": null,
     "date": "02/02/2025 14:07",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipN0NBiSt4qOhQNjKN9fJTjwnJIxrlj4ySaX379H",
@@ -1886,7 +1886,7 @@ const RAW_MEDIA = [
     "url": "https://lh3.googleusercontent.com/pw/AP1GczPsM8-1JhDm1oo6xeDps2DB441_dpZV-QRqFzvAzzgWzeItl7mnByQWiQ1ONeVPsbGMq4FV8P2UqvPKEhooYBrwM6i8wG3WV39gOESc5N2oIBxehaL1",
     "location": null,
     "date": "01/02/2025 23:13",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipP7mZ2co_mk0RUkpXybFgwJ9Utkwuo7E_6jG7CP",
@@ -2068,7 +2068,7 @@ const RAW_MEDIA = [
     "url": "https://lh3.googleusercontent.com/pw/AP1GczPUaOECUtPTfxQgT3AUuc0AEA17ezpSK4VxdYF_1k1d5RaEO18IQ7vvzpBCHiLNja1jI0zhp8g3Mh4cEH8a27fuA4o1K9Hq2ohLc4u-E8xBDbh_huU",
     "location": null,
     "date": "28/08/2024 02:49",
-    "isVideo": false
+    "isVideo": true
   },
   {
     "id": "AF1QipOgviCdbmTDCjsLrFwIRUmLshQMCRRGPKqoIual",
