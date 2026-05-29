@@ -1,7 +1,7 @@
 // Dynamic Photo & Video Geo-location Mapping Engine
 const LOCATION_RULES = [
   { start: "26/04/2026", end: "28/04/2026", location: "Kon Tum" },
-  { start: "24/05/2026", end: "27/05/2026", location: "Đà Nẵng" },
+  { start: "28/04/2026", end: "31/12/2026", location: "Đà Nẵng" },
   // Add other trips here as you provide them!
   // Example: { start: "27/02/2026", end: "02/03/2026", location: "Đà Lạt" }
 ];
