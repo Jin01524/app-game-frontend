@@ -42,6 +42,7 @@ export default function PhotosPage() {
     setSelectedIdx(prev => (prev === ALL_PHOTOS.length - 1 ? 0 : prev + 1));
   };
 
+  // Video quality fallback chain: m22 → m18 → 'failed' (shows deep link)
   const [videoQuality, setVideoQuality] = useState('m22');
 
   // Reset video quality to m22 when index changes
@@ -50,10 +51,12 @@ export default function PhotosPage() {
   }, [selectedIdx]);
 
   const handleVideoError = () => {
-    // If the 720p stream fails, fall back to the 360p H.264 stream
     if (videoQuality === 'm22') {
       console.log('m22 stream failed, falling back to m18');
       setVideoQuality('m18');
+    } else if (videoQuality === 'm18') {
+      console.log('m18 stream also failed, showing deep link fallback');
+      setVideoQuality('failed');
     }
   };
 
@@ -135,16 +138,34 @@ export default function PhotosPage() {
 
             <div className={styles.modalContent}>
               <div className={styles.largeImgWrapper}>
-                {ALL_PHOTOS[selectedIdx].isVideo ? (
+                {ALL_PHOTOS[selectedIdx].isVideo && videoQuality !== 'failed' ? (
                   <video
                     key={`${selectedIdx}-${videoQuality}`}
                     src={`${import.meta.env.VITE_API_URL || ''}/api/proxy-video?url=${encodeURIComponent(`${ALL_PHOTOS[selectedIdx].url}=${videoQuality}`)}`}
                     controls
                     autoPlay
                     playsInline
+                    crossOrigin="anonymous"
                     className={styles.largeVideo}
                     onError={handleVideoError}
                   />
+                ) : ALL_PHOTOS[selectedIdx].isVideo && videoQuality === 'failed' ? (
+                  <div 
+                    className={styles.videoPlaceholder} 
+                    onClick={() => window.open(getDeepLink(ALL_PHOTOS[selectedIdx].id), '_blank')}
+                    title="Bấm để xem video trên Google Photos"
+                  >
+                    <img 
+                      src={`${ALL_PHOTOS[selectedIdx].url}=w800`} 
+                      alt="Ảnh đại diện video" 
+                      referrerPolicy="no-referrer"
+                      className={styles.largeImg} 
+                    />
+                    <div className={styles.playButtonOverlay}>
+                      <div className={styles.playButtonIcon}>▶️</div>
+                      <div className={styles.playButtonText}>XEM TRÊN GOOGLE PHOTOS</div>
+                    </div>
+                  </div>
                 ) : (
                   <img 
                     src={`${ALL_PHOTOS[selectedIdx].url}=w800`} 
