@@ -35,6 +35,23 @@ export default function PhotosPage() {
     setSelectedIdx(prev => (prev === ALL_PHOTOS.length - 1 ? 0 : prev + 1));
   };
 
+  const [videoSrc, setVideoSrc] = useState('');
+
+  // Sync video source whenever selection changes (defaults to high-quality 720p stream)
+  useEffect(() => {
+    if (selectedIdx !== null && ALL_PHOTOS[selectedIdx].isVideo) {
+      setVideoSrc(`${ALL_PHOTOS[selectedIdx].url}=m22`);
+    }
+  }, [selectedIdx]);
+
+  const handleVideoError = () => {
+    // If the 720p stream fails, fall back to the 360p H.264 stream
+    if (selectedIdx !== null && videoSrc.endsWith('=m22')) {
+      console.log('m22 stream failed, falling back to m18');
+      setVideoSrc(`${ALL_PHOTOS[selectedIdx].url}=m18`);
+    }
+  };
+
   const handleScroll = (e) => {
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
     // Load more when scrolled near the bottom (within 120px)
@@ -71,7 +88,7 @@ export default function PhotosPage() {
               >
                 <div className={styles.imgWrapper}>
                   {/* Append =w300 dynamic width modifier for fast thumbnail loading */}
-                  <img src={`${p.url}=w300`} alt={p.location ? `Ảnh chụp tại ${p.location}` : "Ảnh kỷ niệm"} className={styles.thumbnail} loading="lazy" />
+                  <img src={`${p.url}=w300`} alt={p.location ? `Ảnh chụp tại ${p.location}` : "Ảnh kỷ niệm"} referrerPolicy="no-referrer" className={styles.thumbnail} loading="lazy" />
                   {p.isVideo && (
                     <div className={styles.videoOverlay}>
                       <span>▶️</span>
@@ -116,19 +133,21 @@ export default function PhotosPage() {
                 {ALL_PHOTOS[selectedIdx].isVideo ? (
                   <video 
                     key={selectedIdx} // Force recreate DOM element on index change to play new video stream
+                    src={videoSrc}
                     controls 
                     autoPlay 
                     playsInline 
+                    referrerPolicy="no-referrer"
+                    onError={handleVideoError}
                     className={styles.largeVideo}
                   >
-                    <source src={`${ALL_PHOTOS[selectedIdx].url}=m22`} type="video/mp4" />
-                    <source src={`${ALL_PHOTOS[selectedIdx].url}=m18`} type="video/mp4" />
                     Trình duyệt không hỗ trợ xem video này.
                   </video>
                 ) : (
                   <img 
                     src={`${ALL_PHOTOS[selectedIdx].url}=w800`} 
                     alt={ALL_PHOTOS[selectedIdx].location ? `Ảnh chụp tại ${ALL_PHOTOS[selectedIdx].location}` : "Ảnh kỷ niệm"} 
+                    referrerPolicy="no-referrer"
                     className={styles.largeImg} 
                   />
                 )}
