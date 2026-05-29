@@ -189,16 +189,18 @@ export default function HousePage() {
       
       const interval = setInterval(() => {
         const d = (Date.now() - new Date(farm.planted_at + 'Z').getTime()) / 1000;
-        setFarmTimeLeft(Math.max(0, Math.ceil(30 - d)));
-      }, 1000);
+        setFarmTimeLeft(Math.max(0, 30 - d));
+      }, 100);
 
       // Initialize right away
-      setFarmTimeLeft(Math.max(0, Math.ceil(30 - diff / 1000)));
+      setFarmTimeLeft(Math.max(0, 30 - diff / 1000));
 
       return () => {
         clearTimeout(timeout);
         clearInterval(interval);
       };
+    } else {
+      setFarmTimeLeft(0);
     }
   }, [farm]);
 
@@ -905,7 +907,9 @@ export default function HousePage() {
       toast.error('Lỗi kết nối');
     } finally {
       setActionLoading(false);
-      setShowFarmMenu(false);
+      if (endpoint !== 'plant') {
+        setShowFarmMenu(false);
+      }
       setShowHouseMenu(false);
     }
   };
@@ -980,6 +984,19 @@ export default function HousePage() {
   };
 
   const isLocked = !farm || farm.level === 0;
+
+  const getGrowingProgress = () => {
+    if (!farm || farm.state !== 'growing' || !farm.planted_at) {
+      return { remaining: 0, percent: 0, isReady: farm?.state === 'ready' };
+    }
+    const diff = (Date.now() - new Date(farm.planted_at + 'Z').getTime()) / 1000;
+    const remaining = Math.max(0, 30 - diff);
+    const percent = Math.min(100, Math.max(0, (diff / 30) * 100));
+    const isReady = remaining <= 0;
+    return { remaining: Math.ceil(remaining), percent, isReady };
+  };
+
+  const progress = getGrowingProgress();
 
   // Aggregate cows from inventory and backpack
   const getAvailableCows = () => {
@@ -1097,8 +1114,51 @@ export default function HousePage() {
               <div style={{ textAlign: 'center', fontSize: '1rem', marginBottom: '8px', color: 'var(--px-amber)' }}>
                 {isLocked && "Ruộng đang bỏ hoang."}
                 {!isLocked && farm.state === 'idle' && `Sẵn sàng gieo hạt. (Sản lượng: ${farm.yield} Lúa)`}
-                {!isLocked && farm.state === 'growing' && farmTimeLeft > 0 && <span>Đang chờ lúa lớn... <span style={{color: '#4ade80'}}>({farmTimeLeft}s)</span></span>}
-                {!isLocked && ((farm.state === 'growing' && farmTimeLeft <= 0) || farm.state === 'ready') && <span style={{color: '#4ade80'}}>Lúa đã chín!</span>}
+                {!isLocked && farm.state === 'growing' && !progress.isReady && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+                    <span>Đang chờ lúa lớn... <span style={{color: '#4ade80'}}>({progress.remaining}s)</span></span>
+                    
+                    {/* Beautiful Retro Pixel-Art Loading Bar */}
+                    <div style={{
+                      width: '100%',
+                      height: '28px',
+                      background: '#1e293b',
+                      border: '4px solid #475569',
+                      padding: '3px',
+                      boxSizing: 'border-box',
+                      position: 'relative',
+                      imageRendering: 'pixelated',
+                      boxShadow: 'inset 0 0 8px rgba(0,0,0,0.8)'
+                    }}>
+                      <div style={{
+                        width: `${progress.percent}%`,
+                        height: '100%',
+                        background: 'linear-gradient(90deg, #15803d, #22c55e, #4ade80)',
+                        boxShadow: '0 2px 0 rgba(255,255,255,0.4) inset, 0 -2px 0 rgba(0,0,0,0.2) inset',
+                        transition: 'width 0.1s linear'
+                      }} />
+                      <span style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#fff',
+                        fontSize: '11px',
+                        fontFamily: 'var(--font-pixel)',
+                        fontWeight: 'bold',
+                        textShadow: '2px 2px 0 #000',
+                        letterSpacing: '1px'
+                      }}>
+                        {Math.round(progress.percent)}%
+                      </span>
+                    </div>
+                  </div>
+                )}
+                {!isLocked && (farm.state === 'ready' || (farm.state === 'growing' && progress.isReady)) && <span style={{color: '#4ade80'}}>Lúa đã chín!</span>}
               </div>
 
               {isLocked && (
@@ -1113,7 +1173,7 @@ export default function HousePage() {
                 </button>
               )}
 
-              {!isLocked && ((farm.state === 'growing' && farmTimeLeft <= 0) || farm.state === 'ready') && (
+              {!isLocked && (farm.state === 'ready' || (farm.state === 'growing' && progress.isReady)) && (
                 <button className="btn btn-primary" onClick={() => handleAction('harvest')} disabled={actionLoading} style={{ background: '#e6c229', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                   {!actionLoading && <img src={sickleIcon} alt="Cái liềm" style={{ width: '20px', imageRendering: 'pixelated' }} />}
                   {actionLoading ? 'ĐANG THU HOẠCH...' : `[ THU HOẠCH +${farm.yield} LÚA ]`}
