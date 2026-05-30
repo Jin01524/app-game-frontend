@@ -167,6 +167,25 @@ export default function WerewolfPage() {
     setInRoom(true);
   };
 
+  const handleCreateRoom = () => {
+    if (!socket) return;
+    
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    let randomId = '';
+    for (let i = 0; i < 5; i++) {
+      randomId += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    const newRoomId = `ww-${randomId}`;
+    setRoomId(newRoomId);
+    
+    socket.emit('ww_join', {
+      roomId: newRoomId,
+      username: user.username,
+      displayName: user.displayName || user.username
+    });
+    setInRoom(true);
+  };
+
   const handleReady = () => {
     if (socket) socket.emit('ww_ready');
   };
@@ -204,19 +223,38 @@ export default function WerewolfPage() {
             <button className={styles.closeBtn} onClick={() => navigate('/utilities')}>✕</button>
           </header>
           
-          <div className={`${styles.joinBox} rpg-box fade-in fade-in-delay-1`}>
-            <h2>Nhập Mã Phòng</h2>
-            <form onSubmit={joinRoom} className={styles.joinForm}>
-              <input
-                type="text"
-                placeholder="VD: phong123"
-                value={roomId}
-                onChange={e => setRoomId(e.target.value)}
-                maxLength={20}
-                required
-              />
-              <button type="submit" className="btn btn-primary">Vào Phòng</button>
-            </form>
+          <div className={`${styles.joinBox} rpg-box fade-in fade-in-delay-1`} style={{ maxWidth: '400px', margin: '2rem auto' }}>
+            <h2>Tham Gia Game Ma Sói</h2>
+            
+            {/* Tạo phòng */}
+            <div style={{ marginBottom: '1.5rem', borderBottom: '2px dashed #4b5563', paddingBottom: '1.5rem', textAlign: 'center' }}>
+              <p style={{ fontSize: '0.85rem', color: '#9ca3af', marginBottom: '12px' }}>
+                Bắt đầu một phòng chơi mới với tư cách Chủ phòng (Host)
+              </p>
+              <button onClick={handleCreateRoom} className="btn btn-primary" style={{ background: '#10b981', borderColor: '#059669', width: '100%' }}>
+                👑 Tạo Phòng Mới
+              </button>
+            </div>
+
+            {/* Vào phòng */}
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ fontSize: '0.85rem', color: '#9ca3af', marginBottom: '12px' }}>
+                Hoặc nhập mã phòng hiện có để tham gia cùng bạn bè
+              </p>
+              <form onSubmit={joinRoom} className={styles.joinForm}>
+                <input
+                  type="text"
+                  placeholder="Nhập mã phòng (VD: phong123)"
+                  value={roomId}
+                  onChange={e => setRoomId(e.target.value)}
+                  maxLength={20}
+                  required
+                />
+                <button type="submit" className="btn btn-outline" style={{ width: '100%' }}>
+                  🚪 Vào Phòng
+                </button>
+              </form>
+            </div>
           </div>
         </main>
         <BottomNav />
