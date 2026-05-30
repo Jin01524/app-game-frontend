@@ -359,7 +359,7 @@ export default function WerewolfPage() {
                     <button className="btn btn-primary" onClick={saveDeck} style={{ flex: 1 }}>
                       LƯU BỘ BÀI
                     </button>
-                    <button className="btn btn-outline" onClick={() => setShowDeckEditor(false)} style={{ flex: 1 }}>
+                    <button className={`btn btn-outline ${styles.btnCancel}`} onClick={() => setShowDeckEditor(false)} style={{ flex: 1 }}>
                       HỦY BỎ
                     </button>
                   </div>
@@ -385,7 +385,7 @@ export default function WerewolfPage() {
                   <button className="btn btn-outline" onClick={openDeckEditor} style={{ background: '#3b82f6', borderColor: '#2563eb', color: '#fff' }}>
                     ⚙️ Cấu Hình Bộ Bài Custom
                   </button>
-                  <button className="btn btn-outline" onClick={() => {
+                  <button className={`btn btn-outline ${styles.btnDefaultDeck}`} onClick={() => {
                      socket.emit('ww_update_settings', {
                        rolesList: ['MA_SOI', 'MA_SOI', 'TIEN_TRI', 'PHU_THUY', 'DAN_LANG', 'DAN_LANG', 'DAN_LANG', 'DAN_LANG']
                      });

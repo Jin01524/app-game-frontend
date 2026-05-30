@@ -418,10 +418,12 @@
   font-weight: bold;
   min-width: 24px;
   text-align: center;
+  color: #fbbf24;
 }
 
 .deckStats {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.05);
+  color: #000000 !important;
   padding: 10px;
   border-radius: 6px;
   margin-bottom: 1rem;
@@ -430,7 +432,31 @@
 }
 
 .deckStatsHighlight {
-  color: #fbbf24;
+  color: #c2410c;
   font-weight: bold;
+}
+
+.btnCancel {
+  background: #ef4444 !important;
+  border-color: #b91c1c !important;
+  color: #ffffff !important;
+  box-shadow: 3px 3px 0 #b91c1c !important;
+}
+
+.btnCancel:active {
+  transform: translate(3px, 3px);
+  box-shadow: 0 0 0 #b91c1c !important;
+}
+
+.btnDefaultDeck {
+  background: rgb(59, 130, 246) !important;
+  border-color: rgb(37, 99, 235) !important;
+  color: #ffffff !important;
+  box-shadow: 3px 3px 0 rgb(37, 99, 235) !important;
+}
+
+.btnDefaultDeck:active {
+  transform: translate(3px, 3px);
+  box-shadow: 0 0 0 rgb(37, 99, 235) !important;
 }
 
