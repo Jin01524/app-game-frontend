@@ -1,0 +1,224 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  position: relative;
+  background-color: #2c2f33; /* default neutral dark */
+  transition: background-color 0.5s ease;
+}
+
+.dayMode {
+  background-color: #a3c2c2; /* bright daytime */
+}
+
+.nightMode {
+  background-color: #1a1a2e; /* very dark night */
+}
+
+.main {
+  flex: 1;
+  padding: 1rem;
+  padding-bottom: 5rem;
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.header {
+  padding: 0;
+}
+
+.joinBox {
+  padding: 2rem;
+  text-align: center;
+}
+
+.joinBox h2 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: #fbbf24;
+}
+
+.joinForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+}
+
+.joinForm input {
+  padding: 0.75rem;
+  border: 2px solid #555;
+  border-radius: 8px;
+  background: #222;
+  color: #fff;
+  font-size: 1.2rem;
+  text-align: center;
+  width: 100%;
+  max-width: 300px;
+}
+
+.lobbyBox {
+  padding: 1rem;
+}
+
+.lobbyBox h3 {
+  margin-top: 0;
+  border-bottom: 2px solid #444;
+  padding-bottom: 0.5rem;
+  color: #60a5fa;
+}
+
+.playerList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.playerItem {
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #444;
+  border-radius: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.playerItem.ready {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.status {
+  font-size: 0.85rem;
+  color: #9ca3af;
+}
+
+.playerItem.ready .status {
+  color: #10b981;
+  font-weight: bold;
+}
+
+.hostSettings {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.hostSettings h4 {
+  margin: 0 0 0.5rem 0;
+  color: #fbbf24;
+}
+
+.hostSettings label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.deckSelector {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #444;
+}
+
+.lobbyActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.lobbyActions button {
+  flex: 1;
+}
+
+/* In-game */
+.gameHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0;
+}
+
+.timer {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #ef4444;
+  padding-right: 1rem;
+}
+
+.myInfo {
+  padding: 1rem;
+  text-align: center;
+}
+
+.myInfo h3 {
+  margin: 0;
+  color: #10b981;
+}
+
+.deadText {
+  color: #ef4444;
+  font-weight: bold;
+  margin: 0.5rem 0 0 0;
+}
+
+.sheriffText {
+  color: #fbbf24;
+  font-weight: bold;
+  margin: 0.5rem 0 0 0;
+}
+
+.actionPanel {
+  padding: 1rem;
+  text-align: center;
+  border-color: #fbbf24;
+}
+
+.actionPanel h3 {
+  margin: 0 0 0.5rem 0;
+  color: #fbbf24;
+}
+
+.ingamePlayers {
+  padding: 1rem;
+}
+
+.ingamePlayers h3 {
+  margin-top: 0;
+}
+
+.playerItem.dead {
+  opacity: 0.5;
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
+}
+
+.pRole {
+  color: #fbbf24;
+  font-size: 0.85rem;
+  margin-left: 0.5rem;
+}
+
+.voteBadge {
+  background: #ef4444;
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}

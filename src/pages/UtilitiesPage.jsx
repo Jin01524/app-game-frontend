@@ -79,7 +79,7 @@ export default function UtilitiesPage() {
                     } else if (u.key === 'gold') {
                       navigate('/utilities/gold');
                     } else if (u.key === 'werewolf') {
-                      toast.info('Trò chơi Ma Sói đang được phát triển!');
+                      navigate('/utilities/werewolf');
                     }
                   }}
                 >

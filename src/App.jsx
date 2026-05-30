@@ -18,6 +18,7 @@ import TarotPage from './pages/TarotPage';
 import SpyPage from './pages/SpyPage';
 import GoldPage from './pages/GoldPage';
 import MessagingPage from './pages/MessagingPage';
+import WerewolfPage from './pages/WerewolfPage';
 
 
 // Guard: only admin can access, others redirect to /
@@ -70,6 +71,9 @@ export default function App() {
           />
           <Route path="/utilities/messaging"
             element={<ProtectedRoute><MessagingPage /></ProtectedRoute>}
+          />
+          <Route path="/utilities/werewolf"
+            element={<ProtectedRoute><WerewolfPage /></ProtectedRoute>}
           />
 
           <Route path="/lobby"
