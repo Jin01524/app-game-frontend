@@ -456,3 +456,203 @@
   .container { padding: 10px; }
   .statNum { font-size: 1.5rem; }
 }
+
+/* ── Admin Tabs ── */
+.tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.tabBtn {
+  flex: 1;
+  padding: 10px 6px;
+  background: #fff;
+  border: 3px solid var(--px-border);
+  color: var(--px-text-dim);
+  font-family: var(--font-pixel);
+  font-size: 0.70rem;
+  text-align: center;
+  border-radius: 4px;
+  box-shadow: 2px 2px 0 var(--px-border);
+  cursor: crosshair !important;
+  transition: all 0.1s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.tabBtn:hover {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--px-border);
+  background: var(--px-bg2);
+}
+
+.tabBtnActive {
+  background: var(--px-green) !important;
+  color: #fff !important;
+  border-color: var(--px-green) !important;
+  box-shadow: inset 2px 2px 0 rgba(0,0,0,0.15) !important;
+  transform: none !important;
+}
+
+/* ── Logs Filter Bar ── */
+.filterBar {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  margin-top: -4px;
+  /* hide scrollbar */
+  scrollbar-width: none; /* Firefox */
+}
+.filterBar::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+.filterBtn {
+  flex-shrink: 0;
+  padding: 6px 10px;
+  background: #fff;
+  border: 2px solid var(--px-border);
+  color: var(--px-text-mid);
+  font-family: var(--font-pixel);
+  font-size: 0.65rem;
+  border-radius: 4px;
+  box-shadow: 2px 2px 0 var(--px-border);
+  cursor: crosshair !important;
+  transition: all 0.08s ease;
+}
+
+.filterBtn:hover {
+  background: var(--px-bg2);
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--px-border);
+}
+
+.filterBtnActive {
+  background: var(--px-blue) !important;
+  color: #fff !important;
+  border-color: var(--px-blue) !important;
+  box-shadow: inset 1px 1px 0 rgba(0,0,0,0.15) !important;
+  transform: none !important;
+}
+
+/* ── Activity Logs Viewer ── */
+.logsWrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.logsScroll {
+  max-height: 480px;
+  overflow-y: auto;
+  padding-right: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Custom scrollbar for retro logs */
+.logsScroll::-webkit-scrollbar {
+  width: 6px;
+}
+.logsScroll::-webkit-scrollbar-track {
+  background: var(--px-bg2);
+  border: 1px solid var(--px-border);
+  border-radius: 3px;
+}
+.logsScroll::-webkit-scrollbar-thumb {
+  background: var(--px-border);
+  border-radius: 3px;
+}
+
+.logRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  background: #fff;
+  border-radius: 4px;
+  animation: px-fade-in 0.25s steps(4) both;
+}
+
+.logRow:hover {
+  background: var(--px-bg2);
+}
+
+.logHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.logUser {
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--px-text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.catTag {
+  font-size: 0.8rem;
+  padding: 2px 4px;
+  border-radius: 3px;
+  border: 1px solid;
+  line-height: 1;
+}
+
+.catGeneral { background: #f1f5f9; border-color: #cbd5e1; }
+.catLogin   { background: #e0f2fe; border-color: #bae6fd; }
+.catFarming { background: #fef08a; border-color: #fef08a; }
+.catMarket  { background: #fed7aa; border-color: #ffedd5; }
+.catGame    { background: #fbcfe8; border-color: #fce7f3; }
+.catUtility { background: #e9d5ff; border-color: #f3e8ff; }
+.catCoin    { background: #fef08a; border-color: #fef08a; }
+
+.logTime {
+  font-family: 'Courier New', monospace;
+  font-size: 0.72rem;
+  color: var(--px-text-dim);
+}
+
+.logBody {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.logDetails {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: var(--px-text-mid);
+  line-height: 1.4;
+  flex: 1;
+}
+
+.logXu {
+  font-family: var(--font-pixel);
+  font-size: 0.70rem;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.xuPositive {
+  background: #dcfce7;
+  color: #15803d;
+  border: 2.5px solid #15803d;
+}
+
+.xuNegative {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 2.5px solid #b91c1c;
+}

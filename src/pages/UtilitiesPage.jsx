@@ -26,6 +26,14 @@ export default function UtilitiesPage() {
   const { authFetch, user } = useAuth();
   const [hasUnread, setHasUnread] = useState(false);
 
+  const logUtilityAccess = (key, name) => {
+    authFetch('/api/profile/log-utility', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ utilityKey: key, utilityName: name })
+    }).catch(err => console.error('Failed to log utility access:', err));
+  };
+
   useEffect(() => {
     if (!user) return;
     const checkUnread = async () => {
@@ -64,6 +72,7 @@ export default function UtilitiesPage() {
                   key={u.key}
                   className={styles.gridItem}
                   onClick={() => {
+                    logUtilityAccess(u.key, u.name);
                     if (u.key === 'calculator') {
                       navigate('/utilities/calculator');
                     } else if (u.key === 'photos') {

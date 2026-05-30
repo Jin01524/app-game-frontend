@@ -198,6 +198,7 @@ export default function AdminPage() {
   const { authFetch, user: me } = useAuth();
   const navigate = useNavigate();
 
+  const [activeTab, setActiveTab] = useState('users'); // 'users' | 'config' | 'logs'
   const [users, setUsers]       = useState([]);
   const [loading, setLoading]   = useState(true);
   const [search, setSearch]     = useState('');
@@ -214,6 +215,12 @@ export default function AdminPage() {
     market_cow_price: 200, market_rom_price: 5
   });
   const [savingGameSettings, setSavingGameSettings] = useState(false);
+
+  // Activity logs states
+  const [logs, setLogs] = useState([]);
+  const [logsLoading, setLogsLoading] = useState(false);
+  const [logsSearch, setLogsSearch] = useState('');
+  const [logsFilter, setLogsFilter] = useState('all');
 
   const showToast = (msg, type = 'success') => setToast({ msg, type });
 
@@ -237,7 +244,24 @@ export default function AdminPage() {
     } catch {}
   }, [authFetch]);
 
-  useEffect(() => { loadUsers(); loadSettings(); }, [loadUsers, loadSettings]);
+  const loadLogs = useCallback(async () => {
+    setLogsLoading(true);
+    try {
+      const res = await authFetch('/api/admin/logs');
+      if (res.ok) setLogs(await res.json());
+    } catch { showToast('Không tải được nhật ký', 'error'); }
+    finally { setLogsLoading(false); }
+  }, [authFetch]);
+
+  useEffect(() => {
+    if (activeTab === 'users') {
+      loadUsers();
+    } else if (activeTab === 'config') {
+      loadSettings();
+    } else if (activeTab === 'logs') {
+      loadLogs();
+    }
+  }, [activeTab, loadUsers, loadSettings, loadLogs]);
 
   const handleSaveSettings = async () => {
     setSavingSettings(true);
@@ -273,6 +297,37 @@ export default function AdminPage() {
     u.username.includes(search.toLowerCase()) ||
     (u.displayName || '').toLowerCase().includes(search.toLowerCase())
   );
+
+  const FILTER_OPTIONS = [
+    { key: 'all', label: 'Tất cả' },
+    { key: 'login', label: '🔐 Đăng nhập' },
+    { key: 'farming', label: '🌾 Nông trại' },
+    { key: 'market', label: '🛒 Chợ' },
+    { key: 'game', label: '⚽ Trò chơi' },
+    { key: 'utility', label: '⚙️ Tiện ích' },
+    { key: 'coin', label: '🪙 Biến động xu' }
+  ];
+
+  const filteredLogs = logs.filter(log => {
+    // 1. Category Filter
+    if (logsFilter === 'login' && log.action_type !== 'login') return false;
+    if (logsFilter === 'farming' && !log.action_type.startsWith('farming_')) return false;
+    if (logsFilter === 'market' && !log.action_type.startsWith('market_')) return false;
+    if (logsFilter === 'game' && log.action_type !== 'game_play') return false;
+    if (logsFilter === 'utility' && log.action_type !== 'utility_access') return false;
+    if (logsFilter === 'coin' && !log.action_type.startsWith('coin_transfer_') && log.xu_change === 0) return false;
+    
+    // 2. Search Text
+    const q = logsSearch.toLowerCase();
+    if (q) {
+      const matchUser = log.username.toLowerCase().includes(q);
+      const matchDetails = (log.details || '').toLowerCase().includes(q);
+      const matchAction = log.action_type.toLowerCase().includes(q);
+      return matchUser || matchDetails || matchAction;
+    }
+    
+    return true;
+  });
 
   const handleCreate = async (form) => {
     const res = await authFetch('/api/admin/users', {
@@ -320,8 +375,17 @@ export default function AdminPage() {
             <h1 className={styles.headerTitle}>[ QUẢN TRỊ VIÊN ]</h1>
             <p className={styles.headerSub}>TỆ LẠN 4.2 OS</p>
           </div>
-          <button className={styles.refreshBtn} onClick={loadUsers} aria-label="Làm mới" disabled={loading}>
-            <span className={loading ? styles.spinning : ''}><Refresh /></span>
+          <button
+            className={styles.refreshBtn}
+            onClick={() => {
+              if (activeTab === 'users') loadUsers();
+              else if (activeTab === 'config') loadSettings();
+              else if (activeTab === 'logs') loadLogs();
+            }}
+            aria-label="Làm mới"
+            disabled={loading || logsLoading}
+          >
+            <span className={(loading || logsLoading) ? styles.spinning : ''}><Refresh /></span>
           </button>
         </header>
 
@@ -343,162 +407,287 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* Settings & Preview */}
-        <div className={`${styles.statsBar} rpg-box fade-in fade-in-delay-1`} style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'stretch' }}>
-          <div className="px-titlebar">◄ CẤU HÌNH MINI-GAME ►</div>
-          <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-            <div style={{ flex: 1, minWidth: '250px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div className="input-group">
-                <label className="input-label">Tốc độ chạy GK (Level 1): {settings.gkBaseSpeed}</label>
-                <input type="range" min="0.5" max="5" step="0.1" value={settings.gkBaseSpeed} onChange={e => setSettings({...settings, gkBaseSpeed: Number(e.target.value)})} style={{width: '100%'}} />
-              </div>
-              <div className="input-group">
-                <label className="input-label">Độ rộng Khung thành (%): {settings.goalWidth}%</label>
-                <input type="range" min="30" max="100" step="5" value={settings.goalWidth} onChange={e => setSettings({...settings, goalWidth: Number(e.target.value)})} style={{width: '100%'}} />
-              </div>
-              <div className="input-group">
-                <label className="input-label">Tốc độ nhắm sút (Aim): {settings.aimSpeed}</label>
-                <input type="range" min="0.5" max="5" step="0.1" value={settings.aimSpeed} onChange={e => setSettings({...settings, aimSpeed: Number(e.target.value)})} style={{width: '100%'}} />
-              </div>
-              <button className="btn btn-primary" onClick={handleSaveSettings} disabled={savingSettings}>
-                {savingSettings ? 'ĐANG LƯU...' : '[ LƯU CẤU HÌNH ]'}
-              </button>
-            </div>
-            <div style={{ flex: 1, minWidth: '300px' }}>
-              <div style={{ padding: '4px', background: '#222', borderRadius: '4px' }}>
-                <PenaltyGame previewSettings={settings} onGoal={() => {}} onMiss={() => {}} xu={9999} />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Game Settings (Farm & Market) */}
-        <div className={`${styles.statsBar} rpg-box fade-in fade-in-delay-1`} style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'stretch' }}>
-          <div className="px-titlebar">◄ CẤU HÌNH NÔNG TRẠI & CHỢ ►</div>
-          <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-            <div style={{ flex: 1, minWidth: '250px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <h3 style={{ fontSize: '14px', color: '#1e3a8a', borderBottom: '2px solid #1e3a8a', paddingBottom: '4px' }}>Cấu hình Nông Trại</h3>
-              <div className="input-group">
-                <label className="input-label">Thời gian lúa chín (giây): {gameSettings.farm_crop_growth_time}s</label>
-                <input type="range" min="5" max="300" step="5" value={gameSettings.farm_crop_growth_time} onChange={e => setGameSettings({...gameSettings, farm_crop_growth_time: Number(e.target.value)})} style={{width: '100%'}} />
-              </div>
-              <div className="input-group">
-                <label className="input-label">Sản lượng lúa cơ bản (Level 1): {gameSettings.farm_crop_yield_base}</label>
-                <input type="range" min="1" max="50" step="1" value={gameSettings.farm_crop_yield_base} onChange={e => setGameSettings({...gameSettings, farm_crop_yield_base: Number(e.target.value)})} style={{width: '100%'}} />
-              </div>
-              <div className="input-group">
-                <label className="input-label">Sản lượng lúa tăng mỗi cấp: {gameSettings.farm_crop_yield_step}</label>
-                <input type="range" min="1" max="20" step="1" value={gameSettings.farm_crop_yield_step} onChange={e => setGameSettings({...gameSettings, farm_crop_yield_step: Number(e.target.value)})} style={{width: '100%'}} />
-              </div>
-              <div className="input-group">
-                <label className="input-label">Thời gian bò tiêu thụ 1 rơm (giây): {gameSettings.farm_cow_straw_time}s</label>
-                <input type="range" min="10" max="1800" step="10" value={gameSettings.farm_cow_straw_time} onChange={e => setGameSettings({...gameSettings, farm_cow_straw_time: Number(e.target.value)})} style={{width: '100%'}} />
-              </div>
-              <div className="input-group">
-                <label className="input-label">Thời gian bò tạo sữa (giây): {gameSettings.farm_cow_milk_time}s</label>
-                <input type="range" min="10" max="3600" step="10" value={gameSettings.farm_cow_milk_time} onChange={e => setGameSettings({...gameSettings, farm_cow_milk_time: Number(e.target.value)})} style={{width: '100%'}} />
-              </div>
-              <div className="input-group">
-                <label className="input-label">Sức chứa tối đa của chuồng: {gameSettings.farm_cage_max_animals} con</label>
-                <input type="range" min="1" max="20" step="1" value={gameSettings.farm_cage_max_animals} onChange={e => setGameSettings({...gameSettings, farm_cage_max_animals: Number(e.target.value)})} style={{width: '100%'}} />
-              </div>
-            </div>
-
-            <div style={{ flex: 1, minWidth: '250px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <h3 style={{ fontSize: '14px', color: '#1e3a8a', borderBottom: '2px solid #1e3a8a', paddingBottom: '4px' }}>Cấu hình Chợ</h3>
-              <div className="input-group">
-                <label className="input-label">Giá mua bò (Xu): {gameSettings.market_cow_price}</label>
-                <input type="number" className="input-field" style={{ paddingLeft: '8px' }} value={gameSettings.market_cow_price} onChange={e => setGameSettings({...gameSettings, market_cow_price: Number(e.target.value)})} />
-              </div>
-              <div className="input-group">
-                <label className="input-label">Giá mua rơm (Xu/Cái): {gameSettings.market_rom_price}</label>
-                <input type="number" className="input-field" style={{ paddingLeft: '8px' }} value={gameSettings.market_rom_price} onChange={e => setGameSettings({...gameSettings, market_rom_price: Number(e.target.value)})} />
-              </div>
-              <button className="btn btn-primary" style={{ marginTop: 'auto' }} onClick={handleSaveGameSettings} disabled={savingGameSettings}>
-                {savingGameSettings ? 'ĐANG LƯU...' : '[ LƯU CẤU HÌNH NÔNG TRẠI & CHỢ ]'}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Search + Add */}
-        <div className={`${styles.toolbar} fade-in fade-in-delay-2`}>
-          <div className={styles.searchWrap}>
-            <span className={styles.searchIcon}>&gt;</span>
-            <input
-              className={styles.searchInput}
-              placeholder="nhập từ khóa tìm kiếm..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-          </div>
+        {/* Tab Selection */}
+        <div className={`${styles.tabs} fade-in fade-in-delay-1`}>
           <button
-            id="btn-add-user"
-            className={`btn btn-primary ${styles.addBtn}`}
-            onClick={() => setModal('add')}
+            className={`${styles.tabBtn} ${activeTab === 'users' ? styles.tabBtnActive : ''}`}
+            onClick={() => setActiveTab('users')}
           >
-            [ + ] THÊM MỚI
+            👥 TÀI KHOẢN
+          </button>
+          <button
+            className={`${styles.tabBtn} ${activeTab === 'config' ? styles.tabBtnActive : ''}`}
+            onClick={() => setActiveTab('config')}
+          >
+            ⚙️ CẤU HÌNH
+          </button>
+          <button
+            className={`${styles.tabBtn} ${activeTab === 'logs' ? styles.tabBtnActive : ''}`}
+            onClick={() => setActiveTab('logs')}
+          >
+            📜 NHẬT KÝ
           </button>
         </div>
 
-        {/* User list */}
-        <div className={`${styles.listWrap} fade-in fade-in-delay-2`}>
-          {loading ? (
-            <div className={styles.loadingWrap}>
-              <div className="spinner" style={{ width: 32, height: 32, borderWidth: 3 }} />
-            </div>
-          ) : filtered.length === 0 ? (
-            <div className={styles.empty}>Không tìm thấy tài khoản nào</div>
-          ) : (
-            filtered.map((u, i) => {
-              const isMe = u.id === me?.id;
-              const initials = (u.username || 'U')[0].toUpperCase();
-              return (
-                <div
-                  key={u.id}
-                  className={`${styles.userRow} rpg-box`}
-                  style={{ animationDelay: `${i * 0.04}s` }}
-                >
-                  <div className={`${styles.userAvatar} ${u.role === 'admin' ? styles.userAvatarAdmin : ''}`}>
-                    {initials}
+        {/* --- CONFIG TAB --- */}
+        {activeTab === 'config' && (
+          <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {/* Settings & Preview */}
+            <div className={`${styles.statsBar} rpg-box`} style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'stretch' }}>
+              <div className="px-titlebar">◄ CẤU HÌNH MINI-GAME ►</div>
+              <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+                <div style={{ flex: 1, minWidth: '250px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div className="input-group">
+                    <label className="input-label">Tốc độ chạy GK (Level 1): {settings.gkBaseSpeed}</label>
+                    <input type="range" min="0.5" max="5" step="0.1" value={settings.gkBaseSpeed} onChange={e => setSettings({...settings, gkBaseSpeed: Number(e.target.value)})} style={{width: '100%'}} />
                   </div>
-                  <div className={styles.userInfo}>
-                    <div className={styles.userNameRow}>
-                      <span className={styles.userName}>{u.displayName || u.username}</span>
-                      {isMe && <span className={styles.meBadge}>Tôi</span>}
-                    </div>
-                    <div className={styles.userMeta}>
-                      <span className={styles.userUsername}>@{u.username}</span>
-                      <span className={`${styles.roleBadge} ${u.role === 'admin' ? styles.roleBadgeAdmin : styles.roleBadgeUser}`}>
-                        {u.role === 'admin' ? <><Shield /> Admin</> : <><UserIc /> User</>}
-                      </span>
-                      <span className={styles.xuBadge}>
-                        <CoinIc /> {(u.xu ?? 0).toLocaleString('vi-VN')} xu
-                      </span>
-                    </div>
+                  <div className="input-group">
+                    <label className="input-label">Độ rộng Khung thành (%): {settings.goalWidth}%</label>
+                    <input type="range" min="30" max="100" step="5" value={settings.goalWidth} onChange={e => setSettings({...settings, goalWidth: Number(e.target.value)})} style={{width: '100%'}} />
                   </div>
-                  <div className={styles.userActions}>
-                    <button
-                      className={styles.actionBtn}
-                      title="Sửa"
-                      onClick={() => setModal({ edit: u })}
-                    >
-                      <Edit />
-                    </button>
-                    <button
-                      className={`${styles.actionBtn} ${styles.actionBtnDanger}`}
-                      title="Xóa"
-                      onClick={() => setDelTarget(u)}
-                      disabled={isMe}
-                    >
-                      <Trash />
-                    </button>
+                  <div className="input-group">
+                    <label className="input-label">Tốc độ nhắm sút (Aim): {settings.aimSpeed}</label>
+                    <input type="range" min="0.5" max="5" step="0.1" value={settings.aimSpeed} onChange={e => setSettings({...settings, aimSpeed: Number(e.target.value)})} style={{width: '100%'}} />
+                  </div>
+                  <button className="btn btn-primary" onClick={handleSaveSettings} disabled={savingSettings}>
+                    {savingSettings ? 'ĐANG LƯU...' : '[ LƯU CẤU HÌNH ]'}
+                  </button>
+                </div>
+                <div style={{ flex: 1, minWidth: '300px' }}>
+                  <div style={{ padding: '4px', background: '#222', borderRadius: '4px' }}>
+                    <PenaltyGame previewSettings={settings} onGoal={() => {}} onMiss={() => {}} xu={9999} />
                   </div>
                 </div>
-              );
-            })
-          )}
-        </div>
+              </div>
+            </div>
+
+            {/* Game Settings (Farm & Market) */}
+            <div className={`${styles.statsBar} rpg-box`} style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'stretch' }}>
+              <div className="px-titlebar">◄ CẤU HÌNH NÔNG TRẠI & CHỢ ►</div>
+              <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+                <div style={{ flex: 1, minWidth: '250px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <h3 style={{ fontSize: '14px', color: '#1e3a8a', borderBottom: '2px solid #1e3a8a', paddingBottom: '4px' }}>Cấu hình Nông Trại</h3>
+                  <div className="input-group">
+                    <label className="input-label">Thời gian lúa chín (giây): {gameSettings.farm_crop_growth_time}s</label>
+                    <input type="range" min="5" max="300" step="5" value={gameSettings.farm_crop_growth_time} onChange={e => setGameSettings({...gameSettings, farm_crop_growth_time: Number(e.target.value)})} style={{width: '100%'}} />
+                  </div>
+                  <div className="input-group">
+                    <label className="input-label">Sản lượng lúa cơ bản (Level 1): {gameSettings.farm_crop_yield_base}</label>
+                    <input type="range" min="1" max="50" step="1" value={gameSettings.farm_crop_yield_base} onChange={e => setGameSettings({...gameSettings, farm_crop_yield_base: Number(e.target.value)})} style={{width: '100%'}} />
+                  </div>
+                  <div className="input-group">
+                    <label className="input-label">Sản lượng lúa tăng mỗi cấp: {gameSettings.farm_crop_yield_step}</label>
+                    <input type="range" min="1" max="20" step="1" value={gameSettings.farm_crop_yield_step} onChange={e => setGameSettings({...gameSettings, farm_crop_yield_step: Number(e.target.value)})} style={{width: '100%'}} />
+                  </div>
+                  <div className="input-group">
+                    <label className="input-label">Thời gian bò tiêu thụ 1 rơm (giây): {gameSettings.farm_cow_straw_time}s</label>
+                    <input type="range" min="10" max="1800" step="10" value={gameSettings.farm_cow_straw_time} onChange={e => setGameSettings({...gameSettings, farm_cow_straw_time: Number(e.target.value)})} style={{width: '100%'}} />
+                  </div>
+                  <div className="input-group">
+                    <label className="input-label">Thời gian bò tạo sữa (giây): {gameSettings.farm_cow_milk_time}s</label>
+                    <input type="range" min="10" max="3600" step="10" value={gameSettings.farm_cow_milk_time} onChange={e => setGameSettings({...gameSettings, farm_cow_milk_time: Number(e.target.value)})} style={{width: '100%'}} />
+                  </div>
+                  <div className="input-group">
+                    <label className="input-label">Sức chứa tối đa của chuồng: {gameSettings.farm_cage_max_animals} con</label>
+                    <input type="range" min="1" max="20" step="1" value={gameSettings.farm_cage_max_animals} onChange={e => setGameSettings({...gameSettings, farm_cage_max_animals: Number(e.target.value)})} style={{width: '100%'}} />
+                  </div>
+                </div>
+
+                <div style={{ flex: 1, minWidth: '250px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <h3 style={{ fontSize: '14px', color: '#1e3a8a', borderBottom: '2px solid #1e3a8a', paddingBottom: '4px' }}>Cấu hình Chợ</h3>
+                  <div className="input-group">
+                    <label className="input-label">Giá mua bò (Xu): {gameSettings.market_cow_price}</label>
+                    <input type="number" className="input-field" style={{ paddingLeft: '8px' }} value={gameSettings.market_cow_price} onChange={e => setGameSettings({...gameSettings, market_cow_price: Number(e.target.value)})} />
+                  </div>
+                  <div className="input-group">
+                    <label className="input-label">Giá mua rơm (Xu/Cái): {gameSettings.market_rom_price}</label>
+                    <input type="number" className="input-field" style={{ paddingLeft: '8px' }} value={gameSettings.market_rom_price} onChange={e => setGameSettings({...gameSettings, market_rom_price: Number(e.target.value)})} />
+                  </div>
+                  <button className="btn btn-primary" style={{ marginTop: 'auto' }} onClick={handleSaveGameSettings} disabled={savingGameSettings}>
+                    {savingGameSettings ? 'ĐANG LƯU...' : '[ LƯU CẤU HÌNH NÔNG TRẠI & CHỢ ]'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* --- USERS TAB --- */}
+        {activeTab === 'users' && (
+          <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {/* Search + Add */}
+            <div className={styles.toolbar}>
+              <div className={styles.searchWrap}>
+                <span className={styles.searchIcon}>&gt;</span>
+                <input
+                  className={styles.searchInput}
+                  placeholder="nhập từ khóa tìm kiếm..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                />
+              </div>
+              <button
+                id="btn-add-user"
+                className={`btn btn-primary ${styles.addBtn}`}
+                onClick={() => setModal('add')}
+              >
+                [ + ] THÊM MỚI
+              </button>
+            </div>
+
+            {/* User list */}
+            <div className={styles.listWrap}>
+              {loading ? (
+                <div className={styles.loadingWrap}>
+                  <div className="spinner" style={{ width: 32, height: 32, borderWidth: 3 }} />
+                </div>
+              ) : filtered.length === 0 ? (
+                <div className={styles.empty}>Không tìm thấy tài khoản nào</div>
+              ) : (
+                filtered.map((u, i) => {
+                  const isMe = u.id === me?.id;
+                  const initials = (u.username || 'U')[0].toUpperCase();
+                  return (
+                    <div
+                      key={u.id}
+                      className={`${styles.userRow} rpg-box`}
+                      style={{ animationDelay: `${i * 0.04}s` }}
+                    >
+                      <div className={`${styles.userAvatar} ${u.role === 'admin' ? styles.userAvatarAdmin : ''}`}>
+                        {initials}
+                      </div>
+                      <div className={styles.userInfo}>
+                        <div className={styles.userNameRow}>
+                          <span className={styles.userName}>{u.displayName || u.username}</span>
+                          {isMe && <span className={styles.meBadge}>Tôi</span>}
+                        </div>
+                        <div className={styles.userMeta}>
+                          <span className={styles.userUsername}>@{u.username}</span>
+                          <span className={`${styles.roleBadge} ${u.role === 'admin' ? styles.roleBadgeAdmin : styles.roleBadgeUser}`}>
+                            {u.role === 'admin' ? <><Shield /> Admin</> : <><UserIc /> User</>}
+                          </span>
+                          <span className={styles.xuBadge}>
+                            <CoinIc /> {(u.xu ?? 0).toLocaleString('vi-VN')} xu
+                          </span>
+                        </div>
+                      </div>
+                      <div className={styles.userActions}>
+                        <button
+                          className={styles.actionBtn}
+                          title="Sửa"
+                          onClick={() => setModal({ edit: u })}
+                        >
+                          <Edit />
+                        </button>
+                        <button
+                          className={`${styles.actionBtn} ${styles.actionBtnDanger}`}
+                          title="Xóa"
+                          onClick={() => setDelTarget(u)}
+                          disabled={isMe}
+                        >
+                          <Trash />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* --- LOGS TAB --- */}
+        {activeTab === 'logs' && (
+          <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {/* Search filter for logs */}
+            <div className={styles.toolbar}>
+              <div className={styles.searchWrap}>
+                <span className={styles.searchIcon}>&gt;</span>
+                <input
+                  className={styles.searchInput}
+                  placeholder="tìm tên user hoặc nội dung hoạt động..."
+                  value={logsSearch}
+                  onChange={e => setLogsSearch(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Quick Filter Category Tags */}
+            <div className={styles.filterBar}>
+              {FILTER_OPTIONS.map(opt => (
+                <button
+                  key={opt.key}
+                  className={`${styles.filterBtn} ${logsFilter === opt.key ? styles.filterBtnActive : ''}`}
+                  onClick={() => setLogsFilter(opt.key)}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Logs List Container */}
+            <div className={styles.logsWrap}>
+              {logsLoading ? (
+                <div className={styles.loadingWrap}>
+                  <div className="spinner" style={{ width: 32, height: 32, borderWidth: 3 }} />
+                </div>
+              ) : filteredLogs.length === 0 ? (
+                <div className={styles.empty}>Không tìm thấy bản ghi nhật ký nào</div>
+              ) : (
+                <div className={styles.logsScroll}>
+                  {filteredLogs.map((log) => {
+                    const isPositive = log.xu_change > 0;
+                    const isNegative = log.xu_change < 0;
+                    
+                    let timeStr = '';
+                    try {
+                      timeStr = new Date(log.created_at).toLocaleString('vi-VN', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                      });
+                    } catch (e) {
+                      timeStr = String(log.created_at);
+                    }
+                    
+                    let icon = '📝';
+                    let catClass = styles.catGeneral;
+                    if (log.action_type === 'login') { icon = '🔐'; catClass = styles.catLogin; }
+                    else if (log.action_type.startsWith('farming_')) { icon = '🌾'; catClass = styles.catFarming; }
+                    else if (log.action_type.startsWith('market_')) { icon = '🛒'; catClass = styles.catMarket; }
+                    else if (log.action_type === 'game_play') { icon = '⚽'; catClass = styles.catGame; }
+                    else if (log.action_type === 'utility_access') { icon = '⚙️'; catClass = styles.catUtility; }
+                    else if (log.action_type.startsWith('coin_transfer_')) { icon = '🪙'; catClass = styles.catCoin; }
+
+                    return (
+                      <div key={log.id} className={`${styles.logRow} rpg-box`}>
+                        <div className={styles.logHeader}>
+                          <span className={styles.logUser}>
+                            <span className={`${styles.catTag} ${catClass}`}>{icon}</span>
+                            @{log.username}
+                          </span>
+                          <span className={styles.logTime}>{timeStr}</span>
+                        </div>
+                        <div className={styles.logBody}>
+                          <span className={styles.logDetails}>{log.details || log.action_type}</span>
+                          {log.xu_change !== 0 && (
+                            <span className={`${styles.logXu} ${isPositive ? styles.xuPositive : styles.xuNegative}`}>
+                              {isPositive ? `+${log.xu_change}` : log.xu_change} xu
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
       </div>
 
       {/* Modals */}
