@@ -186,6 +186,17 @@ export default function WerewolfPage() {
     setInRoom(true);
   };
 
+  const handleCopyRoomCode = () => {
+    if (!gameState || !gameState.id) return;
+    navigator.clipboard.writeText(gameState.id)
+      .then(() => {
+        toast.success('Đã sao chép mã phòng vào bộ nhớ tạm!');
+      })
+      .catch(() => {
+        toast.error('Không thể sao chép mã phòng.');
+      });
+  };
+
   const handleReady = () => {
     if (socket) socket.emit('ww_ready');
   };
@@ -274,8 +285,26 @@ export default function WerewolfPage() {
         <PixelCanvas />
         <main className={styles.main}>
           <header className={`${styles.header} rpg-box`}>
-            <div className="px-titlebar">
-              <span>Phòng: {gameState.id.toUpperCase()}</span>
+            <div className="px-titlebar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: '8px' }}>
+              <span>Phòng: <strong style={{ color: '#fbbf24' }}>{gameState.id.toUpperCase()}</strong></span>
+              <button 
+                onClick={handleCopyRoomCode} 
+                style={{ 
+                  background: '#3b82f6', 
+                  border: '1px solid #2563eb', 
+                  color: '#fff', 
+                  fontSize: '0.7rem', 
+                  padding: '2px 8px', 
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  textTransform: 'uppercase',
+                  fontWeight: 'bold',
+                  boxShadow: '1px 1px 0px #1d4ed8'
+                }}
+              >
+                📋 Sao chép
+              </button>
             </div>
             <button className={styles.closeBtn} onClick={leaveRoom}>✕</button>
           </header>
