@@ -31,6 +31,7 @@
 
 .header {
   padding: 0;
+  position: relative;
 }
 
 .joinBox {
@@ -152,6 +153,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0;
+  position: relative;
 }
 
 .timer {
@@ -261,3 +263,98 @@
   padding: 1rem 0;
   color: #d1d5db;
 }
+
+.closeBtn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #ef4444;
+  color: #fff;
+  border: 2px solid #b91c1c;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.85rem;
+  font-weight: bold;
+  box-shadow: inset -2px -2px 0px #7f1d1d, inset 2px 2px 0px #fca5a5;
+  transition: all 0.05s ease;
+  z-index: 10;
+}
+
+.closeBtn:active {
+  transform: translateY(-50%) translate(1px, 1px);
+  box-shadow: inset 1px 1px 0px #7f1d1d;
+}
+
+/* Faction details for the Deck Modal */
+.factionSection {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.factionTitle {
+  font-size: 0.95rem;
+  font-weight: bold;
+  padding: 4px 8px;
+  margin-bottom: 0.75rem;
+  border-bottom: 2px solid var(--px-border);
+  letter-spacing: 0.5px;
+}
+
+.factionVillager {
+  color: #2563eb;
+  border-color: #3b82f6;
+}
+
+.factionWolf {
+  color: #dc2626;
+  border-color: #ef4444;
+}
+
+.factionNeutral {
+  color: #d97706;
+  border-color: #fbbf24;
+}
+
+.deckGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.roleCard {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid #374151;
+  padding: 8px 12px;
+  border-radius: 4px;
+}
+
+.roleName {
+  font-weight: bold;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.roleCard.factionVillager .roleName {
+  color: #60a5fa;
+}
+
+.roleCard.factionWolf .roleName {
+  color: #f87171;
+}
+
+.roleCard.factionNeutral .roleName {
+  color: #fcd34d;
+}
+
+.roleDesc {
+  font-size: 0.8rem;
+  color: #cbd5e1;
+  line-height: 1.4;
+}
+
