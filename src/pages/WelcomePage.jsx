@@ -133,11 +133,20 @@ export default function WelcomePage() {
   }, []);
 
   const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      setDeferredPrompt(null);
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setDeferredPrompt(null);
+      }
+    } else {
+      // Platform detection for user friendly instructions
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      if (isIOS) {
+        toast.info("Trên iOS: Nhấp nút Chia sẻ (Share) 📤 trên thanh công cụ Safari và chọn 'Thêm vào MH chính' (Add to Home Screen) ➕");
+      } else {
+        toast.info("Để cài đặt: Nhấp vào biểu tượng dấu 3 chấm ⁝ ở góc trình duyệt và chọn 'Thêm vào màn hình chính' hoặc 'Cài đặt ứng dụng'!");
+      }
     }
   };
 
