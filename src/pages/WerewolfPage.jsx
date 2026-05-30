@@ -17,6 +17,8 @@ export default function WerewolfPage() {
   const [inRoom, setInRoom] = useState(false);
   const [roomId, setRoomId] = useState('');
   const [gameState, setGameState] = useState(null);
+  const [showDeck, setShowDeck] = useState(false);
+
 
   useEffect(() => {
     if (!user) return;
@@ -142,6 +144,25 @@ export default function WerewolfPage() {
                 </li>
               ))}
             </ul>
+
+            <div className={styles.utilityActions}>
+              <button className="rpg-btn" onClick={() => setShowDeck(true)}>Xem Bộ Bài</button>
+              <button className="rpg-btn" onClick={leaveRoom}>Thoát Phòng</button>
+            </div>
+
+            {showDeck && (
+              <div className={styles.modalOverlay}>
+                <div className={`${styles.modalContent} rpg-box`}>
+                  <div className="px-titlebar">
+                    <button className="px-btn-close" onClick={() => setShowDeck(false)}></button>
+                    <span>CHI TIẾT BỘ BÀI</span>
+                  </div>
+                  <div className={styles.deckList}>
+                    <p>Bộ bài sẽ được hiển thị chi tiết ở đây (đang cập nhật list chức năng)...</p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {isHost && (
               <div className={styles.hostSettings}>
