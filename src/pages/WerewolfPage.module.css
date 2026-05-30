@@ -354,7 +354,83 @@
 
 .roleDesc {
   font-size: 0.8rem;
-  color: #cbd5e1;
+  color: #1e293b;
   line-height: 1.4;
+}
+
+.page button:global(.btn-outline) {
+  color: #ffffff !important;
+}
+
+.editorRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #4b5563;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.editorRoleInfo {
+  text-align: left;
+  flex: 1;
+}
+
+.editorRoleName {
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.editorRoleFaction {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.editorControls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.btnAdjust {
+  background: #374151;
+  color: #fff;
+  border: 1px solid #4b5563;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.btnAdjust:active {
+  background: #4b5563;
+}
+
+.roleQty {
+  font-family: var(--font-pixel), monospace;
+  font-size: 1rem;
+  font-weight: bold;
+  min-width: 24px;
+  text-align: center;
+}
+
+.deckStats {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  text-align: left;
+  font-size: 0.85rem;
+}
+
+.deckStatsHighlight {
+  color: #fbbf24;
+  font-weight: bold;
 }
 

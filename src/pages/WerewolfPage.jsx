@@ -47,6 +47,41 @@ const DECK_ROLES = {
   ]
 };
 
+const ALL_ROLES = [
+  { id: 'DAN_LANG', name: 'Dân Làng', faction: 'VILLAGER', desc: 'Dân thường không có chức năng.' },
+  { id: 'TIEN_TRI', name: 'Tiên Tri', faction: 'VILLAGER', desc: 'Soi vai trò của người chơi.' },
+  { id: 'PHU_THUY', name: 'Phù Thủy', faction: 'VILLAGER', desc: 'Có 1 bình cứu mạng và 1 bình thuốc độc.' },
+  { id: 'THO_SAN', name: 'Thợ Săn', faction: 'VILLAGER', desc: 'Khi chết được kéo theo 1 người.' },
+  { id: 'BAO_VE', name: 'Bảo Vệ', faction: 'VILLAGER', desc: 'Bảo vệ người khác khỏi bị cắn đêm đó.' },
+  { id: 'GIA_LANG', name: 'Già Làng', faction: 'VILLAGER', desc: 'Có 2 mạng trước Sói.' },
+  { id: 'KE_NGOC', name: 'Kẻ Ngốc', faction: 'VILLAGER', desc: 'Khi bị vote chết sẽ được tha và lật bài.' },
+  { id: 'THIEN_THAN', name: 'Thiên Thần', faction: 'VILLAGER', desc: 'Thắng nếu bị treo cổ ngày 1.' },
+  { id: 'QUAN_TOA', name: 'Quan Tòa Nói Lắp', faction: 'VILLAGER', desc: 'Cho phép vote đợt 2.' },
+  { id: 'HIEP_SI', name: 'Hiệp Sĩ Kiếm Rỉ', faction: 'VILLAGER', desc: 'Nếu bị cắn chết, Sói cắn sẽ nhiễm bệnh và chết hôm sau.' },
+  { id: 'DIEN_VIEN', name: 'Diễn Viên', faction: 'VILLAGER', desc: 'Chọn 1 trong 3 vai trò ẩn ở ngoài.' },
+  { id: 'NGUOI_HAU', name: 'Người Hầu Trung Thành', faction: 'VILLAGER', desc: 'Thế mạng cho người chơi bị chết.' },
+  { id: 'NGUOI_THUAN_GAU', name: 'Người Thuần Gấu', faction: 'VILLAGER', desc: 'Gấu gầm lên nếu đứng cạnh Sói.' },
+  { id: 'KE_THAO_TUNG', name: 'Kẻ Thao Túng Thành Kiến', faction: 'VILLAGER', desc: 'Giúp phiếu bầu phe đã chọn nặng hơn.' },
+  { id: 'DUA_TRE_HOANG_DA', name: 'Đứa Trẻ Hoang Dã', faction: 'VILLAGER', desc: 'Chọn Thần Tượng. Thần Tượng chết hóa Sói.' },
+  { id: 'THAY_BOI_GYPSY', name: 'Thầy Bói Gypsy', faction: 'VILLAGER', desc: 'Gửi điềm báo cho người khác.' },
+  { id: 'NGUOI_RAO_TIN', name: 'Người Rao Tin', faction: 'VILLAGER', desc: 'Công bố thông tin ngẫu nhiên.' },
+  { id: 'CAP_DAN_LANG', name: 'Cặp Dân Làng', faction: 'VILLAGER', desc: 'Hai người biết mặt nhau.' },
+  
+  { id: 'MA_SOI', name: 'Ma Sói', faction: 'WOLF', desc: 'Cắn chết 1 người mỗi đêm.' },
+  { id: 'SOI_TRANG', name: 'Sói Trắng', faction: 'WOLF', desc: 'Mỗi 2 đêm cắn chết 1 Sói khác. Thắng 1 mình.' },
+  { id: 'DAI_MA_SOI', name: 'Đại Ma Sói', faction: 'WOLF', desc: 'Cắn thêm 1 nạn nhân nữa (1 lần cả trận).' },
+  { id: 'SOI_CHA', name: 'Sói Cha Bị Nguyền', faction: 'WOLF', desc: 'Biến nạn nhân thành Sói mới (1 lần cả trận).' },
+  { id: 'SOI_LAI', name: 'Sói Lai', faction: 'WOLF', desc: 'Đêm đầu tự chọn phe Dân hoặc Sói.' },
+  
+  { id: 'CUPID', name: 'Cupid', faction: 'NEUTRAL', desc: 'Ghép đôi 2 người.' },
+  { id: 'KE_TROM', name: 'Kẻ Trộm', faction: 'NEUTRAL', desc: 'Chọn vai trò từ 2 lá dư.' },
+  { id: 'KE_THOI_SAO', name: 'Kẻ Thổi Sáo', faction: 'NEUTRAL', desc: 'Thôi miên tất cả người chơi để thắng.' },
+  { id: 'VAT_TE_THAN', name: 'Vật Tế Thần', faction: 'NEUTRAL', desc: 'Treo cổ thay thế nếu hòa phiếu.' },
+  { id: 'CHO_SOI', name: 'Chó Sói', faction: 'NEUTRAL', desc: 'Chọn chủ nhân. Chủ nhân chết hóa Sói.' },
+  { id: 'CON_QUA', name: 'Con Quạ', faction: 'NEUTRAL', desc: 'Tăng 2 vote treo cổ hôm sau cho mục tiêu.' },
+  { id: 'KE_PHONG_HOA', name: 'Kẻ Phóng Hỏa', faction: 'NEUTRAL', desc: 'Đổ dầu và thiêu chết các nạn nhân.' },
+];
+
 export default function WerewolfPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -56,6 +91,41 @@ export default function WerewolfPage() {
   const [roomId, setRoomId] = useState('');
   const [gameState, setGameState] = useState(null);
   const [showDeck, setShowDeck] = useState(false);
+  const [showDeckEditor, setShowDeckEditor] = useState(false);
+  const [tempRoles, setTempRoles] = useState([]);
+
+  const openDeckEditor = () => {
+    setTempRoles(gameState?.settings?.rolesList || []);
+    setShowDeckEditor(true);
+  };
+
+  const adjustRoleCount = (roleId, delta) => {
+    setTempRoles(prev => {
+      const currentCount = prev.filter(r => r === roleId).length;
+      const newCount = Math.max(0, currentCount + delta);
+      const filtered = prev.filter(r => r !== roleId);
+      const added = Array(newCount).fill(roleId);
+      return [...filtered, ...added];
+    });
+  };
+
+  const saveDeck = () => {
+    const wolfCount = tempRoles.filter(r => {
+      const rDef = ALL_ROLES.find(x => x.id === r);
+      return rDef && rDef.faction === 'WOLF';
+    }).length;
+
+    if (wolfCount < 2) {
+      toast.error('Bộ bài bắt buộc phải có ít nhất 2 vai trò thuộc phe Sói!');
+      return;
+    }
+
+    if (socket) {
+      socket.emit('ww_update_settings', { rolesList: tempRoles });
+      toast.success('Đã lưu cấu hình bộ bài thành công!');
+    }
+    setShowDeckEditor(false);
+  };
 
 
   useEffect(() => {
@@ -241,6 +311,62 @@ export default function WerewolfPage() {
               </div>
             )}
 
+            {showDeckEditor && (
+              <div className={styles.modalOverlay}>
+                <div className={`${styles.modalContent} rpg-box`} style={{ textAlign: 'center', maxWidth: '500px' }}>
+                  <div className="px-titlebar" style={{ position: 'relative' }}>
+                    <span>CẤU HÌNH BỘ BÀI</span>
+                    <button className={styles.closeBtn} onClick={() => setShowDeckEditor(false)}>✕</button>
+                  </div>
+
+                  <div className={styles.deckList}>
+                    <div className={styles.deckStats}>
+                      🔹 Tổng số lá bài đã chọn: <span className={styles.deckStatsHighlight}>{tempRoles.length} lá</span>
+                      <br />
+                      🔹 Số lá bài phe Sói: <span className={styles.deckStatsHighlight}>
+                        {tempRoles.filter(r => {
+                          const def = ALL_ROLES.find(x => x.id === r);
+                          return def && def.faction === 'WOLF';
+                        }).length} lá (yêu cầu &ge; 2)
+                      </span>
+                    </div>
+
+                    <div style={{ maxHeight: '45vh', overflowY: 'auto', paddingRight: '4px' }}>
+                      {ALL_ROLES.map(role => {
+                        const count = tempRoles.filter(r => r === role.id).length;
+                        let factionColor = '#2563eb'; // villager
+                        if (role.faction === 'WOLF') factionColor = '#dc2626';
+                        if (role.faction === 'NEUTRAL') factionColor = '#d97706';
+
+                        return (
+                          <div key={role.id} className={styles.editorRow}>
+                            <div className={styles.editorRoleInfo}>
+                              <div className={styles.editorRoleName} style={{ color: factionColor }}>{role.name}</div>
+                              <div className={styles.editorRoleFaction}>{role.desc}</div>
+                            </div>
+                            <div className={styles.editorControls}>
+                              <button className={styles.btnAdjust} onClick={() => adjustRoleCount(role.id, -1)}>-</button>
+                              <span className={styles.roleQty}>{count}</span>
+                              <button className={styles.btnAdjust} onClick={() => adjustRoleCount(role.id, 1)}>+</button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '1rem', marginTop: '12px' }}>
+                    <button className="btn btn-primary" onClick={saveDeck} style={{ flex: 1 }}>
+                      LƯU BỘ BÀI
+                    </button>
+                    <button className="btn btn-outline" onClick={() => setShowDeckEditor(false)} style={{ flex: 1 }}>
+                      HỦY BỎ
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {isHost && (
               <div className={styles.hostSettings}>
                 <h4>Cài Đặt Phòng</h4>
@@ -255,14 +381,19 @@ export default function WerewolfPage() {
                   Khán giả (người chết thấy hết)
                 </label>
                 
-                <div className={styles.deckSelector}>
-                  {/* Basic deck for test: 2 wolves, 1 seer, 1 witch, 4 villagers */}
+                <div className={styles.deckSelector} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <button className="btn btn-outline" onClick={openDeckEditor} style={{ background: '#3b82f6', borderColor: '#2563eb', color: '#fff' }}>
+                    ⚙️ Cấu Hình Bộ Bài Custom
+                  </button>
                   <button className="btn btn-outline" onClick={() => {
                      socket.emit('ww_update_settings', {
                        rolesList: ['MA_SOI', 'MA_SOI', 'TIEN_TRI', 'PHU_THUY', 'DAN_LANG', 'DAN_LANG', 'DAN_LANG', 'DAN_LANG']
                      });
+                     toast.success('Đã chọn bộ bài mặc định 8 lá!');
                   }}>Chọn Bộ Bài Mặc Định (8)</button>
-                  <p style={{ marginTop: '8px', fontSize: '0.9rem', color: '#9ca3af' }}>Số lá bài hiện tại: {gameState.settings.rolesList?.length || 0}</p>
+                  <p style={{ marginTop: '8px', fontSize: '0.9rem', color: '#9ca3af' }}>
+                    Số lá bài hiện tại: <strong style={{ color: '#fbbf24' }}>{gameState.settings.rolesList?.length || 0}</strong>
+                  </p>
                 </div>
               </div>
             )}
