@@ -151,14 +151,13 @@ export default function PhotosPage() {
               >
                 <div className={styles.imgWrapper}>
                   {/* Append =w300 dynamic width modifier for fast thumbnail loading */}
-                  <img src={`${p.url}=w300`} alt={p.location ? `Ảnh chụp tại ${p.location}` : "Ảnh kỷ niệm"} referrerPolicy="no-referrer" className={styles.thumbnail} loading="lazy" />
+                  <img src={`${p.url}=w300`} alt="Ảnh kỷ niệm" referrerPolicy="no-referrer" className={styles.thumbnail} loading="lazy" />
                   {p.isVideo && (
                     <div className={styles.videoOverlay} />
                   )}
                 </div>
                 <div className={styles.caption}>
-                  <div>📍 {p.location || 'Không rõ'}</div>
-                  <div style={{ marginTop: '2px', opacity: 0.8 }}>📅 {p.date || 'Không rõ'}</div>
+                  <div>📅 {p.date || 'Không rõ'}</div>
                 </div>
               </div>
             ))}
@@ -222,17 +221,16 @@ export default function PhotosPage() {
                 ) : (
                   <img 
                     src={`${ALL_PHOTOS[selectedIdx].url}=w800`} 
-                    alt={ALL_PHOTOS[selectedIdx].location ? `Ảnh chụp tại ${ALL_PHOTOS[selectedIdx].location}` : "Ảnh kỷ niệm"} 
+                    alt="Ảnh kỷ niệm" 
                     referrerPolicy="no-referrer"
                     className={styles.largeImg} 
                   />
                 )}
               </div>
 
-              {/* Location & Date Details Box */}
+              {/* Date Details Box */}
               <div className={styles.metadataBox}>
-                <div>📍 Địa điểm: <strong>{ALL_PHOTOS[selectedIdx].location || 'Không rõ'}</strong></div>
-                <div style={{ marginTop: '4px' }}>📅 Ngày chụp: <strong>{ALL_PHOTOS[selectedIdx].date || 'Không rõ'}</strong></div>
+                <div>📅 Ngày chụp: <strong>{ALL_PHOTOS[selectedIdx].date || 'Không rõ'}</strong></div>
                 <div style={{ marginTop: '8px', borderTop: '1px dashed #cbd5e1', paddingTop: '8px', textAlign: 'center' }}>
                   <button 
                     className="btn btn-outline" 
