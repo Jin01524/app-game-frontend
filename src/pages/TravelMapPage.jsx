@@ -444,34 +444,68 @@ export default function TravelMapPage() {
       return;
     }
 
+    let highAccuracy = true;
+
     const startGPSTracking = () => {
       setGpsTracking(true);
+
+      const onSuccess = (position) => {
+        const { latitude, longitude } = position.coords;
+        setUserLocation({ lat: latitude, lng: longitude });
+
+        // Center map on user's first location fetch
+        if (mapRef.current && !userLocation) {
+          mapRef.current.setView([latitude, longitude], 15);
+        }
+
+        // Emit location to socket
+        if (socketRef.current) {
+          socketRef.current.emit('update_location', {
+            groupId: activeTrip.id,
+            username: user.username,
+            lat: latitude,
+            lng: longitude
+          });
+        }
+      };
+
+      const onError = (err) => {
+        console.error('[Travel GPS] Geolocation watcher error:', err);
+        setGpsTracking(false);
+
+        // Timeout fallback (Code 3): try low-accuracy Wi-Fi/IP location if GPS chips are missing
+        if (err.code === 3 && highAccuracy) {
+          console.log('[Travel GPS] High accuracy timed out. Falling back to low accuracy Wi-Fi/IP...');
+          highAccuracy = false;
+          
+          if (locationWatcherRef.current !== null) {
+            navigator.geolocation.clearWatch(locationWatcherRef.current);
+          }
+
+          locationWatcherRef.current = navigator.geolocation.watchPosition(
+            onSuccess,
+            (lowAccErr) => {
+              console.error('[Travel GPS] Low accuracy also failed:', lowAccErr);
+              toast.warning("Không lấy được GPS tự động. Hãy bật 'MÔ PHỎNG GPS' ở bảng điều khiển bên phải để test.");
+            },
+            { enableHighAccuracy: false, maximumAge: 10000, timeout: 12000 }
+          );
+          setGpsTracking(true);
+          return;
+        }
+
+        // Permission denied (Code 1)
+        if (err.code === 1) {
+          toast.warning("Quyền định vị bị chặn! Bạn hãy bật 'MÔ PHỎNG GPS' ở bảng bên phải để chạy thử nghiệm.");
+        } else {
+          toast.error("Lỗi định vị! Hãy dùng 'MÔ PHỎNG GPS' nếu test trên máy tính laptop/PC.");
+        }
+      };
+
       locationWatcherRef.current = navigator.geolocation.watchPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setUserLocation({ lat: latitude, lng: longitude });
-
-          // Center map on user's first location fetch
-          if (mapRef.current && !userLocation) {
-            mapRef.current.setView([latitude, longitude], 15);
-          }
-
-          // Emit location to socket
-          if (socketRef.current) {
-            socketRef.current.emit('update_location', {
-              groupId: activeTrip.id,
-              username: user.username,
-              lat: latitude,
-              lng: longitude
-            });
-          }
-        },
-        (err) => {
-          console.error('[Travel GPS] Geolocation watcher error:', err);
-          setGpsTracking(false);
-          toast.error("Lỗi định vị! Hãy bật định vị GPS có độ chính xác cao trên điện thoại.");
-        },
-        { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+        onSuccess,
+        onError,
+        { enableHighAccuracy: true, maximumAge: 5000, timeout: 6000 }
       );
     };
 
