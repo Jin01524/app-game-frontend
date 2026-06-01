@@ -19,6 +19,7 @@ const UTILITIES = [
   { key: 'spy',        name: 'Gián điệp', icon: spyIcon, color: '#ec4899' },
   { key: 'gold',       name: 'Giá Vàng',  icon: goldIcon, color: '#fbbf24' },
   { key: 'werewolf',   name: 'Ma Sói',    icon: wolfIcon, color: '#7c3aed' },
+  { key: 'accommodation', name: 'Tìm Trọ',   icon: '🏠', color: '#ef4444' },
 ];
 
 export default function UtilitiesPage() {
@@ -89,6 +90,8 @@ export default function UtilitiesPage() {
                       navigate('/utilities/gold');
                     } else if (u.key === 'werewolf') {
                       navigate('/utilities/werewolf');
+                    } else if (u.key === 'accommodation') {
+                      navigate('/utilities/accommodation');
                     }
                   }}
                 >
