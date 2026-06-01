@@ -44,6 +44,7 @@ export default function TravelMapPage() {
   // Simulation state for testing without GPS
   const [simulationIndex, setSimulationIndex] = useState(0);
   const [isSimulating, setIsSimulating] = useState(false);
+  const [gpsTracking, setGpsTracking] = useState(false);
 
   // Socket & Map references
   const socketRef = useRef(null);
@@ -444,6 +445,7 @@ export default function TravelMapPage() {
     }
 
     const startGPSTracking = () => {
+      setGpsTracking(true);
       locationWatcherRef.current = navigator.geolocation.watchPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
@@ -466,6 +468,7 @@ export default function TravelMapPage() {
         },
         (err) => {
           console.error('[Travel GPS] Geolocation watcher error:', err);
+          setGpsTracking(false);
           toast.error("Lỗi định vị! Hãy bật định vị GPS có độ chính xác cao trên điện thoại.");
         },
         { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
@@ -478,6 +481,7 @@ export default function TravelMapPage() {
       if (locationWatcherRef.current !== null) {
         navigator.geolocation.clearWatch(locationWatcherRef.current);
         locationWatcherRef.current = null;
+        setGpsTracking(false);
       }
     };
   }, [activeTrip, mapReady, isSimulating, user.username, userLocation]);
@@ -582,6 +586,7 @@ export default function TravelMapPage() {
         
         // Stop simulator
         setIsSimulating(false);
+        setGpsTracking(false);
         
         setActiveTrip(null);
         setMembers([]);
@@ -655,9 +660,11 @@ export default function TravelMapPage() {
   const toggleGPSSimulator = () => {
     if (isSimulating) {
       setIsSimulating(false);
+      setGpsTracking(false);
       toast.info("🔌 Đã ngắt mô phỏng GPS.");
     } else {
       setIsSimulating(true);
+      setGpsTracking(true);
       toast.success("🎮 Đã kích hoạt mô phỏng định vị di chuyển phượt!");
       
       // Auto set first location
