@@ -16,160 +16,11 @@ const MOCK_COORDS = [
   { lat: 16.0152, lng: 108.2524 }  // Danang outskirts / Pass entrance
 ];
 
-const googleDarkStyles = [
-  { elementType: "geometry", stylers: [{ color: "#1f2937" }] }, // Gray-800
-  { elementType: "labels.text.stroke", stylers: [{ color: "#111827" }] }, // Gray-900
-  { elementType: "labels.text.fill", stylers: [{ color: "#9ca3af" }] }, // Gray-400
-  {
-    featureType: "administrative.locality",
-    elementType: "labels.text.fill",
-    stylers: [{ color: "#fbbf24" }] // Yellow-400
-  },
-  {
-    featureType: "poi",
-    elementType: "labels.text.fill",
-    stylers: [{ color: "#9ca3af" }]
-  },
-  {
-    featureType: "poi.park",
-    elementType: "geometry",
-    stylers: [{ color: "#111827" }]
-  },
-  {
-    featureType: "poi.park",
-    elementType: "labels.text.fill",
-    stylers: [{ color: "#4b5563" }]
-  },
-  {
-    featureType: "road",
-    elementType: "geometry",
-    stylers: [{ color: "#374151" }] // Gray-700
-  },
-  {
-    featureType: "road",
-    elementType: "geometry.stroke",
-    stylers: [{ color: "#111827" }]
-  },
-  {
-    featureType: "road",
-    elementType: "labels.text.fill",
-    stylers: [{ color: "#9ca3af" }]
-  },
-  {
-    featureType: "road.highway",
-    elementType: "geometry",
-    stylers: [{ color: "#1f2937" }]
-  },
-  {
-    featureType: "road.highway",
-    elementType: "geometry.stroke",
-    stylers: [{ color: "#111827" }]
-  },
-  {
-    featureType: "road.highway",
-    elementType: "labels.text.fill",
-    stylers: [{ color: "#fbbf24" }]
-  },
-  {
-    featureType: "transit",
-    elementType: "geometry",
-    stylers: [{ color: "#1f2937" }]
-  },
-  {
-    featureType: "transit.station",
-    elementType: "labels.text.fill",
-    stylers: [{ color: "#fbbf24" }]
-  },
-  {
-    featureType: "water",
-    elementType: "geometry",
-    stylers: [{ color: "#0f172a" }] // Slate-900 water
-  },
-  {
-    featureType: "water",
-    elementType: "labels.text.fill",
-    stylers: [{ color: "#4b5563" }]
-  },
-  {
-    featureType: "water",
-    elementType: "labels.text.stroke",
-    stylers: [{ color: "#0f172a" }]
-  }
-];
-
-let HTMLMapMarkerClass = null;
-
-// Dynamically create a custom HTML Marker class for Google Maps after google.maps is loaded
-function getHTMLMapMarkerClass() {
-  if (HTMLMapMarkerClass) return HTMLMapMarkerClass;
-  if (!window.google || !window.google.maps) return null;
-
-  class HTMLMapMarker extends window.google.maps.OverlayView {
-    constructor(latlng, html, map, username, displayName, status) {
-      super();
-      this.latlng = latlng;
-      this.html = html;
-      this.username = username;
-      this.displayName = displayName;
-      this.status = status;
-      this.setMap(map);
-    }
-    onAdd() {
-      this.div = document.createElement('div');
-      this.div.style.position = 'absolute';
-      this.div.style.zIndex = '100';
-      this.div.innerHTML = this.html;
-      
-      // Simple tooltip on click
-      this.div.addEventListener('click', () => {
-        const statTxt = this.status === 'emergency' ? '🚨 CẦN CỨU HỘ KHẨN CẤP' :
-                        this.status === 'gas' ? '⛽ ĐANG ĐỔ XĂNG' :
-                        this.status === 'lost' ? '🌀 LẠC ĐOÀN' : '✅ AN TOÀN';
-        toast.info(`${this.displayName || this.username}: Trạng thái ${statTxt}`);
-      });
-
-      const panes = this.getPanes();
-      panes.overlayImage.appendChild(this.div);
-    }
-    draw() {
-      if (!this.div) return;
-      const projection = this.getProjection();
-      if (!projection) return;
-      const position = projection.fromLatLngToDivPixel(this.latlng);
-      if (position) {
-        // Adjust div anchor position (half of marker width/height)
-        this.div.style.left = (position.x - 18) + 'px';
-        this.div.style.top = (position.y - 18) + 'px';
-      }
-    }
-    onRemove() {
-      if (this.div) {
-        this.div.parentNode.removeChild(this.div);
-        this.div = null;
-      }
-    }
-    setPosition(latlng) {
-      this.latlng = latlng;
-      this.draw();
-    }
-    setContent(html, status) {
-      this.html = html;
-      this.status = status;
-      if (this.div) this.div.innerHTML = html;
-    }
-  }
-
-  HTMLMapMarkerClass = HTMLMapMarker;
-  return HTMLMapMarkerClass;
-}
-
 export default function TravelMapPage() {
   const navigate = useNavigate();
   const { authFetch, user } = useAuth();
 
-  // Dual Map loading, Configurations and General state
-  const [mapProvider, setMapProvider] = useState('leaflet'); // 'google' or 'leaflet'
-  const [googleApiKey, setGoogleApiKey] = useState('');
+  // Map Loading and General state
   const [mapReady, setMapReady] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -254,70 +105,31 @@ export default function TravelMapPage() {
     }
   }, []);
 
-  // 1. Fetch Secure Config (Google Maps API Key) from Backend
+  // 1. Dynamic CDN Loading of Leaflet.js
   useEffect(() => {
-    const fetchConfig = async () => {
-      try {
-        const res = await authFetch('/api/profile/travel/config');
-        if (res.ok) {
-          const data = await res.json();
-          if (data.success && data.googleMapsApiKey) {
-            setGoogleApiKey(data.googleMapsApiKey);
-            setMapProvider('google');
-            console.log('[Travel Config] Found Google Maps API Key. Activating Google Map.');
-          } else {
-            setMapProvider('leaflet');
-            console.log('[Travel Config] No API Key. Falling back to OpenStreetMap.');
-          }
-        }
-      } catch (err) {
-        console.error('Error fetching travel map config:', err);
-        setMapProvider('leaflet');
-      }
-    };
-    fetchConfig();
-  }, [authFetch]);
-
-  // 2. Dynamic Script Loader for Map Providers
-  useEffect(() => {
-    if (mapProvider === 'google' && googleApiKey) {
-      if (window.google && window.google.maps) {
-        setMapReady(true);
-        return;
-      }
-      
-      const jsScript = document.createElement('script');
-      jsScript.src = `https://maps.googleapis.com/maps/api/js?key=${googleApiKey}&libraries=geometry`;
-      jsScript.id = 'google-maps-js';
-      jsScript.onload = () => {
-        setMapReady(true);
-      };
-      jsScript.onerror = () => {
-        console.warn('Google Maps script failed to load. Falling back to Leaflet.');
-        setMapProvider('leaflet');
-      };
-      document.body.appendChild(jsScript);
-    } else if (mapProvider === 'leaflet') {
-      if (window.L) {
-        setMapReady(true);
-        return;
-      }
-
-      const cssLink = document.createElement('link');
-      cssLink.rel = 'stylesheet';
-      cssLink.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-      cssLink.id = 'leaflet-css';
-      document.head.appendChild(cssLink);
-
-      const jsScript = document.createElement('script');
-      jsScript.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-      jsScript.id = 'leaflet-js';
-      jsScript.onload = () => {
-        setMapReady(true);
-      };
-      document.body.appendChild(jsScript);
+    if (window.L) {
+      setMapReady(true);
+      return;
     }
-  }, [mapProvider, googleApiKey]);
+
+    const cssLink = document.createElement('link');
+    cssLink.rel = 'stylesheet';
+    cssLink.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+    cssLink.id = 'leaflet-css';
+    document.head.appendChild(cssLink);
+
+    const jsScript = document.createElement('script');
+    jsScript.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    jsScript.id = 'leaflet-js';
+    jsScript.onload = () => {
+      setMapReady(true);
+    };
+    document.body.appendChild(jsScript);
+
+    return () => {
+      // Keep Leaflet in DOM
+    };
+  }, []);
 
   // Fetch active trip details from HTTP API
   const fetchActiveTrip = useCallback(async () => {
@@ -364,12 +176,14 @@ export default function TravelMapPage() {
     fetchActiveTrip();
   }, [fetchActiveTrip]);
 
-  // Unified Map Marker drawer supporting both Google Maps OverlayView & Leaflet L.divIcon
+  // Create markers for Leaflet Map
   const updateMapMarker = useCallback((member) => {
-    if (!mapRef.current || member.lat === null || member.lng === null) return;
-    
+    if (!mapRef.current || !window.L || member.lat === null || member.lng === null) return;
+
+    const L = window.L;
     const isSelf = member.username === user.username;
     
+    // Create color matched pixel icon HTML
     const markerHtml = `
       <div class="${styles.customMarker} ${styles[member.status]}">
         <div class="${styles.pixelPin}">
@@ -383,193 +197,118 @@ export default function TravelMapPage() {
       </div>
     `;
 
-    if (mapProvider === 'google' && window.google) {
-      const HTMLMapMarker = getHTMLMapMarkerClass();
-      if (!HTMLMapMarker) return;
+    const icon = L.divIcon({
+      html: markerHtml,
+      className: '',
+      iconSize: [36, 36],
+      iconAnchor: [18, 18]
+    });
 
-      const latlng = new window.google.maps.LatLng(member.lat, member.lng);
-
-      if (markersRef.current[member.username]) {
-        markersRef.current[member.username].setPosition(latlng);
-        markersRef.current[member.username].setContent(markerHtml, member.status);
-      } else {
-        markersRef.current[member.username] = new HTMLMapMarker(
-          latlng,
-          markerHtml,
-          mapRef.current,
-          member.username,
-          member.display_name,
-          member.status
-        );
-      }
-    } else if (mapProvider === 'leaflet' && window.L) {
-      const L = window.L;
-      const icon = L.divIcon({
-        html: markerHtml,
-        className: '',
-        iconSize: [36, 36],
-        iconAnchor: [18, 18]
-      });
-
-      if (markersRef.current[member.username]) {
-        markersRef.current[member.username].setLatLng([member.lat, member.lng]);
-        markersRef.current[member.username].setIcon(icon);
-      } else {
-        const marker = L.marker([member.lat, member.lng], { icon }).addTo(mapRef.current);
-        
-        marker.bindPopup(`
-          <div style="font-family: 'Space Mono', monospace; font-size: 11px; color: #000;">
-            <strong>${member.display_name}</strong><br/>
-            Trạng thái: <span style="font-weight:bold; color:${
-              member.status === 'emergency' ? 'red' : 
-              member.status === 'gas' ? 'orange' : 
-              member.status === 'lost' ? 'purple' : 'green'
-            }">${
-              member.status === 'emergency' ? '🚨 SOS KHẨN CẤP' : 
-              member.status === 'gas' ? '⛽ ĐANG ĐỔ XĂNG' : 
-              member.status === 'lost' ? '🌀 LẠC ĐOÀN' : '✅ AN TOÀN'
-            }</span><br/>
-            Cập nhật: ${new Date(member.last_updated || Date.now()).toLocaleTimeString()}
-          </div>
-        `);
-        markersRef.current[member.username] = marker;
-      }
-    }
-  }, [user.username, mapProvider]);
-
-  // Unified Route drawing tool supporting Google maps Polyline & Leaflet Polyline
-  const updateMapRoute = useCallback((waypoints) => {
-    if (!mapRef.current) return;
-
-    if (mapProvider === 'google' && window.google) {
-      const googlePaths = waypoints.map(w => ({ lat: w[0], lng: w[1] }));
+    if (markersRef.current[member.username]) {
+      // Update existing marker
+      markersRef.current[member.username].setLatLng([member.lat, member.lng]);
+      markersRef.current[member.username].setIcon(icon);
+    } else {
+      // Create new marker
+      const marker = L.marker([member.lat, member.lng], { icon }).addTo(mapRef.current);
       
-      if (polylineRef.current) {
-        polylineRef.current.setPath(googlePaths);
-      } else {
-        polylineRef.current = new window.google.maps.Polyline({
-          path: googlePaths,
-          geodesic: true,
-          strokeColor: '#10b981',
-          strokeOpacity: 0.9,
-          strokeWeight: 5,
-          map: mapRef.current
-        });
-      }
-    } else if (mapProvider === 'leaflet' && window.L) {
-      const L = window.L;
-      if (polylineRef.current) {
-        polylineRef.current.setLatLngs(waypoints);
-      } else {
-        polylineRef.current = L.polyline(waypoints, {
-          color: '#10b981',
-          weight: 5,
-          dashArray: '5, 8',
-          lineCap: 'round',
-          lineJoin: 'round'
-        }).addTo(mapRef.current);
-      }
+      // Bind descriptive popup
+      marker.bindPopup(`
+        <div style="font-family: 'Space Mono', monospace; font-size: 11px; color: #000;">
+          <strong>${member.display_name}</strong><br/>
+          Trạng thái: <span style="font-weight:bold; color:${
+            member.status === 'emergency' ? 'red' : 
+            member.status === 'gas' ? 'orange' : 
+            member.status === 'lost' ? 'purple' : 'green'
+          }">${
+            member.status === 'emergency' ? '🚨 SOS KHẨN CẤP' : 
+            member.status === 'gas' ? '⛽ ĐANG ĐỔ XĂNG' : 
+            member.status === 'lost' ? '🌀 LẠC ĐOÀN' : '✅ AN TOÀN'
+          }</span><br/>
+          Cập nhật: ${new Date(member.last_updated || Date.now()).toLocaleTimeString()}
+        </div>
+      `);
+      markersRef.current[member.username] = marker;
     }
-  }, [mapProvider]);
+  }, [user.username]);
 
-  // 3. Initialize Map (Google Maps or Leaflet Fallback)
+  // Handle active routes / polylines drawing
+  const updateMapRoute = useCallback((waypoints) => {
+    if (!mapRef.current || !window.L) return;
+    const L = window.L;
+
+    if (polylineRef.current) {
+      polylineRef.current.setLatLngs(waypoints);
+    } else {
+      polylineRef.current = L.polyline(waypoints, {
+        color: '#10b981',
+        weight: 5,
+        dashArray: '5, 8',
+        lineCap: 'round',
+        lineJoin: 'round'
+      }).addTo(mapRef.current);
+    }
+  }, []);
+
+  // 2. Initialize Leaflet Map with Google Maps Tiles (100% Free POI Database)
   useEffect(() => {
     if (!mapReady || !activeTrip || mapRef.current) return;
 
+    const L = window.L;
     const mapId = 'travel-map-canvas';
-    const defaultCenter = [16.0544, 108.2022]; // Da Nang coordinates
+    
+    // Fallback focus to Danang coordinates
+    const defaultCenter = [16.0544, 108.2022];
+    const map = L.map(mapId, {
+      doubleClickZoom: false
+    }).setView(defaultCenter, 13);
 
-    if (mapProvider === 'google' && window.google) {
-      const googleMap = new window.google.maps.Map(document.getElementById(mapId), {
-        center: { lat: defaultCenter[0], lng: defaultCenter[1] },
-        zoom: 13,
-        styles: googleDarkStyles,
-        disableDoubleClickZoom: true,
-        mapTypeControl: false,
-        streetViewControl: false,
-        fullscreenControl: false
-      });
+    // Setup 100% Free Google Maps Tiles Server
+    L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+      maxZoom: 20,
+      subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+      attribution: '&copy; Google Maps'
+    }).addTo(map);
 
-      mapRef.current = googleMap;
+    mapRef.current = map;
 
-      // Draw route
-      const existingWaypoints = JSON.parse(activeTrip.route_waypoints || '[]');
-      if (existingWaypoints.length > 0) {
-        updateMapRoute(existingWaypoints);
-      }
-
-      // Double click to draw route (Leader only)
-      googleMap.addListener('dblclick', (e) => {
-        if (activeTrip.leader_username === user.username) {
-          const lat = e.latLng.lat();
-          const lng = e.latLng.lng();
-          setRouteWaypoints((prev) => {
-            const next = [...prev, [lat, lng]];
-            updateMapRoute(next);
-            if (socketRef.current) {
-              socketRef.current.emit('update_route', {
-                groupId: activeTrip.id,
-                waypoints: next
-              });
-            }
-            return next;
-          });
-        }
-      });
-
-    } else if (mapProvider === 'leaflet' && window.L) {
-      const L = window.L;
-      const map = L.map(mapId, {
-        doubleClickZoom: false
-      }).setView(defaultCenter, 13);
-
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        subdomains: 'abcd',
-        maxZoom: 20
-      }).addTo(map);
-
-      mapRef.current = map;
-
-      const existingWaypoints = JSON.parse(activeTrip.route_waypoints || '[]');
-      if (existingWaypoints.length > 0) {
-        updateMapRoute(existingWaypoints);
-      }
-
-      map.on('dblclick', (e) => {
-        if (activeTrip.leader_username === user.username) {
-          const { lat, lng } = e.latlng;
-          setRouteWaypoints((prev) => {
-            const next = [...prev, [lat, lng]];
-            updateMapRoute(next);
-            if (socketRef.current) {
-              socketRef.current.emit('update_route', {
-                groupId: activeTrip.id,
-                waypoints: next
-              });
-            }
-            return next;
-          });
-        }
-      });
+    // Draw existing route
+    const existingWaypoints = JSON.parse(activeTrip.route_waypoints || '[]');
+    if (existingWaypoints.length > 0) {
+      updateMapRoute(existingWaypoints);
     }
 
+    // Leader drawing route click handler
+    map.on('dblclick', (e) => {
+      // Access leader state through a ref or dynamic check inside handler
+      if (activeTrip.leader_username === user.username) {
+        const { lat, lng } = e.latlng;
+        setRouteWaypoints((prev) => {
+          const next = [...prev, [lat, lng]];
+          updateMapRoute(next);
+          // Emit socket update
+          if (socketRef.current) {
+            socketRef.current.emit('update_route', {
+              groupId: activeTrip.id,
+              waypoints: next
+            });
+          }
+          return next;
+        });
+      }
+    });
+
     return () => {
-      // Clear markers and shapes on destroy
-      if (mapProvider === 'google' && mapRef.current) {
-        mapRef.current = null;
-        markersRef.current = {};
-        polylineRef.current = null;
-      } else if (mapProvider === 'leaflet' && mapRef.current) {
+      if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
         markersRef.current = {};
         polylineRef.current = null;
       }
     };
-  }, [mapReady, activeTrip, mapProvider, updateMapRoute, user.username]);
+  }, [mapReady, activeTrip, updateMapRoute, user.username]);
 
-  // 4. WebSockets Real-time Communications
+  // 3. WebSockets Real-time Communications
   useEffect(() => {
     if (!activeTrip) return;
 
@@ -580,11 +319,13 @@ export default function TravelMapPage() {
     
     socketRef.current = socket;
 
+    // Join room
     socket.emit('join_trip_room', {
       groupId: activeTrip.id,
       username: user.username
     });
 
+    // Listeners
     socket.on('location_updated', (data) => {
       setMembers((prev) => {
         const index = prev.findIndex(m => m.username === data.username);
@@ -603,6 +344,7 @@ export default function TravelMapPage() {
             last_updated: new Date().toISOString()
           };
         } else {
+          // Add missing member
           updated.push({
             username: data.username,
             display_name: data.displayName,
@@ -618,6 +360,7 @@ export default function TravelMapPage() {
           });
         }
         
+        // Plot marker
         const targetMember = updated.find(m => m.username === data.username);
         if (targetMember) updateMapMarker(targetMember);
         
@@ -626,9 +369,11 @@ export default function TravelMapPage() {
     });
 
     socket.on('status_alert_received', (data) => {
+      // Trigger Audio Alarm
       if (data.status !== 'active') {
         playAlertSound(data.status);
         
+        // Trigger emergency overlay
         if (data.status === 'emergency') {
           setStatusAlert({
             username: data.username,
@@ -648,10 +393,12 @@ export default function TravelMapPage() {
           last_updated: data.timestamp
         };
         
+        // Refresh marker visually
         updateMapMarker(updated[index]);
         return updated;
       });
 
+      // Show warning toast
       const alertMsg = data.status === 'emergency' ? `🚨 CỨU HỘ SOS: ${data.displayName} cần trợ giúp khẩn cấp!`
                     : data.status === 'gas' ? `⛽ ĐỔ XĂNG: ${data.displayName} dừng lại đổ xăng!`
                     : data.status === 'lost' ? `🌀 LẠC ĐOÀN: ${data.displayName} lạc đoàn!`
@@ -682,7 +429,7 @@ export default function TravelMapPage() {
     };
   }, [activeTrip, updateMapMarker, updateMapRoute, playAlertSound, user.username]);
 
-  // 5. GPS Geolocation Tracking Core with fallbacks
+  // 4. GPS Geolocation Tracking Core
   useEffect(() => {
     if (!activeTrip || !mapReady || isSimulating) return;
 
@@ -702,12 +449,7 @@ export default function TravelMapPage() {
 
         // Center map on user's first location fetch
         if (mapRef.current && !userLocation) {
-          if (mapProvider === 'google') {
-            mapRef.current.setCenter({ lat: latitude, lng: longitude });
-            mapRef.current.setZoom(15);
-          } else {
-            mapRef.current.setView([latitude, longitude], 15);
-          }
+          mapRef.current.setView([latitude, longitude], 15);
         }
 
         // Emit location to socket
@@ -770,7 +512,7 @@ export default function TravelMapPage() {
         setGpsTracking(false);
       }
     };
-  }, [activeTrip, mapReady, isSimulating, user.username, userLocation, mapProvider]);
+  }, [activeTrip, mapReady, isSimulating, user.username, userLocation]);
 
   // Initial plot of all members once coordinates load
   useEffect(() => {
@@ -782,7 +524,7 @@ export default function TravelMapPage() {
     });
   }, [members, updateMapMarker]);
 
-  // 6. Trip Management Actions (API Calls)
+  // 5. Trip Management Actions (API Calls)
   const handleCreateTrip = async (e) => {
     e.preventDefault();
     if (!tripName.trim()) {
@@ -805,6 +547,7 @@ export default function TravelMapPage() {
         setRouteWaypoints([]);
         setSimulationIndex(0);
         
+        // Refresh details
         fetchActiveTrip();
       } else {
         toast.error(data.error || 'Lỗi khi tạo nhóm phượt.');
@@ -838,6 +581,7 @@ export default function TravelMapPage() {
         setIsLeader(false);
         setSimulationIndex(0);
         
+        // Refresh details
         fetchActiveTrip();
       } else {
         toast.error(data.error || 'Sai mã nhóm hoặc nhóm không tồn tại.');
@@ -863,10 +607,12 @@ export default function TravelMapPage() {
       if (res.ok) {
         toast.success('Đã rời nhóm phượt thành công!');
         
+        // Clear maps
         if (mapRef.current) {
           markersRef.current = {};
         }
         
+        // Stop simulator
         setIsSimulating(false);
         setGpsTracking(false);
         
@@ -891,9 +637,11 @@ export default function TravelMapPage() {
   const handleStatusChange = async (newStatus) => {
     if (!activeTrip) return;
     
+    // Play sound locally
     playAlertSound(newStatus);
     setCurrentStatus(newStatus);
 
+    // Emit via WebSocket
     if (socketRef.current) {
       socketRef.current.emit('send_status_alert', {
         groupId: activeTrip.id,
@@ -902,6 +650,7 @@ export default function TravelMapPage() {
       });
     }
 
+    // Refresh list locally for direct visual feed
     setMembers((prev) => {
       const index = prev.findIndex(m => m.username === user.username);
       if (index === -1) return prev;
@@ -923,11 +672,7 @@ export default function TravelMapPage() {
     
     setRouteWaypoints([]);
     if (polylineRef.current) {
-      if (mapProvider === 'google') {
-        polylineRef.current.setPath([]);
-      } else {
-        polylineRef.current.setLatLngs([]);
-      }
+      polylineRef.current.setLatLngs([]);
     }
     
     if (socketRef.current) {
@@ -950,16 +695,11 @@ export default function TravelMapPage() {
       setGpsTracking(true);
       toast.success("🎮 Đã kích hoạt mô phỏng định vị di chuyển phượt!");
       
+      // Auto set first location
       const first = MOCK_COORDS[0];
       setUserLocation(first);
-      
       if (mapRef.current) {
-        if (mapProvider === 'google') {
-          mapRef.current.setCenter({ lat: first.lat, lng: first.lng });
-          mapRef.current.setZoom(15);
-        } else {
-          mapRef.current.setView([first.lat, first.lng], 15);
-        }
+        mapRef.current.setView([first.lat, first.lng], 15);
       }
       
       if (socketRef.current) {
@@ -988,11 +728,7 @@ export default function TravelMapPage() {
     setUserLocation(nextCoord);
     
     if (mapRef.current) {
-      if (mapProvider === 'google') {
-        mapRef.current.panTo({ lat: nextCoord.lat, lng: nextCoord.lng });
-      } else {
-        mapRef.current.panTo([nextCoord.lat, nextCoord.lng]);
-      }
+      mapRef.current.panTo([nextCoord.lat, nextCoord.lng]);
     }
 
     if (socketRef.current) {
@@ -1093,27 +829,12 @@ export default function TravelMapPage() {
             {/* 1. Map Panel */}
             <div className={`${styles.mapBox} rpg-box fade-in`}>
               <div className={styles.mapTitleBar}>
-                <span>📍 BẢN ĐỒ ĐỊNH VỊ NHÓM PHƯỢT LIVE ({mapProvider === 'google' ? 'GOOGLE MAPS 🌐' : 'OPENSTREETMAP 🗺️'})</span>
+                <span>📍 GOOGLE MAPS PHƯỢT LIVE 🌐 (100% MIỄN PHÍ)</span>
                 <span>{gpsTracking ? '🟢 ĐANG BÁO VỊ TRÍ...' : '🔵 CHỜ TÍN HIỆU...'}</span>
               </div>
               
               {/* Map Mount Target */}
               <div id="travel-map-canvas" className={styles.leafletContainer}></div>
-
-              {/* Informative OSM fallback alert box */}
-              {mapProvider === 'leaflet' && (
-                <div style={{
-                  padding: '8px',
-                  backgroundColor: '#7c2d12',
-                  border: '2px solid #ea580c',
-                  fontSize: '0.65rem',
-                  color: '#ffedd5',
-                  marginTop: '8px',
-                  lineHeight: '1.4'
-                }}>
-                  ⚠️ Bản đồ đang chạy ở chế độ dự phòng **OpenStreetMap** vì chưa có khóa `GOOGLE_MAPS_API_KEY` ở backend. Hãy thêm Key để mở khóa bản đồ Google Maps đầy đủ nhà nghỉ, hàng quán, cây xăng!
-                </div>
-              )}
 
               {isLeader && (
                 <div style={{ fontSize: '0.6rem', color: '#cbd5e1', marginTop: '8px', textAlign: 'center' }}>
