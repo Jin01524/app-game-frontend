@@ -157,6 +157,7 @@ export default function PhotosPage() {
                   )}
                 </div>
                 <div className={styles.caption}>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--px-text-dim)', marginBottom: '2px' }}>#{idx + 1}</div>
                   <div>📅 {p.date || 'Không rõ'}</div>
                 </div>
               </div>
