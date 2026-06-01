@@ -20,7 +20,6 @@ const UTILITIES = [
   { key: 'gold',       name: 'Giá Vàng',  icon: goldIcon, color: '#fbbf24' },
   { key: 'werewolf',   name: 'Ma Sói',    icon: wolfIcon, color: '#7c3aed' },
   { key: 'accommodation', name: 'Tìm Trọ',   icon: '🏠', color: '#ef4444' },
-  { key: 'travel_map', name: 'Phượt Nhóm', icon: '🏍️', color: '#10b981' },
 ];
 
 export default function UtilitiesPage() {
@@ -93,8 +92,6 @@ export default function UtilitiesPage() {
                       navigate('/utilities/werewolf');
                     } else if (u.key === 'accommodation') {
                       navigate('/utilities/accommodation');
-                    } else if (u.key === 'travel_map') {
-                      navigate('/utilities/travel-map');
                     }
                   }}
                 >
