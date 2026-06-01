@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PixelCanvas from '../components/PixelCanvas';
 import BottomNav from '../components/BottomNav';
-import { ALL_PHOTOS } from '../utils/photosData';
+import { ALL_PHOTOS as DEFAULT_PHOTOS } from '../utils/photosData';
+import { useAuth } from '../context/AuthContext';
+import { toast } from '../utils/toast';
 import styles from './PhotosPage.module.css';
 import nextIcon from '../../assets/next.png';
 
@@ -15,9 +17,53 @@ const getDeepLink = (photoId) => {
 
 export default function PhotosPage() {
   const navigate = useNavigate();
+  const { authFetch } = useAuth();
+  const [photosList, setPhotosList] = useState(DEFAULT_PHOTOS);
+  const [syncing, setSyncing] = useState(false);
+
+  const ALL_PHOTOS = photosList;
+
   const [visibleCount, setVisibleCount] = useState(20);
   const [selectedIdx, setSelectedIdx] = useState(null);
   const [slideshowActive, setSlideshowActive] = useState(false);
+
+  // Fetch synced photos from DB on mount
+  useEffect(() => {
+    const loadCachedPhotos = async () => {
+      try {
+        const res = await authFetch('/api/profile/photos');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setPhotosList(data);
+          }
+        }
+      } catch (e) {
+        console.error('Error fetching cached photos:', e);
+      }
+    };
+    loadCachedPhotos();
+  }, [authFetch]);
+
+  const handleSync = async () => {
+    if (syncing) return;
+    setSyncing(true);
+    try {
+      const res = await authFetch('/api/profile/photos/sync', { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        setPhotosList(data.photos);
+        toast.success(`Đồng bộ thành công ${data.count} ảnh từ Google Photos!`);
+      } else {
+        toast.error(data.error || "Không thể đồng bộ album");
+      }
+    } catch (e) {
+      console.error('Photos sync error:', e);
+      toast.error("Lỗi đồng bộ album");
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   // Sync visibleCount if the user navigates beyond visible range in lightbox
   useEffect(() => {
@@ -78,8 +124,16 @@ export default function PhotosPage() {
       <main className={styles.main}>
         {/* Header */}
         <header className={`${styles.header} rpg-box fade-in`}>
-          <div className="px-titlebar">
-            <span>◄ ALBUM KỶ NIỆM TỆ LẠN 4.2 ({ALL_PHOTOS.length}) ►</span>
+          <div className="px-titlebar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', gap: '12px' }}>
+            <span>◄ ALBUM KỶ NIỆM ({ALL_PHOTOS.length}) ►</span>
+            <button
+              onClick={handleSync}
+              disabled={syncing}
+              className={styles.syncBtn}
+            >
+              <span className={syncing ? styles.spinning : ''}>🔄</span>
+              <span>{syncing ? 'ĐỒNG BỘ...' : 'CẬP NHẬT'}</span>
+            </button>
           </div>
         </header>
 

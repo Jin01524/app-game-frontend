@@ -283,3 +283,52 @@
 .flipped {
   transform: scaleX(-1);
 }
+
+/* ── Album Synchronization Button ── */
+.syncBtn {
+  font-family: var(--font-pixel);
+  font-size: 0.6rem;
+  padding: 5px 8px;
+  background-color: var(--px-bg);
+  border: 2px solid var(--px-border);
+  color: var(--px-text);
+  border-radius: 4px;
+  cursor: crosshair !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  box-shadow: 2px 2px 0 var(--px-border);
+  transition: all 0.1s ease;
+  line-height: 1;
+  user-select: none;
+}
+
+.syncBtn:hover:not(:disabled) {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--px-border);
+  background-color: var(--px-bg2);
+}
+
+.syncBtn:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 0px 0px 0 var(--px-border);
+}
+
+.syncBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed !important;
+  background-color: #cbd5e1;
+  color: #64748b;
+  box-shadow: 1px 1px 0 var(--px-border);
+}
+
+.spinning {
+  display: inline-block;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
