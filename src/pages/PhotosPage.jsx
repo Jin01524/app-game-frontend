@@ -153,7 +153,7 @@ export default function PhotosPage() {
                   {/* Append =w300 dynamic width modifier for fast thumbnail loading */}
                   <img src={`${p.url}=w300`} alt="Ảnh kỷ niệm" referrerPolicy="no-referrer" className={styles.thumbnail} loading="lazy" />
                   {p.isVideo && (
-                    <div className={styles.videoOverlay} />
+                    <div className={styles.videoOverlay}>▶️</div>
                   )}
                 </div>
                 <div className={styles.caption}>
@@ -198,7 +198,6 @@ export default function PhotosPage() {
                     controls
                     autoPlay
                     playsInline
-                    crossOrigin="anonymous"
                     className={styles.largeVideo}
                     onError={handleVideoError}
                   />
