@@ -1,0 +1,502 @@
+.page {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #0f172a;
+  color: #f8fafc;
+  padding-bottom: 72px;
+  position: relative;
+  font-family: 'Space Mono', monospace;
+  image-rendering: pixelated;
+  overflow-x: hidden;
+}
+
+.main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.header {
+  margin-bottom: 8px;
+  background-color: #1e293b;
+}
+
+/* Lobby Mode Styles */
+.lobbyCard {
+  background-color: #1e293b;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.lobbySection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-bottom: 2px dashed #475569;
+  padding-bottom: 24px;
+}
+
+.lobbySection:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #3b82f6;
+  text-shadow: 1px 1px 0px #000;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inputGroup label {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.pixelInput {
+  background-color: #0f172a;
+  border: 3px solid #475569;
+  color: #f8fafc;
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  outline: none;
+  border-radius: 0;
+}
+
+.pixelInput:focus {
+  border-color: #10b981;
+}
+
+/* Active Trip Layout */
+.tripGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .tripGrid {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+.mapBox {
+  background-color: #1e293b;
+  padding: 8px;
+  position: relative;
+  min-height: 380px;
+  height: 480px;
+  display: flex;
+  flex-direction: column;
+}
+
+.mapTitleBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 0.75rem;
+  color: #10b981;
+}
+
+.leafletContainer {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  border: 3px solid #000;
+  z-index: 10;
+  position: relative;
+}
+
+/* Custom Marker Styling */
+.customMarker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.pixelPin {
+  width: 32px;
+  height: 32px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #0f172a;
+  border: 2px solid #f8fafc;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+  transition: transform 0.2s ease-in-out;
+}
+
+.emergency .pixelPin {
+  border-color: #ef4444;
+  background-color: #991b1b;
+  animation: markerBlink 0.6s infinite alternate;
+}
+
+.gas .pixelPin {
+  border-color: #fbbf24;
+  background-color: #78350f;
+}
+
+.lost .pixelPin {
+  border-color: #f97316;
+  background-color: #7c2d12;
+}
+
+.avatarDot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  font-weight: bold;
+}
+
+.markerLabel {
+  position: absolute;
+  top: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(15, 23, 42, 0.85);
+  color: #f8fafc;
+  padding: 2px 6px;
+  font-size: 0.65rem;
+  border: 1px solid #475569;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.emergency .markerLabel {
+  background-color: #991b1b;
+  border-color: #ef4444;
+}
+
+/* Sidebar & Control Panel */
+.sidebarCard {
+  background-color: #1e293b;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+.groupMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 12px;
+  border-bottom: 2px dashed #475569;
+}
+
+.metaRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+.metaValue {
+  color: #f8fafc;
+  font-weight: bold;
+}
+
+.metaValue.code {
+  color: #fbbf24;
+  letter-spacing: 1px;
+}
+
+/* Action Control Panel (SOS Buttons) */
+.controlTitle {
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: #94a3b8;
+  margin-bottom: 8px;
+}
+
+.alertGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.sosBtn {
+  font-family: inherit;
+  font-size: 0.65rem;
+  font-weight: bold;
+  padding: 12px 6px;
+  cursor: pointer;
+  border: 2px solid;
+  color: #fff;
+  transition: transform 0.1s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.sosBtn:active {
+  transform: scale(0.95);
+}
+
+.btnEmergency {
+  background-color: #ef4444;
+  border-color: #991b1b;
+}
+.btnEmergency:hover {
+  background-color: #dc2626;
+}
+
+.btnGas {
+  background-color: #f59e0b;
+  border-color: #b45309;
+}
+.btnGas:hover {
+  background-color: #d97706;
+}
+
+.btnLost {
+  background-color: #f97316;
+  border-color: #c2410c;
+}
+.btnLost:hover {
+  background-color: #ea580c;
+}
+
+.btnActive {
+  background-color: #10b981;
+  border-color: #047857;
+}
+.btnActive:hover {
+  background-color: #059669;
+}
+
+/* Member List */
+.membersBox {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.membersBox::-webkit-scrollbar {
+  width: 6px;
+}
+.membersBox::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+
+.memberItem {
+  background-color: #0f172a;
+  border: 2px solid #334155;
+  padding: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+}
+
+.memberLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.colorIndicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid #fff;
+}
+
+.memberName {
+  font-weight: bold;
+}
+
+.leaderTag {
+  color: #fbbf24;
+  font-size: 0.6rem;
+  margin-left: 4px;
+}
+
+.memberStatusBadge {
+  padding: 2px 6px;
+  font-size: 0.6rem;
+  font-weight: bold;
+  border-radius: 2px;
+}
+
+.badge_active {
+  background-color: #065f46;
+  color: #34d399;
+}
+
+.badge_gas {
+  background-color: #78350f;
+  color: #fbbf24;
+  animation: pulse 1s infinite;
+}
+
+.badge_emergency {
+  background-color: #991b1b;
+  color: #fca5a5;
+  animation: blink 0.5s infinite;
+}
+
+.badge_lost {
+  background-color: #7c2d12;
+  color: #ffedd5;
+  animation: pulse 1.2s infinite;
+}
+
+/* NPC Speech Bubble Section */
+.npcAdvice {
+  margin-top: 16px;
+  display: flex;
+  gap: 12px;
+  background-color: #1e293b;
+  padding: 12px;
+  border: 3px double #475569;
+}
+
+.npcAvatar {
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.speechBubble {
+  flex: 1;
+  position: relative;
+}
+
+.npcName {
+  font-size: 0.65rem;
+  font-weight: bold;
+  color: #10b981;
+}
+
+.speechText {
+  margin: 4px 0 0 0;
+  font-size: 0.7rem;
+  line-height: 1.4;
+  color: #cbd5e1;
+}
+
+/* SOS Fullscreen Alert Overlay */
+.sosAlertOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(153, 27, 27, 0.4);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: screenRedBlink 0.8s infinite alternate;
+  pointer-events: none;
+}
+
+.sosModal {
+  pointer-events: auto;
+  background-color: #7f1d1d;
+  border: 4px solid #ef4444;
+  padding: 24px;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 0 24px rgba(239, 68, 68, 0.8);
+  text-align: center;
+}
+
+.sosTitle {
+  font-size: 1.2rem;
+  color: #fca5a5;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.sosDesc {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin-bottom: 16px;
+  color: #fff;
+}
+
+/* Animations */
+@keyframes markerBlink {
+  from {
+    transform: scale(1);
+    box-shadow: 0 0 8px #ef4444;
+  }
+  to {
+    transform: scale(1.15);
+    box-shadow: 0 0 20px #ef4444;
+  }
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+@keyframes blink {
+  0% { opacity: 0; }
+  49% { opacity: 0; }
+  50% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+@keyframes screenRedBlink {
+  from { background-color: rgba(153, 27, 27, 0.2); }
+  to { background-color: rgba(153, 27, 27, 0.55); }
+}
+
+/* Spin animation for icons */
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+/* General Layout utilities */
+.centerContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  text-align: center;
+}
+
+.blinkText {
+  animation: pulse 1.2s infinite;
+  color: #10b981;
+  font-weight: bold;
+  font-size: 0.8rem;
+}
