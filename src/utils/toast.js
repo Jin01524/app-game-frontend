@@ -5,6 +5,7 @@ export const toast = {
   },
   success: (message) => toast.show(message, 'success'),
   error: (message) => toast.show(message, 'error'),
+  warning: (message) => toast.show(message, 'warning'),
   info: (message) => toast.show(message, 'info'),
   subscribe: (listener) => {
     toast.listeners.push(listener);
@@ -13,3 +14,4 @@ export const toast = {
     };
   }
 };
+

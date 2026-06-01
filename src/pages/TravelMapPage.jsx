@@ -7,6 +7,65 @@ import BottomNav from '../components/BottomNav';
 import { toast } from '../utils/toast';
 import styles from './TravelMapPage.module.css';
 
+// Distance calculation helper (Haversine Formula)
+const getDistance = (lat1, lon1, lat2, lon2) => {
+  if (lat1 === null || lon1 === null || lat2 === null || lon2 === null) return null;
+  const R = 6371e3; // meters
+  const phi1 = (lat1 * Math.PI) / 180;
+  const phi2 = (lat2 * Math.PI) / 180;
+  const deltaPhi = ((lat2 - lat1) * Math.PI) / 180;
+  const deltaLambda = ((lon2 - lon1) * Math.PI) / 180;
+
+  const a =
+    Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
+    Math.cos(phi1) * Math.cos(phi2) * Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c; // in meters
+};
+
+// Bearing angle in radians
+const getBearingAngle = (lat1, lon1, lat2, lon2) => {
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const lat1Rad = (lat1 * Math.PI) / 180;
+  const lat2Rad = (lat2 * Math.PI) / 180;
+  const y = Math.sin(dLon) * Math.cos(lat2Rad);
+  const x =
+    Math.cos(lat1Rad) * Math.sin(lat2Rad) -
+    Math.sin(lat1Rad) * Math.cos(lat2Rad) * Math.cos(dLon);
+  return Math.atan2(y, x);
+};
+
+// Friendly compass directions in Vietnamese
+const getDirectionString = (lat1, lon1, lat2, lon2) => {
+  if (lat1 === null || lon1 === null || lat2 === null || lon2 === null) return '';
+  if (lat1 === lat2 && lon1 === lon2) return 'Ở đây 📍';
+  
+  const angle = (getBearingAngle(lat1, lon1, lat2, lon2) * 180) / Math.PI;
+  const bearing = (angle + 360) % 360;
+
+  const directions = [
+    { label: 'Bắc ⬆️', min: 337.5, max: 360 },
+    { label: 'Bắc ⬆️', min: 0, max: 22.5 },
+    { label: 'Đông Bắc ↗️', min: 22.5, max: 67.5 },
+    { label: 'Đông ➡️', min: 67.5, max: 112.5 },
+    { label: 'Đông Nam ↘️', min: 112.5, max: 157.5 },
+    { label: 'Nam ⬇️', min: 157.5, max: 202.5 },
+    { label: 'Tây Nam ↙️', min: 202.5, max: 247.5 },
+    { label: 'Tây ⬅️', min: 247.5, max: 292.5 },
+    { label: 'Tây Bắc ↖️', min: 292.5, max: 337.5 }
+  ];
+
+  const match = directions.find(d => {
+    if (d.min > d.max) {
+      return bearing >= d.min || bearing < d.max;
+    }
+    return bearing >= d.min && bearing < d.max;
+  });
+
+  return match ? match.label : 'Chỉ hướng...';
+};
+
 const MOCK_COORDS = [
   { lat: 16.0669, lng: 108.2201 }, // Dragon Bridge
   { lat: 16.0601, lng: 108.2234 }, // near Dragon Bridge
@@ -20,36 +79,33 @@ export default function TravelMapPage() {
   const navigate = useNavigate();
   const { authFetch, user } = useAuth();
 
-  // Map Loading and General state
-  const [mapReady, setMapReady] = useState(false);
+  // Loading and General state
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   // Trip specific states
   const [activeTrip, setActiveTrip] = useState(null);
   const [members, setMembers] = useState([]);
-  
+
   // Form inputs
   const [tripName, setTripName] = useState('');
   const [tripCode, setTripCode] = useState('');
-  
+  const [newCheckpointName, setNewCheckpointName] = useState('');
+
   // Real-time states
   const [isLeader, setIsLeader] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
   const [statusAlert, setStatusAlert] = useState(null);
   const [currentStatus, setCurrentStatus] = useState('active'); // active, gas, emergency, lost
   const [routeWaypoints, setRouteWaypoints] = useState([]);
-  
+
   // Geolocation and simulator states
   const [gpsTracking, setGpsTracking] = useState(false);
   const [simulationIndex, setSimulationIndex] = useState(0);
   const [isSimulating, setIsSimulating] = useState(false);
 
-  // Socket & Map references
+  // Socket references
   const socketRef = useRef(null);
-  const mapRef = useRef(null);
-  const markersRef = useRef({});
-  const polylineRef = useRef(null);
   const locationWatcherRef = useRef(null);
 
   // Synthesize alarm sound using browser Web Audio API
@@ -58,13 +114,13 @@ export default function TravelMapPage() {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       if (!AudioContext) return;
       const ctx = new AudioContext();
-      
+
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      
+
       osc.connect(gain);
       gain.connect(ctx.destination);
-      
+
       if (status === 'emergency') {
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(500, ctx.currentTime);
@@ -72,63 +128,37 @@ export default function TravelMapPage() {
         osc.frequency.linearRampToValueAtTime(500, ctx.currentTime + 0.6);
         osc.frequency.linearRampToValueAtTime(1000, ctx.currentTime + 0.9);
         osc.frequency.linearRampToValueAtTime(500, ctx.currentTime + 1.2);
-        
+
         gain.gain.setValueAtTime(0.3, ctx.currentTime);
         gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 1.5);
-        
+
         osc.start();
         osc.stop(ctx.currentTime + 1.5);
       } else if (status === 'gas') {
         osc.type = 'sine';
         osc.frequency.setValueAtTime(659.25, ctx.currentTime); // E5
         osc.frequency.setValueAtTime(880, ctx.currentTime + 0.12); // A5
-        
+
         gain.gain.setValueAtTime(0.2, ctx.currentTime);
         gain.gain.linearRampToValueAtTime(0.2, ctx.currentTime + 0.12);
         gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.4);
-        
+
         osc.start();
         osc.stop(ctx.currentTime + 0.4);
       } else if (status === 'lost') {
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(440, ctx.currentTime);
         osc.frequency.linearRampToValueAtTime(220, ctx.currentTime + 0.5);
-        
+
         gain.gain.setValueAtTime(0.25, ctx.currentTime);
         gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.6);
-        
+
         osc.start();
         osc.stop(ctx.currentTime + 0.6);
       }
     } catch (e) {
       console.warn('[Travel Synth] Failed to play audio alert:', e);
     }
-  }, []);
-
-  // 1. Dynamic CDN Loading of Leaflet.js
-  useEffect(() => {
-    if (window.L) {
-      setMapReady(true);
-      return;
-    }
-
-    const cssLink = document.createElement('link');
-    cssLink.rel = 'stylesheet';
-    cssLink.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-    cssLink.id = 'leaflet-css';
-    document.head.appendChild(cssLink);
-
-    const jsScript = document.createElement('script');
-    jsScript.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-    jsScript.id = 'leaflet-js';
-    jsScript.onload = () => {
-      setMapReady(true);
-    };
-    document.body.appendChild(jsScript);
-
-    return () => {
-      // Keep Leaflet in DOM
-    };
   }, []);
 
   // Fetch active trip details from HTTP API
@@ -148,11 +178,11 @@ export default function TravelMapPage() {
               setActiveTrip(groupData.group);
               setMembers(groupData.members);
               setIsLeader(groupData.group.leader_username === user.username);
-              
+
               const waypoints = JSON.parse(groupData.group.route_waypoints || '[]');
               setRouteWaypoints(waypoints);
-              
-              const me = groupData.members.find(m => m.username === user.username);
+
+              const me = groupData.members.find((m) => m.username === user.username);
               if (me) {
                 setCurrentStatus(me.status);
               }
@@ -176,139 +206,7 @@ export default function TravelMapPage() {
     fetchActiveTrip();
   }, [fetchActiveTrip]);
 
-  // Create markers for Leaflet Map
-  const updateMapMarker = useCallback((member) => {
-    if (!mapRef.current || !window.L || member.lat === null || member.lng === null) return;
-
-    const L = window.L;
-    const isSelf = member.username === user.username;
-    
-    // Create color matched pixel icon HTML
-    const markerHtml = `
-      <div class="${styles.customMarker} ${styles[member.status]}">
-        <div class="${styles.pixelPin}">
-          <div class="${styles.avatarDot}" style="background-color: ${member.char_head_color || '#ffccaa'}">
-            ${isSelf ? '🏍️' : '👤'}
-          </div>
-        </div>
-        <div class="${styles.markerLabel}" style="border-color: ${member.char_body_color || '#3b82f6'}">
-          ${isSelf ? '[BẠN] ' : ''}${member.display_name || member.username}
-        </div>
-      </div>
-    `;
-
-    const icon = L.divIcon({
-      html: markerHtml,
-      className: '',
-      iconSize: [36, 36],
-      iconAnchor: [18, 18]
-    });
-
-    if (markersRef.current[member.username]) {
-      // Update existing marker
-      markersRef.current[member.username].setLatLng([member.lat, member.lng]);
-      markersRef.current[member.username].setIcon(icon);
-    } else {
-      // Create new marker
-      const marker = L.marker([member.lat, member.lng], { icon }).addTo(mapRef.current);
-      
-      // Bind descriptive popup
-      marker.bindPopup(`
-        <div style="font-family: 'Space Mono', monospace; font-size: 11px; color: #000;">
-          <strong>${member.display_name}</strong><br/>
-          Trạng thái: <span style="font-weight:bold; color:${
-            member.status === 'emergency' ? 'red' : 
-            member.status === 'gas' ? 'orange' : 
-            member.status === 'lost' ? 'purple' : 'green'
-          }">${
-            member.status === 'emergency' ? '🚨 SOS KHẨN CẤP' : 
-            member.status === 'gas' ? '⛽ ĐANG ĐỔ XĂNG' : 
-            member.status === 'lost' ? '🌀 LẠC ĐOÀN' : '✅ AN TOÀN'
-          }</span><br/>
-          Cập nhật: ${new Date(member.last_updated || Date.now()).toLocaleTimeString()}
-        </div>
-      `);
-      markersRef.current[member.username] = marker;
-    }
-  }, [user.username]);
-
-  // Handle active routes / polylines drawing
-  const updateMapRoute = useCallback((waypoints) => {
-    if (!mapRef.current || !window.L) return;
-    const L = window.L;
-
-    if (polylineRef.current) {
-      polylineRef.current.setLatLngs(waypoints);
-    } else {
-      polylineRef.current = L.polyline(waypoints, {
-        color: '#10b981',
-        weight: 5,
-        dashArray: '5, 8',
-        lineCap: 'round',
-        lineJoin: 'round'
-      }).addTo(mapRef.current);
-    }
-  }, []);
-
-  // 2. Initialize Leaflet Map with Google Maps Tiles (100% Free POI Database)
-  useEffect(() => {
-    if (!mapReady || !activeTrip || mapRef.current) return;
-
-    const L = window.L;
-    const mapId = 'travel-map-canvas';
-    
-    // Fallback focus to Danang coordinates
-    const defaultCenter = [16.0544, 108.2022];
-    const map = L.map(mapId, {
-      doubleClickZoom: false
-    }).setView(defaultCenter, 13);
-
-    // Setup 100% Free Google Maps Tiles Server
-    L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-      maxZoom: 20,
-      subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-      attribution: '&copy; Google Maps'
-    }).addTo(map);
-
-    mapRef.current = map;
-
-    // Draw existing route
-    const existingWaypoints = JSON.parse(activeTrip.route_waypoints || '[]');
-    if (existingWaypoints.length > 0) {
-      updateMapRoute(existingWaypoints);
-    }
-
-    // Leader drawing route click handler
-    map.on('dblclick', (e) => {
-      // Access leader state through a ref or dynamic check inside handler
-      if (activeTrip.leader_username === user.username) {
-        const { lat, lng } = e.latlng;
-        setRouteWaypoints((prev) => {
-          const next = [...prev, [lat, lng]];
-          updateMapRoute(next);
-          // Emit socket update
-          if (socketRef.current) {
-            socketRef.current.emit('update_route', {
-              groupId: activeTrip.id,
-              waypoints: next
-            });
-          }
-          return next;
-        });
-      }
-    });
-
-    return () => {
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
-        markersRef.current = {};
-        polylineRef.current = null;
-      }
-    };
-  }, [mapReady, activeTrip, updateMapRoute, user.username]);
-
-  // 3. WebSockets Real-time Communications
+  // WebSockets Real-time Communications
   useEffect(() => {
     if (!activeTrip) return;
 
@@ -316,7 +214,7 @@ export default function TravelMapPage() {
     const socket = io(socketUrl, {
       transports: ['websocket', 'polling']
     });
-    
+
     socketRef.current = socket;
 
     // Join room
@@ -328,13 +226,13 @@ export default function TravelMapPage() {
     // Listeners
     socket.on('location_updated', (data) => {
       setMembers((prev) => {
-        const index = prev.findIndex(m => m.username === data.username);
+        const index = prev.findIndex((m) => m.username === data.username);
         let updated = [...prev];
-        
+
         if (index !== -1) {
-          updated[index] = { 
-            ...updated[index], 
-            lat: data.lat, 
+          updated[index] = {
+            ...updated[index],
+            lat: data.lat,
             lng: data.lng,
             char_head_color: data.charColors ? data.charColors.head : updated[index].char_head_color,
             char_hair_color: data.charColors ? data.charColors.hair : updated[index].char_hair_color,
@@ -344,7 +242,6 @@ export default function TravelMapPage() {
             last_updated: new Date().toISOString()
           };
         } else {
-          // Add missing member
           updated.push({
             username: data.username,
             display_name: data.displayName,
@@ -359,11 +256,7 @@ export default function TravelMapPage() {
             last_updated: new Date().toISOString()
           });
         }
-        
-        // Plot marker
-        const targetMember = updated.find(m => m.username === data.username);
-        if (targetMember) updateMapMarker(targetMember);
-        
+
         return updated;
       });
     });
@@ -372,7 +265,7 @@ export default function TravelMapPage() {
       // Trigger Audio Alarm
       if (data.status !== 'active') {
         playAlertSound(data.status);
-        
+
         // Trigger emergency overlay
         if (data.status === 'emergency') {
           setStatusAlert({
@@ -384,7 +277,7 @@ export default function TravelMapPage() {
       }
 
       setMembers((prev) => {
-        const index = prev.findIndex(m => m.username === data.username);
+        const index = prev.findIndex((m) => m.username === data.username);
         if (index === -1) return prev;
         const updated = [...prev];
         updated[index] = {
@@ -392,18 +285,19 @@ export default function TravelMapPage() {
           status: data.status,
           last_updated: data.timestamp
         };
-        
-        // Refresh marker visually
-        updateMapMarker(updated[index]);
         return updated;
       });
 
       // Show warning toast
-      const alertMsg = data.status === 'emergency' ? `🚨 CỨU HỘ SOS: ${data.displayName} cần trợ giúp khẩn cấp!`
-                    : data.status === 'gas' ? `⛽ ĐỔ XĂNG: ${data.displayName} dừng lại đổ xăng!`
-                    : data.status === 'lost' ? `🌀 LẠC ĐOÀN: ${data.displayName} lạc đoàn!`
-                    : `✅ AN TOÀN: ${data.displayName} đã tiếp tục hành trình.`;
-      
+      const alertMsg =
+        data.status === 'emergency'
+          ? `🚨 CỨU HỘ SOS: ${data.displayName} cần trợ giúp khẩn cấp!`
+          : data.status === 'gas'
+          ? `⛽ ĐỔ XĂNG: ${data.displayName} dừng lại đổ xăng!`
+          : data.status === 'lost'
+          ? `🌀 LẠC ĐOÀN: ${data.displayName} lạc đoàn!`
+          : `✅ AN TOÀN: ${data.displayName} đã tiếp tục hành trình.`;
+
       if (data.status === 'emergency') toast.error(alertMsg);
       else if (data.status === 'active') toast.success(alertMsg);
       else toast.warning(alertMsg);
@@ -411,12 +305,11 @@ export default function TravelMapPage() {
 
     socket.on('route_updated', (data) => {
       setRouteWaypoints(data.waypoints);
-      updateMapRoute(data.waypoints);
-      toast.success("🗺️ Lộ trình chung đã được trưởng đoàn cập nhật!");
+      toast.success('🗺️ Lộ trình chung đã được trưởng đoàn cập nhật!');
     });
 
     socket.on('member_joined_room', (data) => {
-      toast.info(`🏍️ ${data.username} đang định vị trực tuyến!`);
+      toast.info(`BIKE 🏍️ ${data.username} đang định vị trực tuyến!`);
     });
 
     socket.on('member_left_room', (data) => {
@@ -427,14 +320,14 @@ export default function TravelMapPage() {
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [activeTrip, updateMapMarker, updateMapRoute, playAlertSound, user.username]);
+  }, [activeTrip, playAlertSound, user.username]);
 
-  // 4. GPS Geolocation Tracking Core
+  // GPS Geolocation Tracking Core
   useEffect(() => {
-    if (!activeTrip || !mapReady || isSimulating) return;
+    if (!activeTrip || isSimulating) return;
 
     if (!navigator.geolocation) {
-      toast.error("Trình duyệt của bạn không hỗ trợ GPS Geolocation!");
+      toast.error('Trình duyệt của bạn không hỗ trợ GPS Geolocation!');
       return;
     }
 
@@ -446,11 +339,6 @@ export default function TravelMapPage() {
       const onSuccess = (position) => {
         const { latitude, longitude } = position.coords;
         setUserLocation({ lat: latitude, lng: longitude });
-
-        // Center map on user's first location fetch
-        if (mapRef.current && !userLocation) {
-          mapRef.current.setView([latitude, longitude], 15);
-        }
 
         // Emit location to socket
         if (socketRef.current) {
@@ -471,7 +359,7 @@ export default function TravelMapPage() {
         if (err.code === 3 && highAccuracy) {
           console.log('[Travel GPS] High accuracy timed out. Falling back to low accuracy Wi-Fi/IP...');
           highAccuracy = false;
-          
+
           if (locationWatcherRef.current !== null) {
             navigator.geolocation.clearWatch(locationWatcherRef.current);
           }
@@ -480,7 +368,9 @@ export default function TravelMapPage() {
             onSuccess,
             (lowAccErr) => {
               console.error('[Travel GPS] Low accuracy also failed:', lowAccErr);
-              toast.warning("Không lấy được GPS tự động. Hãy bật 'MÔ PHỎNG GPS' ở bảng điều khiển bên phải để test.");
+              toast.warning(
+                "Không lấy được GPS tự động. Hãy bật 'MÔ PHỎNG GPS' ở bảng bên phải để test."
+              );
             },
             { enableHighAccuracy: false, maximumAge: 10000, timeout: 12000 }
           );
@@ -490,17 +380,19 @@ export default function TravelMapPage() {
 
         // Permission denied (Code 1)
         if (err.code === 1) {
-          toast.warning("Quyền định vị bị chặn! Bạn hãy bật 'MÔ PHỎNG GPS' ở bảng bên phải để chạy thử nghiệm.");
+          toast.warning(
+            "Quyền định vị bị chặn! Hãy bật 'MÔ PHỎNG GPS' ở bảng bên phải để chạy thử nghiệm."
+          );
         } else {
-          toast.error("Lỗi định vị! Hãy dùng 'MÔ PHỎNG GPS' nếu test trên máy tính laptop/PC.");
+          toast.error("Lỗi định vị! Hãy dùng 'MÔ PHỎNG GPS' để thử nghiệm.");
         }
       };
 
-      locationWatcherRef.current = navigator.geolocation.watchPosition(
-        onSuccess,
-        onError,
-        { enableHighAccuracy: true, maximumAge: 5000, timeout: 6000 }
-      );
+      locationWatcherRef.current = navigator.geolocation.watchPosition(onSuccess, onError, {
+        enableHighAccuracy: true,
+        maximumAge: 5000,
+        timeout: 6000
+      });
     };
 
     startGPSTracking();
@@ -512,19 +404,9 @@ export default function TravelMapPage() {
         setGpsTracking(false);
       }
     };
-  }, [activeTrip, mapReady, isSimulating, user.username, userLocation]);
+  }, [activeTrip, isSimulating, user.username]);
 
-  // Initial plot of all members once coordinates load
-  useEffect(() => {
-    if (!mapRef.current || members.length === 0) return;
-    members.forEach(member => {
-      if (member.lat !== null && member.lng !== null) {
-        updateMapMarker(member);
-      }
-    });
-  }, [members, updateMapMarker]);
-
-  // 5. Trip Management Actions (API Calls)
+  // Trip Management Actions (API Calls)
   const handleCreateTrip = async (e) => {
     e.preventDefault();
     if (!tripName.trim()) {
@@ -546,8 +428,7 @@ export default function TravelMapPage() {
         setIsLeader(true);
         setRouteWaypoints([]);
         setSimulationIndex(0);
-        
-        // Refresh details
+
         fetchActiveTrip();
       } else {
         toast.error(data.error || 'Lỗi khi tạo nhóm phượt.');
@@ -580,8 +461,7 @@ export default function TravelMapPage() {
         setActiveTrip(data.group);
         setIsLeader(false);
         setSimulationIndex(0);
-        
-        // Refresh details
+
         fetchActiveTrip();
       } else {
         toast.error(data.error || 'Sai mã nhóm hoặc nhóm không tồn tại.');
@@ -595,7 +475,12 @@ export default function TravelMapPage() {
   };
 
   const handleLeaveTrip = async () => {
-    if (!window.confirm('Bạn có chắc muốn rời nhóm phượt hiện tại? Vị trí định vị của bạn sẽ bị hủy.')) return;
+    if (
+      !window.confirm(
+        'Bạn có chắc muốn rời nhóm phượt hiện tại? Vị trí định vị của bạn sẽ bị hủy.'
+      )
+    )
+      return;
 
     setLoading(true);
     try {
@@ -606,16 +491,10 @@ export default function TravelMapPage() {
       });
       if (res.ok) {
         toast.success('Đã rời nhóm phượt thành công!');
-        
-        // Clear maps
-        if (mapRef.current) {
-          markersRef.current = {};
-        }
-        
-        // Stop simulator
+
         setIsSimulating(false);
         setGpsTracking(false);
-        
+
         setActiveTrip(null);
         setMembers([]);
         setIsLeader(false);
@@ -636,12 +515,10 @@ export default function TravelMapPage() {
   // Change emergency panel states
   const handleStatusChange = async (newStatus) => {
     if (!activeTrip) return;
-    
-    // Play sound locally
+
     playAlertSound(newStatus);
     setCurrentStatus(newStatus);
 
-    // Emit via WebSocket
     if (socketRef.current) {
       socketRef.current.emit('send_status_alert', {
         groupId: activeTrip.id,
@@ -650,9 +527,8 @@ export default function TravelMapPage() {
       });
     }
 
-    // Refresh list locally for direct visual feed
     setMembers((prev) => {
-      const index = prev.findIndex(m => m.username === user.username);
+      const index = prev.findIndex((m) => m.username === user.username);
       if (index === -1) return prev;
       const updated = [...prev];
       updated[index] = {
@@ -660,48 +536,80 @@ export default function TravelMapPage() {
         status: newStatus,
         last_updated: new Date().toISOString()
       };
-      
-      updateMapMarker(updated[index]);
       return updated;
     });
   };
 
-  // Double-click route drawing leader tool resets
+  // Checkpoints logic
+  const handleAddCheckpoint = (e) => {
+    e.preventDefault();
+    if (!newCheckpointName.trim()) return;
+
+    const newCp = {
+      name: newCheckpointName.trim(),
+      lat: userLocation ? userLocation.lat : null,
+      lng: userLocation ? userLocation.lng : null
+    };
+
+    setRouteWaypoints((prev) => {
+      const next = [...prev, newCp];
+      if (socketRef.current) {
+        socketRef.current.emit('update_route', {
+          groupId: activeTrip.id,
+          waypoints: next
+        });
+      }
+      return next;
+    });
+
+    setNewCheckpointName('');
+    toast.success(`📍 Đã thêm điểm chặng: "${newCp.name}"`);
+  };
+
+  const handleRemoveCheckpoint = (idx) => {
+    if (!isLeader) return;
+
+    setRouteWaypoints((prev) => {
+      const next = prev.filter((_, i) => i !== idx);
+      if (socketRef.current) {
+        socketRef.current.emit('update_route', {
+          groupId: activeTrip.id,
+          waypoints: next
+        });
+      }
+      return next;
+    });
+    toast.info('🧹 Đã xóa điểm chặng.');
+  };
+
   const handleClearRoute = () => {
-    if (!isLeader || !window.confirm('Xác nhận xóa sạch lộ trình vẽ trên bản đồ?')) return;
-    
+    if (!isLeader || !window.confirm('Xác nhận xóa sạch toàn bộ lộ trình chặng dừng?')) return;
+
     setRouteWaypoints([]);
-    if (polylineRef.current) {
-      polylineRef.current.setLatLngs([]);
-    }
-    
+
     if (socketRef.current) {
       socketRef.current.emit('update_route', {
         groupId: activeTrip.id,
         waypoints: []
       });
     }
-    toast.info("🧹 Đã xóa toàn bộ lộ trình chung.");
+    toast.info('🧹 Đã xóa toàn bộ lộ trình chặng dừng.');
   };
 
-  // GPS Simulation Trigger (For desktops/environments without true high-accuracy GPS)
+  // GPS Simulation Trigger
   const toggleGPSSimulator = () => {
     if (isSimulating) {
       setIsSimulating(false);
       setGpsTracking(false);
-      toast.info("🔌 Đã ngắt mô phỏng GPS.");
+      toast.info('🔌 Đã ngắt mô phỏng GPS.');
     } else {
       setIsSimulating(true);
       setGpsTracking(true);
-      toast.success("🎮 Đã kích hoạt mô phỏng định vị di chuyển phượt!");
-      
-      // Auto set first location
+      toast.success('🎮 Đã kích hoạt mô phỏng định vị di chuyển phượt!');
+
       const first = MOCK_COORDS[0];
       setUserLocation(first);
-      if (mapRef.current) {
-        mapRef.current.setView([first.lat, first.lng], 15);
-      }
-      
+
       if (socketRef.current) {
         socketRef.current.emit('update_location', {
           groupId: activeTrip.id,
@@ -719,17 +627,13 @@ export default function TravelMapPage() {
     if (!isSimulating) return;
 
     if (simulationIndex >= MOCK_COORDS.length) {
-      toast.info("🏆 Bạn đã phượt hoàn thành chặng đèo mô phỏng!");
+      toast.info('🏆 Bạn đã phượt hoàn thành chặng đèo mô phỏng!');
       setSimulationIndex(0);
       return;
     }
 
     const nextCoord = MOCK_COORDS[simulationIndex];
     setUserLocation(nextCoord);
-    
-    if (mapRef.current) {
-      mapRef.current.panTo([nextCoord.lat, nextCoord.lng]);
-    }
 
     if (socketRef.current) {
       socketRef.current.emit('update_location', {
@@ -739,9 +643,25 @@ export default function TravelMapPage() {
         lng: nextCoord.lng
       });
     }
-    
+
     toast.info(`🛵 Di chuyển đến trạm ${simulationIndex + 1}/${MOCK_COORDS.length}`);
-    setSimulationIndex(prev => prev + 1);
+    setSimulationIndex((prev) => prev + 1);
+  };
+
+  // Normalize waypoint format helper
+  const parseWaypoint = (wp, idx) => {
+    if (Array.isArray(wp)) {
+      return {
+        name: `Trạm dừng chân ${idx + 1}`,
+        lat: wp[0],
+        lng: wp[1]
+      };
+    }
+    return {
+      name: wp.name || `Trạm dừng chân ${idx + 1}`,
+      lat: wp.lat || null,
+      lng: wp.lng || null
+    };
   };
 
   return (
@@ -751,22 +671,44 @@ export default function TravelMapPage() {
       <main className={styles.main}>
         {/* Header */}
         <header className={`${styles.header} rpg-box fade-in`}>
-          <div className="px-titlebar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-            <span>◄ ĐỒNG ĐỘI ĐÂU RỒI? 🏍️ ►</span>
-            <button className="pixel-btn" onClick={() => navigate('/utilities')} style={{ padding: '3px 8px', fontSize: '0.65rem' }}>
+          <div
+            className="px-titlebar"
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              width: '100%'
+            }}
+          >
+            <span>◄ ĐỒNG ĐỘI ĐÂU RỒI? 🏍️ (HUD RADAR CHỈ ĐƯỜNG) ►</span>
+            <button
+              className="pixel-btn"
+              onClick={() => navigate('/utilities')}
+              style={{ padding: '3px 8px', fontSize: '0.65rem' }}
+            >
               [ THOÁT ]
             </button>
           </div>
         </header>
 
         {loading && !activeTrip ? (
-          <div className="rpg-box fade-in" style={{ padding: '32px', textAlign: 'center', backgroundColor: '#1e293b' }}>
+          <div
+            className="rpg-box fade-in"
+            style={{ padding: '32px', textAlign: 'center', backgroundColor: '#1e293b' }}
+          >
             <div className={styles.blinkText}>[ 🌐 ĐANG ĐỒNG BỘ PHƯỢT THỜI GIAN THỰC... ]</div>
           </div>
         ) : error ? (
-          <div className="rpg-box fade-in" style={{ padding: '24px', backgroundColor: '#7f1d1d', border: '3px solid #ef4444' }}>
-            <div style={{ color: '#fca5a5', fontWeight: 'bold', marginBottom: '8px' }}>⚠️ {error}</div>
-            <button className="btn btn-outline" onClick={() => fetchActiveTrip()}>Thử lại</button>
+          <div
+            className="rpg-box fade-in"
+            style={{ padding: '24px', backgroundColor: '#7f1d1d', border: '3px solid #ef4444' }}
+          >
+            <div style={{ color: '#fca5a5', fontWeight: 'bold', marginBottom: '8px' }}>
+              ⚠️ {error}
+            </div>
+            <button className="btn btn-outline" onClick={() => fetchActiveTrip()}>
+              Thử lại
+            </button>
           </div>
         ) : !activeTrip ? (
           /* Lobby Mode: Join or Create Group */
@@ -781,10 +723,14 @@ export default function TravelMapPage() {
                     className={styles.pixelInput}
                     placeholder="Nhập tên chuyến đi..."
                     value={tripName}
-                    onChange={e => setTripName(e.target.value)}
+                    onChange={(e) => setTripName(e.target.value)}
                     style={{ flex: 1 }}
                   />
-                  <button type="submit" className="btn btn-primary" style={{ backgroundColor: '#10b981', border: '3px solid #047857' }}>
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    style={{ backgroundColor: '#10b981', border: '3px solid #047857' }}
+                  >
                     [ TẠO NHÓM ]
                   </button>
                 </div>
@@ -801,10 +747,14 @@ export default function TravelMapPage() {
                     className={styles.pixelInput}
                     placeholder="Mã CODE phượt..."
                     value={tripCode}
-                    onChange={e => setTripCode(e.target.value)}
+                    onChange={(e) => setTripCode(e.target.value)}
                     style={{ flex: 1, textTransform: 'uppercase' }}
                   />
-                  <button type="submit" className="btn btn-primary" style={{ backgroundColor: '#3b82f6', border: '3px solid #1d4ed8' }}>
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    style={{ backgroundColor: '#3b82f6', border: '3px solid #1d4ed8' }}
+                  >
                     [ GIA NHẬP ]
                   </button>
                 </div>
@@ -817,7 +767,9 @@ export default function TravelMapPage() {
               <div className={styles.speechBubble}>
                 <span className={styles.npcName}>[ NPC BÁC XE ÔM ĐÀ THÀNH 👴 ]</span>
                 <p className={styles.speechText}>
-                  "Hỡi các bạn trẻ thích chinh phục cung đường! Chuyến đi chơi xa chỉ thực sự trọn vẹn khi tất cả cùng trở về an toàn. Sử dụng bảng liên lạc định vị này để không ai bị bỏ lại phía sau nhé!"
+                  "Bản đồ bản đồ chi cho nặng máy các cháu ơi! Chỉ cần bật cái HUD Radar định vị
+                  xe máy này lên là thấy rõ các bạn cách mình mấy mét, đi hướng nào, có ai bị lạc
+                  đường hay dừng đổ xăng không. Vừa nhẹ vừa nhanh, lái xe an toàn nhé!"
                 </p>
               </div>
             </div>
@@ -825,22 +777,259 @@ export default function TravelMapPage() {
         ) : (
           /* Active Trip Mode */
           <div className={styles.tripGrid}>
-            
-            {/* 1. Map Panel */}
+            {/* 1. Radar Panel */}
             <div className={`${styles.mapBox} rpg-box fade-in`}>
               <div className={styles.mapTitleBar}>
-                <span>📍 GOOGLE MAPS PHƯỢT LIVE 🌐 (100% MIỄN PHÍ)</span>
-                <span>{gpsTracking ? '🟢 ĐANG BÁO VỊ TRÍ...' : '🔵 CHỜ TÍN HIỆU...'}</span>
+                <span>📡 RADAR ĐỊNH VỊ PHƯỢT KHÔNG CẦN BẢN ĐỒ (SIÊU NHẸ)</span>
+                <span>{gpsTracking ? '🟢 LIVE GPS' : '🔵 CHỜ GPS...'}</span>
               </div>
-              
-              {/* Map Mount Target */}
-              <div id="travel-map-canvas" className={styles.leafletContainer}></div>
 
-              {isLeader && (
-                <div style={{ fontSize: '0.6rem', color: '#cbd5e1', marginTop: '8px', textAlign: 'center' }}>
-                  💡 Trưởng đoàn: <strong>Click đúp (Double-click)</strong> trên bản đồ để nối thêm các điểm lộ trình chung!
+              {/* HUD CSS RADAR SCREEN */}
+              <div className={styles.radarScreen}>
+                <div className={styles.radarSweeper} />
+
+                {/* Radar grid markings */}
+                <div className={styles.radarGridCircle} style={{ width: '60px', height: '60px' }} />
+                <div
+                  className={styles.radarGridCircle}
+                  style={{ width: '120px', height: '120px' }}
+                />
+                <div
+                  className={styles.radarGridCircle}
+                  style={{ width: '180px', height: '180px' }}
+                />
+                <div
+                  className={styles.radarGridCircle}
+                  style={{ width: '240px', height: '240px' }}
+                />
+
+                {/* Vertical & Horizontal Crosshairs */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '0',
+                    left: '50%',
+                    width: '1px',
+                    height: '100%',
+                    background: 'rgba(16,185,129,0.15)',
+                    pointerEvents: 'none'
+                  }}
+                />
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '0',
+                    width: '100%',
+                    height: '1px',
+                    background: 'rgba(16,185,129,0.15)',
+                    pointerEvents: 'none'
+                  }}
+                />
+
+                {/* User Center Blip */}
+                <div className={styles.radarCenterBlip}>
+                  <div
+                    style={{
+                      fontSize: '11px',
+                      background: '#10b981',
+                      color: '#fff',
+                      padding: '2px 4px',
+                      border: '1px solid #fff',
+                      borderRadius: '3px',
+                      fontWeight: 'bold',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    BẠN 🏍️
+                  </div>
                 </div>
-              )}
+
+                {/* Render Blips for Teammates */}
+                {members
+                  .filter((m) => m.username !== user.username && m.lat !== null && m.lng !== null)
+                  .map((m) => {
+                    // Maximum radar range is 3.5 km
+                    const MAX_RANGE = 3500;
+                    if (!userLocation) return null;
+
+                    const distance = getDistance(
+                      userLocation.lat,
+                      userLocation.lng,
+                      m.lat,
+                      m.lng
+                    );
+                    if (distance === null) return null;
+
+                    // Compute bearing angle in radians
+                    const bearing = getBearingAngle(
+                      userLocation.lat,
+                      userLocation.lng,
+                      m.lat,
+                      m.lng
+                    );
+
+                    // Clamp distance to MAX_RANGE and map to radar radius (120px)
+                    const radius = Math.min((distance / MAX_RANGE) * 120, 120);
+
+                    // Calculate X & Y offsets from radar center
+                    const dx = radius * Math.sin(bearing);
+                    const dy = -radius * Math.cos(bearing); // SVG/Screen Y inversion
+
+                    return (
+                      <div
+                        key={m.username}
+                        className={styles.radarBlip}
+                        style={{
+                          left: `calc(50% + ${dx}px)`,
+                          top: `calc(50% + ${dy}px)`,
+                          backgroundColor: m.char_head_color || '#ef4444',
+                          borderColor:
+                            m.status === 'emergency'
+                              ? '#ef4444'
+                              : m.status === 'gas'
+                              ? '#f59e0b'
+                              : m.status === 'lost'
+                              ? '#a855f7'
+                              : '#fff'
+                        }}
+                        title={`${m.display_name} (${Math.round(distance)}m)`}
+                      >
+                        <div
+                          style={{
+                            position: 'absolute',
+                            top: '-16px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            background: 'rgba(0,0,0,0.8)',
+                            color: '#fff',
+                            fontSize: '6px',
+                            padding: '1px 3px',
+                            border: '1px solid #475569',
+                            whiteSpace: 'nowrap',
+                            zIndex: 10
+                          }}
+                        >
+                          {m.display_name}
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+
+              <div
+                style={{
+                  fontSize: '0.65rem',
+                  color: '#94a3b8',
+                  textAlign: 'center',
+                  marginBottom: '10px'
+                }}
+              >
+                📡 Bán kính Radar tương ứng: <strong>3.5 Kilômét (3500m)</strong>. Tâm quét là vị
+                trí của bạn.
+              </div>
+
+              {/* Route Waypoints Checkpoints list (No-Map Quest line style!) */}
+              <div style={{ marginTop: '12px', borderTop: '2px dashed #334155', paddingTop: '12px' }}>
+                <h4 style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#10b981', margin: '0 0 8px 0' }}>
+                  📍 LỘ TRÌNH CHẶNG DỪNG PHƯỢT ({routeWaypoints.length})
+                </h4>
+
+                {routeWaypoints.length === 0 ? (
+                  <div style={{ fontSize: '0.65rem', color: '#64748b', fontStyle: 'italic' }}>
+                    Chưa có chặng dừng chân nào được đặt cho chuyến đi này.
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {routeWaypoints.map((wp, idx) => {
+                      const cp = parseWaypoint(wp, idx);
+                      let distInfo = '';
+                      if (userLocation && cp.lat !== null && cp.lng !== null) {
+                        const meters = getDistance(
+                          userLocation.lat,
+                          userLocation.lng,
+                          cp.lat,
+                          cp.lng
+                        );
+                        distInfo =
+                          meters > 1000
+                            ? `Cách bạn: ${(meters / 1000).toFixed(1)} km`
+                            : `Cách bạn: ${Math.round(meters)} m`;
+                      }
+
+                      return (
+                        <div
+                          key={idx}
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            background: '#0f172a',
+                            border: '2px solid #334155',
+                            padding: '6px 10px',
+                            fontSize: '0.7rem'
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>🏁 {idx + 1}.</span>
+                            <span style={{ color: '#f8fafc', fontWeight: 'bold' }}>{cp.name}</span>
+                            {distInfo && (
+                              <span style={{ color: '#94a3b8', fontSize: '0.65rem' }}>({distInfo})</span>
+                            )}
+                          </div>
+
+                          {isLeader && (
+                            <button
+                              onClick={() => handleRemoveCheckpoint(idx)}
+                              className="pixel-btn"
+                              style={{
+                                padding: '2px 6px',
+                                fontSize: '0.55rem',
+                                backgroundColor: '#7f1d1d'
+                              }}
+                            >
+                              [ XÓA ]
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Add checkpoint tool */}
+                {isLeader && (
+                  <form
+                    onSubmit={handleAddCheckpoint}
+                    style={{
+                      display: 'flex',
+                      gap: '8px',
+                      marginTop: '8px',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <input
+                      type="text"
+                      className={styles.pixelInput}
+                      placeholder="Thêm điểm mốc..."
+                      value={newCheckpointName}
+                      onChange={(e) => setNewCheckpointName(e.target.value)}
+                      style={{ flex: 1, padding: '4px 8px', fontSize: '0.7rem' }}
+                    />
+                    <button
+                      type="submit"
+                      className="pixel-btn"
+                      style={{
+                        padding: '6px 10px',
+                        fontSize: '0.65rem',
+                        backgroundColor: '#10b981'
+                      }}
+                    >
+                      [ + THÊM CHẶNG ]
+                    </button>
+                  </form>
+                )}
+              </div>
             </div>
 
             {/* 2. Control & Info Sidebar */}
@@ -864,29 +1053,37 @@ export default function TravelMapPage() {
               <div>
                 <h3 className={styles.controlTitle}>🚨 TRẠNG THÁI CỦA BẠN:</h3>
                 <div className={styles.alertGrid}>
-                  <button 
-                    className={`${styles.sosBtn} ${styles.btnEmergency} ${currentStatus === 'emergency' ? 'active-alert' : ''}`}
+                  <button
+                    className={`${styles.sosBtn} ${styles.btnEmergency} ${
+                      currentStatus === 'emergency' ? 'active-alert' : ''
+                    }`}
                     onClick={() => handleStatusChange('emergency')}
                   >
                     <span>🚨 KHẨN CẤP</span>
                     <span style={{ fontSize: '7px' }}>HỎNG XE / TAI NẠN</span>
                   </button>
-                  <button 
-                    className={`${styles.sosBtn} ${styles.btnGas} ${currentStatus === 'gas' ? 'active-alert' : ''}`}
+                  <button
+                    className={`${styles.sosBtn} ${styles.btnGas} ${
+                      currentStatus === 'gas' ? 'active-alert' : ''
+                    }`}
                     onClick={() => handleStatusChange('gas')}
                   >
                     <span>⛽ ĐỔ XĂNG</span>
                     <span style={{ fontSize: '7px' }}>DỪNG LẠI TÝ</span>
                   </button>
-                  <button 
-                    className={`${styles.sosBtn} ${styles.btnLost} ${currentStatus === 'lost' ? 'active-alert' : ''}`}
+                  <button
+                    className={`${styles.sosBtn} ${styles.btnLost} ${
+                      currentStatus === 'lost' ? 'active-alert' : ''
+                    }`}
                     onClick={() => handleStatusChange('lost')}
                   >
                     <span>🌀 LẠC ĐOÀN</span>
                     <span style={{ fontSize: '7px' }}>KHÔNG THẤY AI</span>
                   </button>
-                  <button 
-                    className={`${styles.sosBtn} ${styles.btnActive} ${currentStatus === 'active' ? 'active-alert' : ''}`}
+                  <button
+                    className={`${styles.sosBtn} ${styles.btnActive} ${
+                      currentStatus === 'active' ? 'active-alert' : ''
+                    }`}
                     onClick={() => handleStatusChange('active')}
                   >
                     <span>✅ BÌNH THƯỜNG</span>
@@ -895,56 +1092,150 @@ export default function TravelMapPage() {
                 </div>
               </div>
 
-              {/* Active Members Checklist */}
+              {/* Active Members HUD list showing exact distances */}
               <div>
                 <h3 className={styles.controlTitle}>🏍️ THÀNH VIÊN ({members.length}):</h3>
                 <div className={styles.membersBox}>
-                  {members.map(member => (
-                    <div key={member.username} className={styles.memberItem}>
-                      <div className={styles.memberLeft}>
-                        <div className={styles.colorIndicator} style={{ backgroundColor: member.char_head_color || '#ffccaa' }} />
-                        <span className={styles.memberName}>
-                          {member.display_name}
-                          {member.username === activeTrip.leader_username && <span className={styles.leaderTag}>[👑]</span>}
+                  {members.map((member) => {
+                    const isSelf = member.username === user.username;
+                    let distanceText = '';
+                    let directionText = '';
+
+                    if (isSelf) {
+                      distanceText = '[ BẠN ]';
+                    } else if (
+                      userLocation &&
+                      member.lat !== null &&
+                      member.lng !== null
+                    ) {
+                      const distMeters = getDistance(
+                        userLocation.lat,
+                        userLocation.lng,
+                        member.lat,
+                        member.lng
+                      );
+                      distanceText =
+                        distMeters > 1000
+                          ? `Cách: ${(distMeters / 1000).toFixed(1)} km`
+                          : `Cách: ${Math.round(distMeters)} m`;
+
+                      directionText = getDirectionString(
+                        userLocation.lat,
+                        userLocation.lng,
+                        member.lat,
+                        member.lng
+                      );
+                    } else {
+                      distanceText = 'Mất định vị ⚠️';
+                    }
+
+                    return (
+                      <div key={member.username} className={styles.memberItem}>
+                        <div className={styles.memberLeft}>
+                          <div
+                            className={styles.colorIndicator}
+                            style={{ backgroundColor: member.char_head_color || '#ffccaa' }}
+                          />
+                          <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <span className={styles.memberName}>
+                              {member.display_name}
+                              {member.username === activeTrip.leader_username && (
+                                <span className={styles.leaderTag}>[👑]</span>
+                              )}
+                            </span>
+                            <span style={{ fontSize: '7px', color: '#94a3b8' }}>
+                              {distanceText} {directionText && `| ${directionText}`}
+                            </span>
+                          </div>
+                        </div>
+                        <span
+                          className={`${styles.memberStatusBadge} ${
+                            styles[`badge_${member.status}`]
+                          }`}
+                        >
+                          {member.status === 'emergency'
+                            ? 'SOS'
+                            : member.status === 'gas'
+                            ? 'XĂNG'
+                            : member.status === 'lost'
+                            ? 'LẠC'
+                            : 'AN TOÀN'}
                         </span>
                       </div>
-                      <span className={`${styles.memberStatusBadge} ${styles[`badge_${member.status}`]}`}>
-                        {member.status === 'emergency' ? 'SOS' :
-                         member.status === 'gas' ? 'XĂNG' :
-                         member.status === 'lost' ? 'LẠC' : 'AN TOÀN'}
-                      </span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
               {/* Simulator & Leader panel tools */}
               <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ padding: '8px', border: '1px dashed #475569', backgroundColor: '#0f172a' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <div
+                  style={{
+                    padding: '8px',
+                    border: '1px dashed #475569',
+                    backgroundColor: '#0f172a'
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '4px'
+                    }}
+                  >
                     <span style={{ fontSize: '0.6rem', color: '#94a3b8' }}>🎮 MÔ PHỎNG GPS:</span>
-                    <button onClick={toggleGPSSimulator} className="pixel-btn" style={{ padding: '2px 6px', fontSize: '0.55rem', backgroundColor: isSimulating ? '#ef4444' : '#10b981' }}>
+                    <button
+                      onClick={toggleGPSSimulator}
+                      className="pixel-btn"
+                      style={{
+                        padding: '2px 6px',
+                        fontSize: '0.55rem',
+                        backgroundColor: isSimulating ? '#ef4444' : '#10b981'
+                      }}
+                    >
                       {isSimulating ? 'TẮT SIM' : 'BẬT SIM'}
                     </button>
                   </div>
                   {isSimulating && (
-                    <button onClick={moveSimulatorForward} className="pixel-btn" style={{ width: '100%', padding: '4px', fontSize: '0.6rem', backgroundColor: '#3b82f6' }}>
+                    <button
+                      onClick={moveSimulatorForward}
+                      className="pixel-btn"
+                      style={{
+                        width: '100%',
+                        padding: '4px',
+                        fontSize: '0.6rem',
+                        backgroundColor: '#3b82f6'
+                      }}
+                    >
                       [ 🏍️ DI CHUYỂN PHƯỢT TIẾP ]
                     </button>
                   )}
                 </div>
 
                 {isLeader && routeWaypoints.length > 0 && (
-                  <button onClick={handleClearRoute} className="pixel-btn" style={{ backgroundColor: '#78350f', border: '2px solid #b45309', padding: '4px 8px', fontSize: '0.65rem' }}>
+                  <button
+                    onClick={handleClearRoute}
+                    className="pixel-btn"
+                    style={{
+                      backgroundColor: '#78350f',
+                      border: '2px solid #b45309',
+                      padding: '4px 8px',
+                      fontSize: '0.65rem'
+                    }}
+                  >
                     [ 🧹 XÓA LỘ TRÌNH CHUNG ]
                   </button>
                 )}
 
-                <button onClick={handleLeaveTrip} className="btn btn-outline" style={{ width: '100%', borderColor: '#ef4444', color: '#fca5a5' }}>
+                <button
+                  onClick={handleLeaveTrip}
+                  className="btn btn-outline"
+                  style={{ width: '100%', borderColor: '#ef4444', color: '#fca5a5' }}
+                >
                   [ RỜI NHÓM PHƯỢT ]
                 </button>
               </div>
-
             </div>
           </div>
         )}
@@ -956,9 +1247,20 @@ export default function TravelMapPage() {
           <div className={`${styles.sosModal} rpg-box`}>
             <div className={styles.sosTitle}>🚨 BÁO CÁO CỨU HỘ KHẨN CẤP!</div>
             <div className={styles.sosDesc}>
-              Thành viên <strong>{statusAlert.displayName} ({statusAlert.username})</strong> vừa gửi tín hiệu SOS khẩn cấp! Cần dừng đoàn để cứu trợ gấp.
+              Thành viên <strong>{statusAlert.displayName} ({statusAlert.username})</strong> vừa
+              gửi tín hiệu SOS khẩn cấp! Cần dừng đoàn để cứu trợ gấp.
             </div>
-            <button className="pixel-btn" onClick={() => setStatusAlert(null)} style={{ padding: '6px 16px', backgroundColor: '#ef4444', border: '3px solid #991b1b', color: '#fff', fontWeight: 'bold' }}>
+            <button
+              className="pixel-btn"
+              onClick={() => setStatusAlert(null)}
+              style={{
+                padding: '6px 16px',
+                backgroundColor: '#ef4444',
+                border: '3px solid #991b1b',
+                color: '#fff',
+                fontWeight: 'bold'
+              }}
+            >
               [ ĐÃ NHẬN TIN ]
             </button>
           </div>

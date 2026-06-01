@@ -21,6 +21,8 @@ export function ToastContainer() {
         return { bg: '#fef2f2', border: '#ef4444', text: '#b91c1c' };
       case 'success':
         return { bg: '#f0fdf4', border: '#22c55e', text: '#15803d' };
+      case 'warning':
+        return { bg: '#fffbeb', border: '#f59e0b', text: '#b45309' };
       default: // info
         return { bg: '#eff6ff', border: '#3b82f6', text: '#1d4ed8' };
     }
