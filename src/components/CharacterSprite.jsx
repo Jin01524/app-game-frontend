@@ -45,12 +45,28 @@ export default function CharacterSprite({ characterType = 'FrogNinja', action = 
     } else {
       path = `../../assets/character/PinkMan/idle (1).png`;
     }
+  } else if (charType === 'MaskDude') {
+    if (action === 'idle') {
+      path = `../../assets/character/MaskDude/idle (${frameIndex}).png`;
+    } else if (action === 'run') {
+      path = `../../assets/character/MaskDude/run (${frameIndex}).png`;
+    } else if (action === 'jump') {
+      path = `../../assets/character/MaskDude/Jump.png`;
+    } else if (action === 'fall') {
+      path = `../../assets/character/MaskDude/Fall.png`;
+    } else {
+      path = `../../assets/character/MaskDude/idle (1).png`;
+    }
   } else {
     // FrogNinja
     if (action === 'idle') {
       path = `../../assets/character/FrogNinja/idle (${frameIndex}).png`;
     } else if (action === 'run') {
       path = `../../assets/character/FrogNinja/run (${frameIndex}).png`;
+    } else if (action === 'jump') {
+      path = `../../assets/character/FrogNinja/Jump (32x32).png`;
+    } else if (action === 'fall') {
+      path = `../../assets/character/FrogNinja/Fall (32x32).png`;
     } else {
       path = `../../assets/character/FrogNinja/idle (1).png`;
     }

@@ -19,6 +19,12 @@ const CHARACTERS = [
     title: 'Pink Man',
     description: 'Anh chàng Pink Man vui nhộn, cá tính và tràn đầy sức sống.',
     emoji: '🌸'
+  },
+  {
+    key: 'MaskDude',
+    title: 'Mask Dude',
+    description: 'Chiến binh đeo mặt nạ bí ẩn, nhanh nhẹn và đầy bản lĩnh.',
+    emoji: '🎭'
   }
 ];
 

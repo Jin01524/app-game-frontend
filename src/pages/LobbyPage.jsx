@@ -31,6 +31,12 @@ const CHARACTER_PRELOADS = {
     run: [],
     jump: null,
     fall: null,
+  },
+  MaskDude: {
+    idle: [],
+    run: [],
+    jump: null,
+    fall: null,
   }
 };
 
@@ -65,6 +71,22 @@ CHARACTER_PRELOADS.PinkMan.jump = new Image();
 CHARACTER_PRELOADS.PinkMan.jump.src = characterImages[`../../assets/character/PinkMan/Jump.png`] || '';
 CHARACTER_PRELOADS.PinkMan.fall = new Image();
 CHARACTER_PRELOADS.PinkMan.fall.src = characterImages[`../../assets/character/PinkMan/Fall.png`] || '';
+
+// Pre-load MaskDude images
+for (let i = 1; i <= 11; i++) {
+  const img = new Image();
+  img.src = characterImages[`../../assets/character/MaskDude/idle (${i}).png`] || '';
+  CHARACTER_PRELOADS.MaskDude.idle.push(img);
+}
+for (let i = 1; i <= 12; i++) {
+  const img = new Image();
+  img.src = characterImages[`../../assets/character/MaskDude/run (${i}).png`] || '';
+  CHARACTER_PRELOADS.MaskDude.run.push(img);
+}
+CHARACTER_PRELOADS.MaskDude.jump = new Image();
+CHARACTER_PRELOADS.MaskDude.jump.src = characterImages[`../../assets/character/MaskDude/Jump.png`] || '';
+CHARACTER_PRELOADS.MaskDude.fall = new Image();
+CHARACTER_PRELOADS.MaskDude.fall.src = characterImages[`../../assets/character/MaskDude/Fall.png`] || '';
 
 export default function LobbyPage() {
   const navigate = useNavigate();
