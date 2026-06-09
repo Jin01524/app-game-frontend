@@ -51,6 +51,11 @@ export function AuthProvider({ children }) {
     setUser((prev) => prev ? { ...prev, avatar } : prev);
   }, []);
 
+  // Update selected character type in context
+  const updateCharacterType = useCallback((characterType) => {
+    setUser((prev) => prev ? { ...prev, characterType } : prev);
+  }, []);
+
   // Refresh user info from server
   const refreshUser = useCallback(async () => {
     const token = localStorage.getItem('tl42_token');
@@ -86,7 +91,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, updateAvatar, addXu, refreshUser, authFetch, updateBackpack }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, updateAvatar, updateCharacterType, addXu, refreshUser, authFetch, updateBackpack }}>
       {children}
     </AuthContext.Provider>
   );

@@ -36,60 +36,48 @@ import TradeModal from '../components/TradeModal';
 import LandscapeEnforcer from '../components/LandscapeEnforcer';
 import { useGameWindowSize } from '../hooks/useGameWindowSize';
 
-import frogIdle1 from '../../assets/character/FrogNinja/idle (1).png';
-import frogIdle2 from '../../assets/character/FrogNinja/idle (2).png';
-import frogIdle3 from '../../assets/character/FrogNinja/idle (3).png';
-import frogIdle4 from '../../assets/character/FrogNinja/idle (4).png';
-import frogIdle5 from '../../assets/character/FrogNinja/idle (5).png';
-import frogIdle6 from '../../assets/character/FrogNinja/idle (6).png';
-import frogIdle7 from '../../assets/character/FrogNinja/idle (7).png';
-import frogIdle8 from '../../assets/character/FrogNinja/idle (8).png';
-import frogIdle9 from '../../assets/character/FrogNinja/idle (9).png';
-import frogIdle10 from '../../assets/character/FrogNinja/idle (10).png';
-import frogIdle11 from '../../assets/character/FrogNinja/idle (11).png';
+const characterImages = import.meta.glob('../../assets/character/**/*.png', { eager: true, import: 'default' });
 
-import frogJumpImg from '../../assets/character/FrogNinja/Jump (32x32).png';
-import frogFallImg from '../../assets/character/FrogNinja/Fall (32x32).png';
+const CHARACTER_PRELOADS = {
+  FrogNinja: {
+    idle: [],
+    run: [],
+    jump: null,
+    fall: null,
+  },
+  Samurai: {
+    idle: [],
+    run: [],
+    jump: null,
+    fall: null,
+  }
+};
 
-import frogRun1 from '../../assets/character/FrogNinja/run (1).png';
-import frogRun2 from '../../assets/character/FrogNinja/run (2).png';
-import frogRun3 from '../../assets/character/FrogNinja/run (3).png';
-import frogRun4 from '../../assets/character/FrogNinja/run (4).png';
-import frogRun5 from '../../assets/character/FrogNinja/run (5).png';
-import frogRun6 from '../../assets/character/FrogNinja/run (6).png';
-import frogRun7 from '../../assets/character/FrogNinja/run (7).png';
-import frogRun8 from '../../assets/character/FrogNinja/run (8).png';
-import frogRun9 from '../../assets/character/FrogNinja/run (9).png';
-import frogRun10 from '../../assets/character/FrogNinja/run (10).png';
-import frogRun11 from '../../assets/character/FrogNinja/run (11).png';
-import frogRun12 from '../../assets/character/FrogNinja/run (12).png';
-import frogHit1 from '../../assets/character/FrogNinja/hit_01.png';
-import frogHit2 from '../../assets/character/FrogNinja/hit_02.png';
-import frogHit3 from '../../assets/character/FrogNinja/hit_03.png';
-import frogHit4 from '../../assets/character/FrogNinja/hit_04.png';
-import frogHit5 from '../../assets/character/FrogNinja/hit_05.png';
-import frogHit6 from '../../assets/character/FrogNinja/hit_06.png';
-import frogHit7 from '../../assets/character/FrogNinja/hit_07.png';
-import frogAttack1 from '../../assets/character/FrogNinja/attack_01.png';
-import frogAttack2 from '../../assets/character/FrogNinja/attack_02.png';
-import frogAttack3 from '../../assets/character/FrogNinja/attack_03.png';
-const frogIdleSrcs = [
-  frogIdle1, frogIdle2, frogIdle3, frogIdle4, frogIdle5, 
-  frogIdle6, frogIdle7, frogIdle8, frogIdle9, frogIdle10, frogIdle11
-];
+// Pre-load FrogNinja images
+for (let i = 1; i <= 11; i++) {
+  const img = new Image();
+  img.src = characterImages[`../../assets/character/FrogNinja/idle (${i}).png`] || '';
+  CHARACTER_PRELOADS.FrogNinja.idle.push(img);
+}
+for (let i = 1; i <= 12; i++) {
+  const img = new Image();
+  img.src = characterImages[`../../assets/character/FrogNinja/run (${i}).png`] || '';
+  CHARACTER_PRELOADS.FrogNinja.run.push(img);
+}
+CHARACTER_PRELOADS.FrogNinja.jump = new Image();
+CHARACTER_PRELOADS.FrogNinja.jump.src = characterImages[`../../assets/character/FrogNinja/Jump (32x32).png`] || '';
+CHARACTER_PRELOADS.FrogNinja.fall = new Image();
+CHARACTER_PRELOADS.FrogNinja.fall.src = characterImages[`../../assets/character/FrogNinja/Fall (32x32).png`] || '';
 
-const frogRunSrcs = [
-  frogRun1, frogRun2, frogRun3, frogRun4, frogRun5, frogRun6,
-  frogRun7, frogRun8, frogRun9, frogRun10, frogRun11, frogRun12
-];
-
-const frogHitSrcs = [
-  frogHit1, frogHit2, frogHit3, frogHit4, frogHit5, frogHit6, frogHit7
-];
-
-const frogAttackSrcs = [
-  frogAttack1, frogAttack2, frogAttack3
-];
+// Pre-load Samurai images
+for (let i = 1; i <= 10; i++) {
+  const img = new Image();
+  img.src = characterImages[`../../assets/character/Samurai/idle (${i}).png`] || '';
+  CHARACTER_PRELOADS.Samurai.idle.push(img);
+}
+CHARACTER_PRELOADS.Samurai.run = CHARACTER_PRELOADS.Samurai.idle;
+CHARACTER_PRELOADS.Samurai.jump = CHARACTER_PRELOADS.Samurai.idle[0];
+CHARACTER_PRELOADS.Samurai.fall = CHARACTER_PRELOADS.Samurai.idle[0];
 
 const parsePlantedAt = (plantedAt) => {
   if (!plantedAt) return 0;
@@ -155,7 +143,7 @@ export default function HousePage() {
 
   // Game state
   const gameState = useRef({
-    player: { x: 200, y: 0, vy: 0, isGrounded: true, width: 32, height: 48, facing: 1, walkCycle: 0 },
+    player: { x: 200, y: 0, vy: 0, isGrounded: true, width: 32, height: 48, facing: 1, walkCycle: 0, characterType: user?.characterType || 'FrogNinja' },
     farmPlot: { x: 650, width: 128 },
     house: { x: 80, width: 80, height: 80 },
     lastTime: performance.now(),
@@ -238,7 +226,8 @@ export default function HousePage() {
         player: { 
           ...gameState.current.player, 
           username: user?.username, 
-          displayName: user ? (user.displayName || user.username) : 'Player' 
+          displayName: user ? (user.displayName || user.username) : 'Player',
+          characterType: user?.characterType || 'FrogNinja'
         }
       });
     });
@@ -296,39 +285,8 @@ export default function HousePage() {
     const img1 = new Image(); img1.src = luaNonImg; img1.onload = () => { state.imgLuaNon = img1; };
     const img2 = new Image(); img2.src = luaChinImg; img2.onload = () => { state.imgLuaChin = img2; };
     
-    state.frogIdleImgs = [];
-    frogIdleSrcs.forEach(src => {
-      const img = new Image();
-      img.src = src;
-      state.frogIdleImgs.push(img);
-    });
-
-    state.frogRunImgs = [];
-    state.frogHitImgs = [];
-    state.frogAttackImgs = [];
-    state.imgJump = null;
-    frogRunSrcs.forEach(src => {
-      const img = new Image();
-      img.src = src;
-      state.frogRunImgs.push(img);
-    });
-
-    state.frogHitImgs = [];
-    frogHitSrcs.forEach(src => {
-      const img = new Image();
-      img.src = src;
-      state.frogHitImgs.push(img);
-    });
-
-    state.frogAttackImgs = [];
-    frogAttackSrcs.forEach(src => {
-      const img = new Image();
-      img.src = src;
-      state.frogAttackImgs.push(img);
-    });
-
-    const imgJ = new Image(); imgJ.src = frogJumpImg; imgJ.onload = () => { state.imgJump = imgJ; };
-    const imgF = new Image(); imgF.src = frogFallImg; imgF.onload = () => { state.imgFall = imgF; };
+    const imgG = new Image(); imgG.src = groundGreenImg; imgG.onload = () => { state.imgGroundGreen = imgG; };
+    const imgH = new Image(); imgH.src = houseImg; imgH.onload = () => { state.imgHouse = imgH; };
 
     const imgChuong = new Image(); imgChuong.src = chuongGoImgSrc; imgChuong.onload = () => { state.imgChuong = imgChuong; };
 
@@ -346,8 +304,6 @@ export default function HousePage() {
       };
     });
 
-    const imgG = new Image(); imgG.src = groundGreenImg; imgG.onload = () => { state.imgGroundGreen = imgG; };
-    const imgH = new Image(); imgH.src = houseImg; imgH.onload = () => { state.imgHouse = imgH; };
     const imgMilk = new Image(); imgMilk.src = milkIconImg; imgMilk.onload = () => { state.imgMilk = imgMilk; };
   }, []);
 
@@ -805,17 +761,21 @@ export default function HousePage() {
         ctx.scale(pState.facing, 1);
         
         let currentImg = null;
-        const uname = pState.username || (isMe ? user?.username : null);
+        const charType = pState.characterType || (isMe ? user?.characterType : null) || 'FrogNinja';
+        const preloads = CHARACTER_PRELOADS[charType] || CHARACTER_PRELOADS.FrogNinja;
         
         if (!pState.isGrounded) {
-          if (pState.vy < 0 && state.imgJump) currentImg = state.imgJump;
-          else if (state.imgFall) currentImg = state.imgFall;
-        } else if (pState.isMoving && state.frogRunImgs && state.frogRunImgs.length >= 12) {
-          const frameIndex = Math.floor(time / 66) % 12;
-          currentImg = state.frogRunImgs[frameIndex];
-        } else if (!pState.isMoving && state.frogIdleImgs && state.frogIdleImgs.length >= 11) {
-          const frameIndex = Math.floor(time / 66) % 11;
-          currentImg = state.frogIdleImgs[frameIndex];
+          if (pState.vy < 0) {
+            currentImg = preloads.jump;
+          } else {
+            currentImg = preloads.fall;
+          }
+        } else if (pState.isMoving && preloads.run && preloads.run.length > 0) {
+          const frameIndex = Math.floor(time / 66) % preloads.run.length;
+          currentImg = preloads.run[frameIndex];
+        } else if (preloads.idle && preloads.idle.length > 0) {
+          const frameIndex = Math.floor(time / 66) % preloads.idle.length;
+          currentImg = preloads.idle[frameIndex];
         }
         
         if (currentImg && currentImg.complete && currentImg.width > 0) {
@@ -849,7 +809,8 @@ export default function HousePage() {
           height: state.player.height,
           isMoving,
           username: user?.username,
-          displayName: user ? (user.displayName || user.username) : 'Player'
+          displayName: user ? (user.displayName || user.username) : 'Player',
+          characterType: user?.characterType || 'FrogNinja'
         });
       }
 
@@ -864,7 +825,8 @@ export default function HousePage() {
         ...state.player,
         isMoving,
         displayName: user ? (user.displayName || user.username) : 'Player',
-        username: user?.username
+        username: user?.username,
+        characterType: user?.characterType || 'FrogNinja'
       }, true);
 
       ctx.restore();

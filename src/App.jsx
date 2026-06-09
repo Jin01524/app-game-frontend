@@ -20,6 +20,7 @@ import GoldPage from './pages/GoldPage';
 import MessagingPage from './pages/MessagingPage';
 import WerewolfPage from './pages/WerewolfPage';
 import AccommodationPage from './pages/AccommodationPage';
+import ChangeCharacterPage from './pages/ChangeCharacterPage';
 
 
 // Guard: only admin can access, others redirect to /
@@ -78,6 +79,9 @@ export default function App() {
           />
           <Route path="/utilities/accommodation"
             element={<ProtectedRoute><AccommodationPage /></ProtectedRoute>}
+          />
+          <Route path="/utilities/change-character"
+            element={<ProtectedRoute><ChangeCharacterPage /></ProtectedRoute>}
           />
 
           <Route path="/lobby"

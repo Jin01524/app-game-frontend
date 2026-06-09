@@ -12,9 +12,10 @@ import bagIcon from '../../assets/bag.png';
 import StorageModal from '../components/StorageModal';
 import BackpackModal from '../components/BackpackModal';
 import LandscapeEnforcer from '../components/LandscapeEnforcer';
+import CharacterSprite from '../components/CharacterSprite';
 
 export default function FarmPage() {
-  const { authFetch, updateXu } = useAuth();
+  const { authFetch, updateXu, user } = useAuth();
   
   const [farm, setFarm] = useState(null);
   const [inventory, setInventory] = useState([]);
@@ -145,6 +146,24 @@ export default function FarmPage() {
         </header>
 
         <div style={{ flexGrow: 1, position: 'relative' }}>
+          {/* Left aligned character standing */}
+          <div style={{ position: 'absolute', top: '40px', left: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <CharacterSprite characterType={user?.characterType} action="idle" width={64} height={64} />
+            <div style={{ 
+              background: 'rgba(0, 0, 0, 0.65)', 
+              color: '#4ade80', 
+              padding: '2px 8px', 
+              borderRadius: '0',
+              border: '2px solid var(--px-border)',
+              fontSize: '0.7rem', 
+              marginTop: '4px',
+              fontFamily: 'var(--font-pixel)',
+              whiteSpace: 'nowrap'
+            }}>
+              {user?.displayName || user?.username}
+            </div>
+          </div>
+
           {/* Right aligned farm patch */}
           <div style={{ position: 'absolute', top: '20px', right: '0' }}>
             <div className={styles.farmGrid}>

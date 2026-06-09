@@ -17,41 +17,48 @@ import bagIcon from '../../assets/bag.png';
 import transactionIcon from '../../assets/transaction.png';
 import gamingIcon from '../../assets/gaming.png';
 
-import frogIdle1 from '../../assets/character/FrogNinja/idle (1).png';
-import frogIdle2 from '../../assets/character/FrogNinja/idle (2).png';
-import frogIdle3 from '../../assets/character/FrogNinja/idle (3).png';
-import frogIdle4 from '../../assets/character/FrogNinja/idle (4).png';
-import frogIdle5 from '../../assets/character/FrogNinja/idle (5).png';
-import frogIdle6 from '../../assets/character/FrogNinja/idle (6).png';
-import frogIdle7 from '../../assets/character/FrogNinja/idle (7).png';
-import frogIdle8 from '../../assets/character/FrogNinja/idle (8).png';
-import frogIdle9 from '../../assets/character/FrogNinja/idle (9).png';
-import frogIdle10 from '../../assets/character/FrogNinja/idle (10).png';
-import frogIdle11 from '../../assets/character/FrogNinja/idle (11).png';
+const characterImages = import.meta.glob('../../assets/character/**/*.png', { eager: true, import: 'default' });
 
-import frogJumpImg from '../../assets/character/FrogNinja/Jump (32x32).png';
-import frogFallImg from '../../assets/character/FrogNinja/Fall (32x32).png';
+const CHARACTER_PRELOADS = {
+  FrogNinja: {
+    idle: [],
+    run: [],
+    jump: null,
+    fall: null,
+  },
+  Samurai: {
+    idle: [],
+    run: [],
+    jump: null,
+    fall: null,
+  }
+};
 
-import frogRun1 from '../../assets/character/FrogNinja/run (1).png';
-import frogRun2 from '../../assets/character/FrogNinja/run (2).png';
-import frogRun3 from '../../assets/character/FrogNinja/run (3).png';
-import frogRun4 from '../../assets/character/FrogNinja/run (4).png';
-import frogRun5 from '../../assets/character/FrogNinja/run (5).png';
-import frogRun6 from '../../assets/character/FrogNinja/run (6).png';
-import frogRun7 from '../../assets/character/FrogNinja/run (7).png';
-import frogRun8 from '../../assets/character/FrogNinja/run (8).png';
-import frogRun9 from '../../assets/character/FrogNinja/run (9).png';
-import frogRun10 from '../../assets/character/FrogNinja/run (10).png';
-import frogRun11 from '../../assets/character/FrogNinja/run (11).png';
-import frogRun12 from '../../assets/character/FrogNinja/run (12).png';
+// Pre-load FrogNinja images
+for (let i = 1; i <= 11; i++) {
+  const img = new Image();
+  img.src = characterImages[`../../assets/character/FrogNinja/idle (${i}).png`] || '';
+  CHARACTER_PRELOADS.FrogNinja.idle.push(img);
+}
+for (let i = 1; i <= 12; i++) {
+  const img = new Image();
+  img.src = characterImages[`../../assets/character/FrogNinja/run (${i}).png`] || '';
+  CHARACTER_PRELOADS.FrogNinja.run.push(img);
+}
+CHARACTER_PRELOADS.FrogNinja.jump = new Image();
+CHARACTER_PRELOADS.FrogNinja.jump.src = characterImages[`../../assets/character/FrogNinja/Jump (32x32).png`] || '';
+CHARACTER_PRELOADS.FrogNinja.fall = new Image();
+CHARACTER_PRELOADS.FrogNinja.fall.src = characterImages[`../../assets/character/FrogNinja/Fall (32x32).png`] || '';
 
-const frogIdleSrcs = [
-  frogIdle1, frogIdle2, frogIdle3, frogIdle4, frogIdle5, frogIdle6, frogIdle7, frogIdle8, frogIdle9, frogIdle10, frogIdle11
-];
-
-const frogRunSrcs = [
-  frogRun1, frogRun2, frogRun3, frogRun4, frogRun5, frogRun6, frogRun7, frogRun8, frogRun9, frogRun10, frogRun11, frogRun12
-];
+// Pre-load Samurai images
+for (let i = 1; i <= 10; i++) {
+  const img = new Image();
+  img.src = characterImages[`../../assets/character/Samurai/idle (${i}).png`] || '';
+  CHARACTER_PRELOADS.Samurai.idle.push(img);
+}
+CHARACTER_PRELOADS.Samurai.run = CHARACTER_PRELOADS.Samurai.idle;
+CHARACTER_PRELOADS.Samurai.jump = CHARACTER_PRELOADS.Samurai.idle[0];
+CHARACTER_PRELOADS.Samurai.fall = CHARACTER_PRELOADS.Samurai.idle[0];
 
 export default function LobbyPage() {
   const navigate = useNavigate();
@@ -84,15 +91,12 @@ export default function LobbyPage() {
       height: 48,
       facing: 1,
       isMoving: false,
-      displayName: user?.displayName || user?.username
+      displayName: user?.displayName || user?.username,
+      characterType: user?.characterType || 'FrogNinja'
     },
     cameraX: 0,
     groundImg: null,
-    casinoImg: null,
-    frogIdleImgs: [],
-    frogRunImgs: [],
-    imgJump: null,
-    imgFall: null
+    casinoImg: null
   });
 
   // Load assets
@@ -101,19 +105,6 @@ export default function LobbyPage() {
 
     const imgG = new Image(); imgG.src = groundGreenImg; imgG.onload = () => { state.groundImg = imgG; };
     const cImg = new Image(); cImg.src = casinoImgAsset; cImg.onload = () => { state.casinoImg = cImg; };
-
-    const loadImages = (srcs, arr) => {
-      srcs.forEach(src => {
-        const img = new Image();
-        img.src = src;
-        img.onload = () => arr.push(img);
-      });
-    };
-    loadImages(frogIdleSrcs, state.frogIdleImgs);
-    loadImages(frogRunSrcs, state.frogRunImgs);
-
-    const imgJ = new Image(); imgJ.src = frogJumpImg; imgJ.onload = () => state.imgJump = imgJ;
-    const imgF = new Image(); imgF.src = frogFallImg; imgF.onload = () => state.imgFall = imgF;
   }, []);
 
   // Socket
@@ -139,7 +130,8 @@ export default function LobbyPage() {
         isMoving: gameState.current.player.isMoving,
         isGrounded: gameState.current.player.isGrounded,
         username: user?.username,
-        displayName: user.displayName || user.username 
+        displayName: user.displayName || user.username,
+        characterType: user?.characterType || 'FrogNinja'
       } 
     });
 
@@ -260,7 +252,8 @@ export default function LobbyPage() {
           vy: state.player.vy,
           facing: state.player.facing,
           isMoving: state.player.isMoving,
-          isGrounded: state.player.isGrounded
+          isGrounded: state.player.isGrounded,
+          characterType: user?.characterType || 'FrogNinja'
         });
       }
     };
@@ -306,17 +299,16 @@ export default function LobbyPage() {
         ctx.fillText(displayName || 'Player', x + 16, py - 10);
         
         let imgToDraw = null;
+        const charType = playerData.characterType || (isMe ? user?.characterType : null) || 'FrogNinja';
+        const preloads = CHARACTER_PRELOADS[charType] || CHARACTER_PRELOADS.FrogNinja;
+
         if (!isGrounded) {
            const playerVy = playerData.vy !== undefined ? playerData.vy : state.player.vy;
-           imgToDraw = playerVy < 0 ? state.imgJump : state.imgFall;
-        } else if (isMoving) {
-           if (state.frogRunImgs.length > 0) {
-             imgToDraw = state.frogRunImgs[currentFrame % state.frogRunImgs.length];
-           }
-        } else {
-           if (state.frogIdleImgs.length > 0) {
-             imgToDraw = state.frogIdleImgs[currentFrame % state.frogIdleImgs.length];
-           }
+           imgToDraw = playerVy < 0 ? preloads.jump : preloads.fall;
+        } else if (isMoving && preloads.run && preloads.run.length > 0) {
+           imgToDraw = preloads.run[currentFrame % preloads.run.length];
+        } else if (preloads.idle && preloads.idle.length > 0) {
+           imgToDraw = preloads.idle[currentFrame % preloads.idle.length];
         }
 
         if (imgToDraw && imgToDraw.complete && imgToDraw.width > 0) {
@@ -335,7 +327,10 @@ export default function LobbyPage() {
         if (!p.username || p.username === user?.username) return;
         drawPlayer(p, false);
       });
-      drawPlayer(state.player, true);
+      drawPlayer({
+        ...state.player,
+        characterType: user?.characterType || 'FrogNinja'
+      }, true);
 
       // Draw Ground
       if (state.groundImg) {
