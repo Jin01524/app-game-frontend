@@ -25,12 +25,6 @@ const CHARACTER_PRELOADS = {
     run: [],
     jump: null,
     fall: null,
-  },
-  Samurai: {
-    idle: [],
-    run: [],
-    jump: null,
-    fall: null,
   }
 };
 
@@ -49,16 +43,6 @@ CHARACTER_PRELOADS.FrogNinja.jump = new Image();
 CHARACTER_PRELOADS.FrogNinja.jump.src = characterImages[`../../assets/character/FrogNinja/Jump (32x32).png`] || '';
 CHARACTER_PRELOADS.FrogNinja.fall = new Image();
 CHARACTER_PRELOADS.FrogNinja.fall.src = characterImages[`../../assets/character/FrogNinja/Fall (32x32).png`] || '';
-
-// Pre-load Samurai images
-for (let i = 1; i <= 10; i++) {
-  const img = new Image();
-  img.src = characterImages[`../../assets/character/Samurai/idle (${i}).png`] || '';
-  CHARACTER_PRELOADS.Samurai.idle.push(img);
-}
-CHARACTER_PRELOADS.Samurai.run = CHARACTER_PRELOADS.Samurai.idle;
-CHARACTER_PRELOADS.Samurai.jump = CHARACTER_PRELOADS.Samurai.idle[0];
-CHARACTER_PRELOADS.Samurai.fall = CHARACTER_PRELOADS.Samurai.idle[0];
 
 export default function LobbyPage() {
   const navigate = useNavigate();

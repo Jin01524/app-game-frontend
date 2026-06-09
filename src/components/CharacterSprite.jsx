@@ -7,10 +7,8 @@ export default function CharacterSprite({ characterType = 'FrogNinja', action = 
   const [frameIndex, setFrameIndex] = useState(1);
   const charType = characterType || 'FrogNinja';
 
-  // Get total frames
+  // Get total frames (only FrogNinja exists now)
   const getFrameCount = () => {
-    if (charType === 'Samurai') return 10;
-    // FrogNinja
     if (action === 'idle') return 11;
     if (action === 'run') return 12;
     return 1;
@@ -33,18 +31,14 @@ export default function CharacterSprite({ characterType = 'FrogNinja', action = 
     return () => clearInterval(interval);
   }, [charType, action]);
 
-  // Resolve path
+  // Resolve path for FrogNinja
   let path = '';
-  if (charType === 'Samurai') {
-    path = `../../assets/character/Samurai/idle (${frameIndex}).png`;
+  if (action === 'idle') {
+    path = `../../assets/character/FrogNinja/idle (${frameIndex}).png`;
+  } else if (action === 'run') {
+    path = `../../assets/character/FrogNinja/run (${frameIndex}).png`;
   } else {
-    if (action === 'idle') {
-      path = `../../assets/character/FrogNinja/idle (${frameIndex}).png`;
-    } else if (action === 'run') {
-      path = `../../assets/character/FrogNinja/run (${frameIndex}).png`;
-    } else {
-      path = `../../assets/character/FrogNinja/idle (1).png`;
-    }
+    path = `../../assets/character/FrogNinja/idle (1).png`;
   }
 
   const src = characterImages[path] || '';

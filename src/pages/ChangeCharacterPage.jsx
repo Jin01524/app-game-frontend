@@ -13,12 +13,6 @@ const CHARACTERS = [
     title: 'Frog Ninja',
     description: 'Chú ếch tinh nghịch, thích phiêu lưu và chăm sóc nông trại.',
     emoji: '🐸'
-  },
-  {
-    key: 'Samurai',
-    title: 'Kiếm Sĩ Samurai',
-    description: 'Kiếm sĩ Samurai kiên cường, bảo vệ sự yên bình cho khu chợ.',
-    emoji: '⚔️'
   }
 ];
 
@@ -33,19 +27,21 @@ export default function ChangeCharacterPage() {
   const initialIndex = CHARACTERS.findIndex(c => c.key === currentCharacter);
   const [currentIndex, setCurrentIndex] = useState(initialIndex >= 0 ? initialIndex : 0);
 
-  const selectedChar = CHARACTERS[currentIndex];
-  const isActive = selectedChar.key === currentCharacter;
+  const selectedChar = CHARACTERS[currentIndex] || CHARACTERS[0];
+  const isActive = selectedChar?.key === currentCharacter;
 
   const handleLeft = () => {
+    if (CHARACTERS.length <= 1) return;
     setCurrentIndex((prev) => (prev === 0 ? CHARACTERS.length - 1 : prev - 1));
   };
 
   const handleRight = () => {
+    if (CHARACTERS.length <= 1) return;
     setCurrentIndex((prev) => (prev === CHARACTERS.length - 1 ? 0 : prev + 1));
   };
 
   const handleSelect = async () => {
-    if (isActive) return;
+    if (!selectedChar || isActive) return;
     setSaving(true);
     try {
       const res = await authFetch('/api/profile/character-type', {
@@ -66,6 +62,8 @@ export default function ChangeCharacterPage() {
       setSaving(false);
     }
   };
+
+  if (!selectedChar) return null;
 
   return (
     <div className={styles.page}>
@@ -97,9 +95,11 @@ export default function ChangeCharacterPage() {
 
           {/* Carousel Section */}
           <div className={styles.carousel}>
-            <button className={styles.arrowBtn} onClick={handleLeft}>
-              ◄
-            </button>
+            {CHARACTERS.length > 1 && (
+              <button className={styles.arrowBtn} onClick={handleLeft}>
+                ◄
+              </button>
+            )}
             
             <div className={styles.spriteFrame}>
               <div className={`${styles.spriteWrapper} ${isActive ? styles.activeSprite : ''}`}>
@@ -107,9 +107,11 @@ export default function ChangeCharacterPage() {
               </div>
             </div>
             
-            <button className={styles.arrowBtn} onClick={handleRight}>
-              ►
-            </button>
+            {CHARACTERS.length > 1 && (
+              <button className={styles.arrowBtn} onClick={handleRight}>
+                ►
+              </button>
+            )}
           </div>
 
           {/* Character Details */}
