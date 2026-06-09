@@ -13,6 +13,12 @@ const CHARACTERS = [
     title: 'Frog Ninja',
     description: 'Chú ếch tinh nghịch, thích phiêu lưu và chăm sóc nông trại.',
     emoji: '🐸'
+  },
+  {
+    key: 'PinkMan',
+    title: 'Pink Man',
+    description: 'Anh chàng Pink Man vui nhộn, cá tính và tràn đầy sức sống.',
+    emoji: '🌸'
   }
 ];
 

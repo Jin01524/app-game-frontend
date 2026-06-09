@@ -31,14 +31,29 @@ export default function CharacterSprite({ characterType = 'FrogNinja', action = 
     return () => clearInterval(interval);
   }, [charType, action]);
 
-  // Resolve path for FrogNinja
+  // Resolve path for selected character
   let path = '';
-  if (action === 'idle') {
-    path = `../../assets/character/FrogNinja/idle (${frameIndex}).png`;
-  } else if (action === 'run') {
-    path = `../../assets/character/FrogNinja/run (${frameIndex}).png`;
+  if (charType === 'PinkMan') {
+    if (action === 'idle') {
+      path = `../../assets/character/PinkMan/idle (${frameIndex}).png`;
+    } else if (action === 'run') {
+      path = `../../assets/character/PinkMan/run (${frameIndex}).png`;
+    } else if (action === 'jump') {
+      path = `../../assets/character/PinkMan/Jump.png`;
+    } else if (action === 'fall') {
+      path = `../../assets/character/PinkMan/Fall.png`;
+    } else {
+      path = `../../assets/character/PinkMan/idle (1).png`;
+    }
   } else {
-    path = `../../assets/character/FrogNinja/idle (1).png`;
+    // FrogNinja
+    if (action === 'idle') {
+      path = `../../assets/character/FrogNinja/idle (${frameIndex}).png`;
+    } else if (action === 'run') {
+      path = `../../assets/character/FrogNinja/run (${frameIndex}).png`;
+    } else {
+      path = `../../assets/character/FrogNinja/idle (1).png`;
+    }
   }
 
   const src = characterImages[path] || '';

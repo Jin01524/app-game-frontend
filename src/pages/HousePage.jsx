@@ -44,6 +44,12 @@ const CHARACTER_PRELOADS = {
     run: [],
     jump: null,
     fall: null,
+  },
+  PinkMan: {
+    idle: [],
+    run: [],
+    jump: null,
+    fall: null,
   }
 };
 
@@ -62,6 +68,22 @@ CHARACTER_PRELOADS.FrogNinja.jump = new Image();
 CHARACTER_PRELOADS.FrogNinja.jump.src = characterImages[`../../assets/character/FrogNinja/Jump (32x32).png`] || '';
 CHARACTER_PRELOADS.FrogNinja.fall = new Image();
 CHARACTER_PRELOADS.FrogNinja.fall.src = characterImages[`../../assets/character/FrogNinja/Fall (32x32).png`] || '';
+
+// Pre-load PinkMan images
+for (let i = 1; i <= 11; i++) {
+  const img = new Image();
+  img.src = characterImages[`../../assets/character/PinkMan/idle (${i}).png`] || '';
+  CHARACTER_PRELOADS.PinkMan.idle.push(img);
+}
+for (let i = 1; i <= 12; i++) {
+  const img = new Image();
+  img.src = characterImages[`../../assets/character/PinkMan/run (${i}).png`] || '';
+  CHARACTER_PRELOADS.PinkMan.run.push(img);
+}
+CHARACTER_PRELOADS.PinkMan.jump = new Image();
+CHARACTER_PRELOADS.PinkMan.jump.src = characterImages[`../../assets/character/PinkMan/Jump.png`] || '';
+CHARACTER_PRELOADS.PinkMan.fall = new Image();
+CHARACTER_PRELOADS.PinkMan.fall.src = characterImages[`../../assets/character/PinkMan/Fall.png`] || '';
 
 const parsePlantedAt = (plantedAt) => {
   if (!plantedAt) return 0;
