@@ -42,6 +42,12 @@ const CHARACTER_PRELOADS = {
     run: [],
     jump: null,
     fall: null,
+  },
+  VirtualGuy: {
+    idle: [],
+    run: [],
+    jump: null,
+    fall: null,
   }
 };
 
@@ -92,6 +98,22 @@ CHARACTER_PRELOADS.MaskDude.jump = new Image();
 CHARACTER_PRELOADS.MaskDude.jump.src = characterImages[`../../assets/character/MaskDude/Jump.png`] || '';
 CHARACTER_PRELOADS.MaskDude.fall = new Image();
 CHARACTER_PRELOADS.MaskDude.fall.src = characterImages[`../../assets/character/MaskDude/Fall.png`] || '';
+
+// Pre-load VirtualGuy images
+for (let i = 1; i <= 11; i++) {
+  const img = new Image();
+  img.src = characterImages[`../../assets/character/VituarlGuy/idle (${i}).png`] || '';
+  CHARACTER_PRELOADS.VirtualGuy.idle.push(img);
+}
+for (let i = 1; i <= 12; i++) {
+  const img = new Image();
+  img.src = characterImages[`../../assets/character/VituarlGuy/run (${i}).png`] || '';
+  CHARACTER_PRELOADS.VirtualGuy.run.push(img);
+}
+CHARACTER_PRELOADS.VirtualGuy.jump = new Image();
+CHARACTER_PRELOADS.VirtualGuy.jump.src = characterImages[`../../assets/character/VituarlGuy/Jump.png`] || '';
+CHARACTER_PRELOADS.VirtualGuy.fall = new Image();
+CHARACTER_PRELOADS.VirtualGuy.fall.src = characterImages[`../../assets/character/VituarlGuy/Fall.png`] || '';
 
 export default function MarketPage() {
   const navigate = useNavigate();

@@ -25,6 +25,12 @@ const CHARACTERS = [
     title: 'Mask Dude',
     description: 'Chiến binh đeo mặt nạ bí ẩn, nhanh nhẹn và đầy bản lĩnh.',
     emoji: '🎭'
+  },
+  {
+    key: 'VirtualGuy',
+    title: 'Virtual Guy',
+    description: 'Chàng trai kỹ thuật số bí ẩn, tốc độ ánh sáng và phong cách tương lai.',
+    emoji: '🤖'
   }
 ];
 
