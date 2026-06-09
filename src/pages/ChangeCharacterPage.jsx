@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import PixelCanvas from '../components/PixelCanvas';
@@ -10,18 +10,14 @@ import styles from './ChangeCharacterPage.module.css';
 const CHARACTERS = [
   {
     key: 'FrogNinja',
-    name: 'Frog Ninja',
-    title: 'Chú Ếch Ninja',
-    description: 'Chú ếch tinh nghịch, nhanh nhẹn, thích phiêu lưu và chăm sóc nông trại.',
-    stats: { speed: 5, power: 3, luck: 4 },
+    title: 'Frog Ninja',
+    description: 'Chú ếch tinh nghịch, thích phiêu lưu và chăm sóc nông trại.',
     emoji: '🐸'
   },
   {
     key: 'Samurai',
-    name: 'Samurai',
     title: 'Kiếm Sĩ Samurai',
-    description: 'Kiếm sĩ Samurai kiên cường, trung nghĩa, bảo vệ bình yên cho khu chợ.',
-    stats: { speed: 3, power: 5, luck: 4 },
+    description: 'Kiếm sĩ Samurai kiên cường, bảo vệ sự yên bình cho khu chợ.',
     emoji: '⚔️'
   }
 ];
@@ -30,22 +26,37 @@ export default function ChangeCharacterPage() {
   const navigate = useNavigate();
   const { user, authFetch, updateCharacterType } = useAuth();
   const [saving, setSaving] = useState(false);
-
+  
   const currentCharacter = user?.characterType || 'FrogNinja';
+  
+  // Set initial preview index based on user's current character
+  const initialIndex = CHARACTERS.findIndex(c => c.key === currentCharacter);
+  const [currentIndex, setCurrentIndex] = useState(initialIndex >= 0 ? initialIndex : 0);
 
-  const handleSelect = async (characterType) => {
-    if (characterType === currentCharacter) return;
+  const selectedChar = CHARACTERS[currentIndex];
+  const isActive = selectedChar.key === currentCharacter;
+
+  const handleLeft = () => {
+    setCurrentIndex((prev) => (prev === 0 ? CHARACTERS.length - 1 : prev - 1));
+  };
+
+  const handleRight = () => {
+    setCurrentIndex((prev) => (prev === CHARACTERS.length - 1 ? 0 : prev + 1));
+  };
+
+  const handleSelect = async () => {
+    if (isActive) return;
     setSaving(true);
     try {
       const res = await authFetch('/api/profile/character-type', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ characterType })
+        body: JSON.stringify({ characterType: selectedChar.key })
       });
       const data = await res.json();
       if (res.ok) {
-        updateCharacterType(characterType);
-        toast.success(`Đổi nhân vật thành ${characterType === 'FrogNinja' ? 'Frog Ninja' : 'Samurai'} thành công!`);
+        updateCharacterType(selectedChar.key);
+        toast.success(`Đổi nhân vật thành ${selectedChar.title} thành công!`);
       } else {
         toast.error(data.error || 'Có lỗi xảy ra');
       }
@@ -61,78 +72,63 @@ export default function ChangeCharacterPage() {
       <PixelCanvas />
       
       <main className={styles.main}>
+        {/* Header with Exit (X) Button */}
         <header className={`${styles.header} rpg-box fade-in`}>
-          <div className="px-titlebar">
+          <div className="px-titlebar" style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>◄ ĐỔI NHÂN VẬT 🎭 ►</span>
           </div>
+          <button 
+            className={styles.closeHeaderBtn} 
+            onClick={() => navigate('/utilities')}
+            aria-label="Exit"
+          >
+            ✖
+          </button>
         </header>
 
         <div className={`${styles.contentCard} rpg-box fade-in fade-in-delay-1`}>
           <div className="px-titlebar">
-            <span>◄ DANH SÁCH NHÂN VẬT ►</span>
+            <span>◄ CHỌN SKIN NHÂN VẬT ►</span>
           </div>
           
           <div className={styles.description}>
-            Chọn nhân vật để hiển thị hình ảnh của bạn tại Nông trại và Chợ nông sản
+            Lựa chọn ngoại hình hiển thị tại Nông trại và Chợ (Các nhân vật chỉ thay đổi ngoại hình, không ảnh hưởng đến chỉ số).
           </div>
 
-          <div className={styles.grid}>
-            {CHARACTERS.map((char) => {
-              const isActive = char.key === currentCharacter;
-              return (
-                <div 
-                  key={char.key} 
-                  className={`${styles.card} ${isActive ? styles.activeCard : ''}`}
-                >
-                  <div className={styles.spriteWrapper}>
-                    <CharacterSprite characterType={char.key} action="idle" width={72} height={72} />
-                  </div>
-                  
-                  <div className={styles.infoWrapper}>
-                    <h3 className={styles.charName}>
-                      {char.emoji} {char.title}
-                    </h3>
-                    <p className={styles.charDesc}>{char.description}</p>
-                    
-                    {/* Stats display */}
-                    <div className={styles.stats}>
-                      <div className={styles.statRow}>
-                        <span className={styles.statLabel}>TỐC ĐỘ:</span>
-                        <span className={styles.statValue}>
-                          {'⚡'.repeat(char.stats.speed)}
-                          {/* {'☆'.repeat(5 - char.stats.speed)} */}
-                        </span>
-                      </div>
-                      <div className={styles.statRow}>
-                        <span className={styles.statLabel}>SỨC MẠNH:</span>
-                        <span className={styles.statValue}>
-                          {'⚔️'.repeat(char.stats.power)}
-                          {/* {'☆'.repeat(5 - char.stats.power)} */}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <button
-                    className={`btn ${isActive ? 'btn-outline' : 'btn-primary'} ${styles.selectBtn}`}
-                    disabled={isActive || saving}
-                    onClick={() => handleSelect(char.key)}
-                  >
-                    {isActive ? '[ ĐANG SỬ DỤNG ]' : saving ? 'ĐANG LƯU...' : '[ CHỌN NHÂN VẬT ]'}
-                  </button>
-                </div>
-              );
-            })}
+          {/* Carousel Section */}
+          <div className={styles.carousel}>
+            <button className={styles.arrowBtn} onClick={handleLeft}>
+              ◄
+            </button>
+            
+            <div className={styles.spriteFrame}>
+              <div className={`${styles.spriteWrapper} ${isActive ? styles.activeSprite : ''}`}>
+                <CharacterSprite characterType={selectedChar.key} action="idle" width={96} height={96} />
+              </div>
+            </div>
+            
+            <button className={styles.arrowBtn} onClick={handleRight}>
+              ►
+            </button>
           </div>
+
+          {/* Character Details */}
+          <div className={styles.infoWrapper}>
+            <h3 className={styles.charName}>
+              {selectedChar.emoji} {selectedChar.title}
+            </h3>
+            <p className={styles.charDesc}>{selectedChar.description}</p>
+          </div>
+
+          {/* Action Button */}
+          <button
+            className={`btn ${isActive ? 'btn-outline' : 'btn-primary'} ${styles.confirmBtn}`}
+            disabled={isActive || saving}
+            onClick={handleSelect}
+          >
+            {isActive ? '[ ĐANG SỬ DỤNG ]' : saving ? 'ĐANG LƯU...' : '[ XÁC NHẬN ]'}
+          </button>
         </div>
-
-        <button 
-          className="btn btn-outline" 
-          onClick={() => navigate('/utilities')}
-          style={{ width: '100%', marginTop: '16px' }}
-        >
-          [ QUAY LẠI TIỆN ÍCH ]
-        </button>
       </main>
 
       <BottomNav />
