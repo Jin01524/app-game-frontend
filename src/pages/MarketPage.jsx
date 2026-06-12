@@ -19,6 +19,18 @@ import tree2Img from '../../assets/tree2.png';
 import groundGreenImg from '../../assets/ground-green.png';
 import stallImgAsset from '../../assets/cho-nong-san.png';
 import animalShopImgAsset from '../../assets/cuahang_dongvat.png';
+import motorCarShopImgAsset from '../../assets/motor_car_shop.png';
+
+import motorcycleOrangeImg from '../../assets/vehicle/Motorcycle_orange.png';
+import motorcycleRedImg from '../../assets/vehicle/Motorcycle_red.png';
+import largeDisplacementMotorcyclesRedImg from '../../assets/vehicle/large_displacement_motorcycles_red.png';
+import oldCarWhiteImg from '../../assets/vehicle/old_car_white.png';
+import cheapCarWhiteImg from '../../assets/vehicle/cheap_car_white.png';
+import cheapCarDarkBlueGreyImg from '../../assets/vehicle/cheap_car_Dark-Blue-Grey.png';
+import vf3RedImg from '../../assets/vehicle/vf3_red.png';
+import vf3BlueImg from '../../assets/vehicle/vf3_blue.png';
+import vf3YellowImg from '../../assets/vehicle/vf3_yellow.png';
+
 import marketIcon from '../../assets/market.png';
 import transactionIcon from '../../assets/transaction.png';
 import coinIcon from '../../assets/coin-tl4.2.png';
@@ -32,6 +44,17 @@ import { useGameWindowSize } from '../hooks/useGameWindowSize';
 import LandscapeEnforcer from '../components/LandscapeEnforcer';
 
 const characterImages = import.meta.glob('../../assets/character/**/*.png', { eager: true, import: 'default' });
+
+const VEHICLES_METADATA = [
+  { id: 'Motorcycle_red', name: 'Xe máy đỏ', price: 500, img: motorcycleRedImg },
+  { id: 'large_displacement_motorcycles_red', name: 'Mô tô PKL đỏ', price: 1000, img: largeDisplacementMotorcyclesRedImg },
+  { id: 'old_car_white', name: 'Ô tô cổ trắng', price: 1200, img: oldCarWhiteImg },
+  { id: 'cheap_car_white', name: 'Ô tô giá rẻ trắng', price: 1500, img: cheapCarWhiteImg },
+  { id: 'cheap_car_Dark-Blue-Grey', name: 'Ô tô xanh xám', price: 1600, img: cheapCarDarkBlueGreyImg },
+  { id: 'vf3_red', name: 'VinFast VF3 đỏ', price: 2500, img: vf3RedImg },
+  { id: 'vf3_blue', name: 'VinFast VF3 xanh', price: 2600, img: vf3BlueImg },
+  { id: 'vf3_yellow', name: 'VinFast VF3 vàng', price: 3000, img: vf3YellowImg }
+];
 
 const CHARACTER_PRELOADS = {
   FrogNinja: {
@@ -176,17 +199,25 @@ export default function MarketPage() {
       width: 200,
       height: 150
     },
+    motorCarShop: {
+      x: 1650,
+      width: 250,
+      height: 180
+    },
     cameraX: 0,
     bgImg: null,
     groundImg: null,
     tree1Img: null,
     tree2Img: null,
     stallImg: null,
-    imgAnimalShop: null
+    imgAnimalShop: null,
+    imgMotorCarShop: null
   });
 
   const [canInteract, setCanInteract] = useState(false);
   const [canInteractAnimal, setCanInteractAnimal] = useState(false);
+  const [canInteractMotorCar, setCanInteractMotorCar] = useState(false);
+  const [showMotorCarMenu, setShowMotorCarMenu] = useState(false);
   const [closestPlayer, setClosestPlayer] = useState(null);
   const [showTradeMenu, setShowTradeMenu] = useState(null); // stores targetUsername
   const [pendingTradeRequest, setPendingTradeRequest] = useState(null);
@@ -221,6 +252,7 @@ export default function MarketPage() {
     const imgT2 = new Image(); imgT2.src = tree2Img; imgT2.onload = () => { state.tree2Img = imgT2; };
     const stallImage = new Image(); stallImage.src = stallImgAsset; stallImage.onload = () => { state.stallImg = stallImage; };
     const imgAnimal = new Image(); imgAnimal.src = animalShopImgAsset; imgAnimal.onload = () => { state.imgAnimalShop = imgAnimal; };
+    const imgMotorCar = new Image(); imgMotorCar.src = motorCarShopImgAsset; imgMotorCar.onload = () => { state.imgMotorCarShop = imgMotorCar; };
   }, []);
 
   const fetchMarket = async () => {
@@ -378,7 +410,7 @@ export default function MarketPage() {
 
       const gravity = 2000;
       const jumpPower = -600;
-      const menuOpen = showMarketMenu || showAnimalMenu || !!showTradeMenu || !!pendingTradeRequest;
+      const menuOpen = showMarketMenu || showAnimalMenu || showMotorCarMenu || !!showTradeMenu || !!pendingTradeRequest;
       const canMove = !menuOpen && !loading;
       const currentEnergy = userRef.current?.energy !== undefined && userRef.current?.energy !== null ? userRef.current.energy : 6;
       const speed = currentEnergy <= 0 ? 125 : 250;
@@ -408,7 +440,7 @@ export default function MarketPage() {
       state.player.y += state.player.vy * dt;
 
       if (state.player.y > 0) { state.player.y = 0; state.player.vy = 0; state.player.isGrounded = true; }
-      const worldWidth = 1500;
+      const worldWidth = 2200;
       state.player.x = Math.max(0, Math.min(worldWidth - state.player.width, state.player.x));
       
       state.cameraX = state.player.x - canvas.width / 2 + state.player.width / 2;
@@ -439,6 +471,9 @@ export default function MarketPage() {
       
       const centerAnimal = state.animalShop.x + state.animalShop.width / 2;
       const inRangeAnimal = Math.abs(centerPlayer - centerAnimal) < 150;
+
+      const centerMotorCar = state.motorCarShop.x + state.motorCarShop.width / 2;
+      const inRangeMotorCar = Math.abs(centerPlayer - centerMotorCar) < 150;
       
       let closestPlayer = null;
       let minDist = 50;
@@ -454,9 +489,11 @@ export default function MarketPage() {
 
       setCanInteract((prev) => prev !== inRange ? inRange : prev);
       setCanInteractAnimal((prev) => prev !== inRangeAnimal ? inRangeAnimal : prev);
+      setCanInteractMotorCar((prev) => prev !== inRangeMotorCar ? inRangeMotorCar : prev);
       
       if (!inRange && showMarketMenu) setShowMarketMenu(false);
       if (!inRangeAnimal && showAnimalMenu) setShowAnimalMenu(false);
+      if (!inRangeMotorCar && showMotorCarMenu) setShowMotorCarMenu(false);
 
       ctx.save();
       ctx.translate(-state.cameraX, 0);
@@ -487,6 +524,13 @@ export default function MarketPage() {
         ctx.drawImage(state.imgAnimalShop, ax, groundY - h, w, h);
       }
 
+      if (state.imgMotorCarShop && state.imgMotorCarShop.complete) {
+        const h = 180;
+        const w = state.imgMotorCarShop.width * (h / state.imgMotorCarShop.height);
+        const mcx = state.motorCarShop.x + state.motorCarShop.width/2 - w/2;
+        ctx.drawImage(state.imgMotorCarShop, mcx, groundY - h, w, h);
+      }
+
       if (state.groundImg && state.groundImg.complete) {
         const ih = state.groundImg.height;
         const pattern = ctx.createPattern(state.groundImg, 'repeat-x');
@@ -507,6 +551,14 @@ export default function MarketPage() {
         ctx.fillStyle = '#facc15'; ctx.font = '24px sans-serif'; ctx.textAlign = 'center';
         ctx.fillText('▼', state.stall.x + state.stall.width/2, groundY - state.stall.height - 20 + bounce);
       } else if (inRangeAnimal && !showAnimalMenu) {
+        const bounce = Math.sin(time / 150) * 5;
+        ctx.fillStyle = '#facc15'; ctx.font = '24px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('▼', state.animalShop.x + state.animalShop.width/2, groundY - state.animalShop.height - 20 + bounce);
+      } else if (inRangeMotorCar && !showMotorCarMenu) {
+        const bounce = Math.sin(time / 150) * 5;
+        ctx.fillStyle = '#facc15'; ctx.font = '24px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('▼', state.motorCarShop.x + state.motorCarShop.width/2, groundY - state.motorCarShop.height - 20 + bounce);
+      } else if (false) {
         const bounce = Math.sin(time / 150) * 5;
         ctx.fillStyle = '#facc15'; ctx.font = '24px sans-serif'; ctx.textAlign = 'center';
         ctx.fillText('▼', state.animalShop.x + state.animalShop.width/2, groundY - state.animalShop.height - 20 + bounce);
@@ -599,7 +651,7 @@ export default function MarketPage() {
     };
     rafId = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(rafId);
-  }, [market, showMarketMenu, showAnimalMenu, showTradeMenu, pendingTradeRequest, selectedBackpackSlotIdx, user, loading, gameWidth, gameHeight]);
+  }, [market, showMarketMenu, showAnimalMenu, showMotorCarMenu, showTradeMenu, pendingTradeRequest, selectedBackpackSlotIdx, user, loading, gameWidth, gameHeight]);
 
   useEffect(() => {
     if (!user) return;
@@ -675,6 +727,28 @@ export default function MarketPage() {
         setSelectedBackpackSlotIdx(null);
         setDiscardPrompt(null);
         toast.success('Đã vứt vật phẩm');
+      }
+    } catch (e) {
+      toast.error('Lỗi kết nối');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleBuyVehicle = async (vehicleId) => {
+    setActionLoading(true);
+    try {
+      const res = await authFetch('/api/vehicle/buy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vehicleId })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || 'Lỗi mua xe');
+      } else {
+        toast.success(data.message || 'Mua xe thành công!');
+        refreshUser();
       }
     } catch (e) {
       toast.error('Lỗi kết nối');
@@ -836,7 +910,7 @@ export default function MarketPage() {
           ▲
         </button>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          {!showMarketMenu && !showAnimalMenu && (
+          {!showMarketMenu && !showAnimalMenu && !showMotorCarMenu && (
             <SelectedItemActions
               item={selectedBackpackItem}
               canConsume={canConsume}
@@ -852,7 +926,7 @@ export default function MarketPage() {
               cooldown={eatCooldown}
             />
           )}
-          {!showMarketMenu && !showAnimalMenu && (
+          {!showMarketMenu && !showAnimalMenu && !showMotorCarMenu && (
             <button 
               onClick={() => {
                 if (canInteract) {
@@ -860,6 +934,8 @@ export default function MarketPage() {
                   setSellInput(riceQty.toString());
                 } else if (canInteractAnimal) {
                   setShowAnimalMenu(true);
+                } else if (canInteractMotorCar) {
+                  setShowMotorCarMenu(true);
                 } else if (closestPlayerRef.current) {
                   setShowTradeMenu({ username: closestPlayerRef.current, isAccepting: false });
                 }
@@ -874,12 +950,14 @@ export default function MarketPage() {
                 userSelect: 'none',
                 WebkitUserSelect: 'none',
                 WebkitTouchCallout: 'none',
-                animation: (canInteract || canInteractAnimal || closestPlayer) ? 'pulse 1s infinite' : 'none'
+                animation: (canInteract || canInteractAnimal || canInteractMotorCar || closestPlayer) ? 'pulse 1s infinite' : 'none'
               }}>
               {canInteract ? (
                 <img src={marketIcon} alt="Giao Dịch" style={{ width: '40px', height: '40px', imageRendering: 'pixelated', display: 'block' }} />
               ) : canInteractAnimal ? (
                 <img src={marketIcon} alt="Động Vật" style={{ width: '40px', height: '40px', imageRendering: 'pixelated', display: 'block', filter: 'hue-rotate(180deg)' }} />
+              ) : canInteractMotorCar ? (
+                <span style={{ fontSize: '24px' }}>🏍️</span>
               ) : closestPlayer ? (
                 <img src={transactionIcon} alt="Giao Dịch" style={{ width: '36px', height: '36px', imageRendering: 'pixelated' }} />
               ) : null}
@@ -948,6 +1026,80 @@ export default function MarketPage() {
                   </button>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+      {showMotorCarMenu && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+          <div className="rpg-box" style={{ background: '#fffbeb', width: '420px', maxHeight: '90%', overflowY: 'auto', padding: '12px 16px', color: '#000', position: 'relative', marginTop: '-50px', boxSizing: 'border-box' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #ccc', paddingBottom: '6px', marginBottom: '15px' }}>
+              <h2 style={{ fontSize: '16px', margin: 0, fontWeight: 'bold' }}>🛒 CỬA HÀNG XE</h2>
+              <button 
+                onClick={() => setShowMotorCarMenu(false)} 
+                style={{ 
+                  background: 'transparent', 
+                  border: 'none', 
+                  fontSize: '14px', 
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-pixel)',
+                  fontWeight: 'bold',
+                  color: '#ef4444'
+                }}
+              >
+                [x]
+              </button>
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '15px', background: 'rgba(0,0,0,0.05)', padding: '8px', borderRadius: '4px' }}>
+              <span style={{ fontSize: '14px', fontWeight: 'bold' }}>Tài sản của bạn:</span>
+              <img src={coinIcon} alt="Xu" style={{ width: '20px', height: '20px' }} />
+              <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#b45309' }}>{user?.xu ?? 0} xu</span>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {VEHICLES_METADATA.map(item => {
+                const isOwned = user?.vehicleSkins?.includes(item.id);
+                const canAfford = (user?.xu ?? 0) >= item.price;
+                return (
+                  <div key={item.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'white', border: '2px solid #cbd5e1', padding: '10px', borderRadius: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ width: '80px', height: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
+                        <img src={item.img} alt={item.name} style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 'bold', fontSize: '13px' }}>{item.name}</div>
+                        <div style={{ fontSize: '12px', color: '#b45309', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <img src={coinIcon} alt="Xu" style={{ width: '12px', height: '12px' }} />
+                          {item.price} xu
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      {isOwned ? (
+                        <button className="pixel-btn" disabled style={{ background: '#94a3b8', color: '#f8fafc', padding: '6px 10px', fontSize: '11px', cursor: 'not-allowed' }}>
+                          ĐÃ SỞ HỮU
+                        </button>
+                      ) : (
+                        <button 
+                          onClick={() => handleBuyVehicle(item.id)}
+                          disabled={actionLoading || !canAfford}
+                          className="pixel-btn"
+                          style={{ 
+                            background: canAfford ? '#22c55e' : '#ef4444', 
+                            color: '#fff', 
+                            padding: '6px 10px', 
+                            fontSize: '11px',
+                            opacity: (!canAfford || actionLoading) ? 0.6 : 1
+                          }}
+                        >
+                          {actionLoading ? '...' : canAfford ? 'MUA' : 'KHÔNG ĐỦ XU'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
