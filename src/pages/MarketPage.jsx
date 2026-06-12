@@ -785,18 +785,18 @@ export default function MarketPage() {
         [ THOÁT ]
       </button>
 
+      <button onClick={() => setShowBackpackMenu(true)} className="pixel-btn" style={{ position: 'absolute', top: '20px', right: '150px', padding: '10px', background: '#eab308', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10 }}>
+        <img src={bagIcon} alt="Balo" style={{ width: '24px', height: '24px', imageRendering: 'pixelated' }} />
+        <span>Balo</span>
+      </button>
+
       {/* Coin Display */}
-      <div style={{ position: 'absolute', top: '20px', right: '250px', padding: '6px 16px', background: 'white', border: '4px solid #f59e0b', borderRadius: '0', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10, fontFamily: 'var(--font-pixel)', boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}>
+      <div style={{ position: 'absolute', top: '20px', right: '280px', padding: '6px 16px', background: 'white', border: '4px solid #f59e0b', borderRadius: '0', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10, fontFamily: 'var(--font-pixel)', boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}>
         <img src={coinIcon} alt="Xu" style={{ width: '28px', height: '28px', imageRendering: 'pixelated' }} />
         <span style={{ fontSize: '1.2rem', color: '#d97706', fontWeight: 'bold', textShadow: '1px 1px 0 #fff' }}>{user?.xu?.toLocaleString() || 0}</span>
       </div>
 
-      <EnergyBar energy={user?.energy} style={{ top: '76px', right: '20px' }} />
-
-      <button onClick={() => setShowBackpackMenu(true)} className="pixel-btn" style={{ position: 'absolute', top: '20px', right: '140px', padding: '10px', background: '#eab308', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10 }}>
-        <img src={bagIcon} alt="Balo" style={{ width: '24px', height: '24px', imageRendering: 'pixelated' }} />
-        <span>Balo</span>
-      </button>
+      <EnergyBar energy={user?.energy} style={{ top: '20px', right: '490px' }} />
 
       <div style={{ position: 'absolute', bottom: '20px', left: '20px', display: 'flex', gap: '16px', zIndex: 10 }}>
         <button 
@@ -825,65 +825,67 @@ export default function MarketPage() {
         onSelectSlot={setSelectedBackpackSlotIdx}
       />
 
-      <div style={{ position: 'absolute', bottom: '20px', right: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', zIndex: 20 }}>
+      <div style={{ position: 'absolute', bottom: '20px', right: '20px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '16px', zIndex: 20 }}>
         <button 
           onPointerDown={(e) => { e.preventDefault(); keys.current.jump = true; }}
           onPointerUp={(e) => { e.preventDefault(); keys.current.jump = false; }}
           onPointerLeave={() => keys.current.jump = false}
           onContextMenu={(e) => e.preventDefault()}
           className="pixel-btn" 
-          style={{ width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', background: 'rgba(0,0,0,0.5)', border: '4px solid var(--px-border)', color: 'white', touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }}>
+          style={{ width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', background: 'rgba(0,0,0,0.5)', border: '4px solid var(--px-border)', color: 'white', touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none', marginRight: '4px' }}>
           ▲
         </button>
-        {!showMarketMenu && !showAnimalMenu && (
-          <SelectedItemActions
-            item={selectedBackpackItem}
-            canConsume={canConsume}
-            isDrinkable={isDrinkable}
-            onConsume={handleConsumeItem}
-            onDiscard={() => {
-              if (selectedBackpackItem) {
-                setDiscardPrompt({ itemId: selectedBackpackItem.item_id, maxQty: selectedBackpackItem.quantity });
-                setDiscardQtyInput(selectedBackpackItem.quantity.toString());
-              }
-            }}
-            disabled={actionLoading}
-            cooldown={eatCooldown}
-          />
-        )}
-        {!showMarketMenu && !showAnimalMenu && (
-          <button 
-            onClick={() => {
-              if (canInteract) {
-                setShowMarketMenu(true);
-                setSellInput(riceQty.toString());
-              } else if (canInteractAnimal) {
-                setShowAnimalMenu(true);
-              } else if (closestPlayerRef.current) {
-                setShowTradeMenu({ username: closestPlayerRef.current, isAccepting: false });
-              }
-            }}
-            className="pixel-btn"
-            style={{ 
-              width: '68px', height: '68px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'rgb(59, 130, 246)', 
-              border: '4px solid #1e3a8a', padding: '0',
-              boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
-              touchAction: 'none',
-              userSelect: 'none',
-              WebkitUserSelect: 'none',
-              WebkitTouchCallout: 'none',
-              animation: (canInteract || canInteractAnimal || closestPlayer) ? 'pulse 1s infinite' : 'none'
-            }}>
-            {canInteract ? (
-              <img src={marketIcon} alt="Giao Dịch" style={{ width: '40px', height: '40px', imageRendering: 'pixelated', display: 'block' }} />
-            ) : canInteractAnimal ? (
-              <img src={marketIcon} alt="Động Vật" style={{ width: '40px', height: '40px', imageRendering: 'pixelated', display: 'block', filter: 'hue-rotate(180deg)' }} />
-            ) : closestPlayer ? (
-              <img src={transactionIcon} alt="Giao Dịch" style={{ width: '36px', height: '36px', imageRendering: 'pixelated' }} />
-            ) : null}
-          </button>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          {!showMarketMenu && !showAnimalMenu && (
+            <SelectedItemActions
+              item={selectedBackpackItem}
+              canConsume={canConsume}
+              isDrinkable={isDrinkable}
+              onConsume={handleConsumeItem}
+              onDiscard={() => {
+                if (selectedBackpackItem) {
+                  setDiscardPrompt({ itemId: selectedBackpackItem.item_id, maxQty: selectedBackpackItem.quantity });
+                  setDiscardQtyInput(selectedBackpackItem.quantity.toString());
+                }
+              }}
+              disabled={actionLoading}
+              cooldown={eatCooldown}
+            />
+          )}
+          {!showMarketMenu && !showAnimalMenu && (
+            <button 
+              onClick={() => {
+                if (canInteract) {
+                  setShowMarketMenu(true);
+                  setSellInput(riceQty.toString());
+                } else if (canInteractAnimal) {
+                  setShowAnimalMenu(true);
+                } else if (closestPlayerRef.current) {
+                  setShowTradeMenu({ username: closestPlayerRef.current, isAccepting: false });
+                }
+              }}
+              className="pixel-btn"
+              style={{ 
+                width: '68px', height: '68px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'rgb(59, 130, 246)', 
+                border: '4px solid #1e3a8a', padding: '0',
+                boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
+                touchAction: 'none',
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+                WebkitTouchCallout: 'none',
+                animation: (canInteract || canInteractAnimal || closestPlayer) ? 'pulse 1s infinite' : 'none'
+              }}>
+              {canInteract ? (
+                <img src={marketIcon} alt="Giao Dịch" style={{ width: '40px', height: '40px', imageRendering: 'pixelated', display: 'block' }} />
+              ) : canInteractAnimal ? (
+                <img src={marketIcon} alt="Động Vật" style={{ width: '40px', height: '40px', imageRendering: 'pixelated', display: 'block', filter: 'hue-rotate(180deg)' }} />
+              ) : closestPlayer ? (
+                <img src={transactionIcon} alt="Giao Dịch" style={{ width: '36px', height: '36px', imageRendering: 'pixelated' }} />
+              ) : null}
+            </button>
+          )}
+        </div>
       </div>
 
       {showAnimalMenu && (
