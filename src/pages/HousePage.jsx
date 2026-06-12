@@ -547,6 +547,12 @@ export default function HousePage() {
       if (e.key === '2') {
         setSelectedBackpackSlotIdx(1);
       }
+      if (e.key === '3') {
+        setSelectedBackpackSlotIdx(2);
+      }
+      if (e.key === '4') {
+        setSelectedBackpackSlotIdx(3);
+      }
       if (key === 'q') {
         const currentSlotIdx = selectedBackpackSlotIdxRef.current;
         const backpack = userRef.current?.backpack;

@@ -115,8 +115,8 @@ export function EnergyBar({ energy, style }) {
 }
 
 export function BackpackHotbar({ backpack, selectedSlotIdx, onSelectSlot, zIndex = 10 }) {
-  const bp = backpack || [null, null];
-  const slots = [bp[0] || null, bp[1] || null];
+  const bp = Array.isArray(backpack) ? backpack : [];
+  const slots = Array.from({ length: 4 }).map((_, i) => bp[i] || null);
 
   return (
     <div
