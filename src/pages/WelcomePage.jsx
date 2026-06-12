@@ -181,6 +181,10 @@ export default function WelcomePage() {
   };
 
   const handleGoal = async (amount = 2) => {
+    if ((user?.energy ?? 6) <= 0) {
+      toast.error('Hết năng lượng, không thể chơi mini game!');
+      return;
+    }
     addXu(amount);
     try {
       const goalsCount = Math.floor(amount / 2);
@@ -396,13 +400,37 @@ export default function WelcomePage() {
             <span>◄ MINIGAME: SÚT PHẠT ►</span>
             <span className={styles.blinkDot}>█</span>
           </div>
-          <div className={styles.cardBody} style={{ padding: '0' }}>
+          <div className={styles.cardBody} style={{ padding: '0', position: 'relative' }}>
             <PenaltyGame onGoal={handleGoal} xu={xu} />
             <div style={{ padding: '14px', borderTop: '2px solid var(--px-border)', textAlign: 'center' }}>
                <button className={`${styles.profileBtn}`} onClick={() => navigate('/profile')}>
                  &gt; CHỈNH SỬA HỒ SƠ
                </button>
             </div>
+            {((user?.energy ?? 6) <= 0) && (
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                color: '#ef4444',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                textAlign: 'center',
+                padding: '20px',
+                zIndex: 10,
+                fontFamily: 'inherit',
+                userSelect: 'none'
+              }}>
+                <div style={{ fontSize: '36px', marginBottom: '10px' }}>⚡</div>
+                <div style={{ fontSize: '16px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}>HẾT NĂNG LƯỢNG</div>
+                <div style={{ fontSize: '12px', marginTop: '10px', color: '#9ca3af' }}>Ăn bánh mì hoặc uống sữa để nạp năng lượng!</div>
+              </div>
+            )}
           </div>
         </div>
 

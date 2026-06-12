@@ -252,6 +252,7 @@ export default function HousePage() {
   const socketRef = useRef(null);
   const otherPlayersRef = useRef({});
   const lastEmitTime = useRef(0);
+  const moveTimeAccumulator = useRef(0);
   
   const [farm, setFarm] = useState(null);
   const [farmTimeLeft, setFarmTimeLeft] = useState(0);
@@ -581,22 +582,39 @@ export default function HousePage() {
       const menuOpen = showFarmMenu || showHouseMenu || showCageMenu || showCraftingMenu || !!showTradeMenu || !!pendingTradeRequest;
       const canMove = !menuOpen && !loading;
 
+      const currentEnergy = userRef.current?.energy !== undefined && userRef.current?.energy !== null ? userRef.current.energy : 6;
+      const isMoving = (keys.current.left || keys.current.right) && canMove;
+      const currentlyMoving = isMoving || (!state.player.isGrounded && canMove);
+
+      if (currentlyMoving) {
+        moveTimeAccumulator.current += dt;
+        if (moveTimeAccumulator.current >= 10) {
+          moveTimeAccumulator.current = 0;
+          if (currentEnergy > 0) {
+            updateEnergy(currentEnergy - 1);
+            handleDrainEnergy();
+          }
+        }
+      } else {
+        moveTimeAccumulator.current = Math.max(0, moveTimeAccumulator.current - dt);
+      }
+
       if (canMove) {
-        const speed = 250; // px/s
-        let isMoving = false;
+        const speed = currentEnergy <= 0 ? 125 : 250; // px/s
+        let movingThisFrame = false;
         
         if (keys.current.left) {
           state.player.x -= speed * dt;
           state.player.facing = -1;
-          isMoving = true;
+          movingThisFrame = true;
         }
         if (keys.current.right) {
           state.player.x += speed * dt;
           state.player.facing = 1;
-          isMoving = true;
+          movingThisFrame = true;
         }
 
-        if (isMoving) {
+        if (movingThisFrame) {
           state.player.walkCycle += dt * 15; // Animation speed
         } else {
           state.player.walkCycle = 0; // Reset to standing
@@ -615,7 +633,7 @@ export default function HousePage() {
           state.player.isGrounded = false;
         }
 
-        if (keys.current.jump && state.player.isGrounded) {
+        if (keys.current.jump && state.player.isGrounded && currentEnergy > 0) {
           state.player.vy = -700;
           state.player.isGrounded = false;
         }
@@ -963,6 +981,26 @@ export default function HousePage() {
         const px = pState.x;
         const py = groundY - pState.height + pState.y;
         
+        if (isMe && moveTimeAccumulator.current > 0) {
+          const barWidth = 4;
+          const barHeight = 20;
+          const bx = px - 8;
+          const by = py + pState.height / 2 - barHeight / 2;
+          
+          // Draw black border (1px)
+          ctx.fillStyle = 'black';
+          ctx.fillRect(bx - 1, by - 1, barWidth + 2, barHeight + 2);
+          
+          // Draw background
+          ctx.fillStyle = '#1e293b';
+          ctx.fillRect(bx, by, barWidth, barHeight);
+          
+          // Draw yellow progress (fill from bottom up)
+          ctx.fillStyle = '#facc15';
+          const progressHeight = Math.min(barHeight, (moveTimeAccumulator.current / 10) * barHeight);
+          ctx.fillRect(bx, by + barHeight - progressHeight, barWidth, progressHeight);
+        }
+
         ctx.save();
         ctx.translate(px + pState.width/2, py);
         ctx.scale(pState.facing, 1);
@@ -1019,8 +1057,6 @@ export default function HousePage() {
         ctx.fillText(name, px + pState.width/2, py - 10);
       };
 
-      const isMoving = (keys.current.left || keys.current.right) && canMove;
-      
       if (socketRef.current && (time - lastEmitTime.current > 50)) {
         lastEmitTime.current = time;
         socketRef.current.emit('player_move', {
@@ -1070,6 +1106,22 @@ export default function HousePage() {
     }, 2 * 60 * 1000);
     return () => clearInterval(interval);
   }, [refreshUser, user]);
+
+  const handleDrainEnergy = async () => {
+    try {
+      const res = await authFetch('/api/profile/drain-energy', {
+        method: 'POST'
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.energy !== undefined) {
+          updateEnergy(data.energy);
+        }
+      }
+    } catch (e) {
+      console.error('Lỗi trừ năng lượng di chuyển:', e);
+    }
+  };
 
   const handleConsumeItem = async () => {
     if (eatCooldown || actionLoading) return;
@@ -1144,6 +1196,10 @@ export default function HousePage() {
   };
 
   const handleAction = async (endpoint) => {
+    if (endpoint === 'plant' && (user?.energy ?? 6) <= 0) {
+      toast.error('Hết năng lượng, không thể trồng lúa!');
+      return;
+    }
     setActionLoading(true);
     try {
       const res = await authFetch(`/api/farm/${endpoint}`, { method: 'POST' });
@@ -1645,8 +1701,17 @@ export default function HousePage() {
               )}
 
               {!isLocked && farm.state === 'idle' && (
-                <button className="btn btn-primary" onClick={() => handleAction('plant')} disabled={actionLoading}>
-                  {actionLoading ? 'ĐANG GIEO...' : '[ GIEO HẠT - 10 XU ]'}
+                <button
+                  className="btn btn-primary"
+                  onClick={() => handleAction('plant')}
+                  disabled={actionLoading || (user?.energy ?? 6) <= 0}
+                  style={{
+                    backgroundColor: (user?.energy ?? 6) <= 0 ? '#475569' : undefined,
+                    color: (user?.energy ?? 6) <= 0 ? '#94a3b8' : undefined,
+                    cursor: (user?.energy ?? 6) <= 0 ? 'not-allowed' : undefined
+                  }}
+                >
+                  {actionLoading ? 'ĐANG GIEO...' : ((user?.energy ?? 6) <= 0 ? '[ HẾT NĂNG LƯỢNG ]' : '[ GIEO HẠT - 10 XU ]')}
                 </button>
               )}
 
