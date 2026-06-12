@@ -277,20 +277,25 @@ export default function TradeModal({ targetUsername, onClose, socket, isAcceptin
           background: '#fff', border: '4px solid #000', borderRadius: '4px',
           width: '500px', display: 'flex', flexDirection: 'column', position: 'relative'
         }}>
-          {/* Close button X */}
-          <button 
-            onClick={handleCancel}
-            style={{
-              position: 'absolute', top: '-16px', right: '-16px',
-              width: '32px', height: '32px', background: 'red', border: '3px solid black',
-              color: 'white', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', zIndex: 10
-            }}
-          >
-            X
-          </button>
-          
-          <div style={{ background: '#2563eb', color: 'white', padding: '12px', textAlign: 'center', fontSize: '1.5rem', fontWeight: 'bold', borderBottom: '4px solid #000' }}>
-            TRAO ĐỔI
+          <div style={{ background: '#2563eb', color: 'white', padding: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '1.5rem', fontWeight: 'bold', borderBottom: '4px solid #000', position: 'relative' }}>
+            <span style={{ flex: 1, textAlign: 'center' }}>🤝 TRAO ĐỔI</span>
+            <button 
+              onClick={handleCancel}
+              style={{ 
+                background: 'transparent', 
+                border: 'none', 
+                fontSize: '18px', 
+                cursor: 'pointer',
+                fontFamily: 'var(--font-pixel)',
+                fontWeight: 'bold',
+                color: '#ef4444',
+                position: 'absolute',
+                right: '12px',
+                top: '12px'
+              }}
+            >
+              [x]
+            </button>
           </div>
           
           {status === 'requesting' ? (

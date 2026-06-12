@@ -414,10 +414,14 @@ export default function LobbyPage() {
   // Events
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.current.left = true;
-      if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.current.right = true;
-      if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') keys.current.jump = true;
-      if (e.code === 'KeyF') {
+      if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+        return;
+      }
+      const key = e.key.toLowerCase();
+      if (e.key === 'ArrowLeft' || key === 'a') keys.current.left = true;
+      if (e.key === 'ArrowRight' || key === 'd') keys.current.right = true;
+      if (e.key === 'ArrowUp' || key === 'w' || e.key === ' ') keys.current.jump = true;
+      if (key === 'f') {
         if (canInteractCasinoRef.current) {
           setShowCasinoMenu(true);
         } else if (closestPlayerRef.current) {
@@ -426,9 +430,10 @@ export default function LobbyPage() {
       }
     };
     const handleKeyUp = (e) => {
-      if (e.key === 'a' || e.key === 'ArrowLeft') keys.current.left = false;
-      if (e.key === 'd' || e.key === 'ArrowRight') keys.current.right = false;
-      if (e.key === 'w' || e.key === 'ArrowUp' || e.key === ' ') keys.current.jump = false;
+      const key = e.key.toLowerCase();
+      if (e.key === 'ArrowLeft' || key === 'a') keys.current.left = false;
+      if (e.key === 'ArrowRight' || key === 'd') keys.current.right = false;
+      if (e.key === 'ArrowUp' || key === 'w' || e.key === ' ') keys.current.jump = false;
     };
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
@@ -564,7 +569,20 @@ export default function LobbyPage() {
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <h2 style={{ color: '#facc15', margin: 0 }}>GAME CENTER</h2>
-            <button onClick={() => setShowCasinoMenu(false)} style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '1.5rem', cursor: 'pointer' }}>×</button>
+            <button 
+              onClick={() => setShowCasinoMenu(false)} 
+              style={{ 
+                background: 'transparent', 
+                border: 'none', 
+                fontSize: '14px', 
+                cursor: 'pointer',
+                fontFamily: 'var(--font-pixel)',
+                fontWeight: 'bold',
+                color: '#ef4444'
+              }}
+            >
+              [x]
+            </button>
           </div>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>

@@ -84,7 +84,24 @@ export default function XiDachGame({ onClose, user, socket }) {
   return (
     <div className={styles.overlay}>
       <div className={styles.table}>
-        <button className={styles.closeBtn} onClick={onClose}>X</button>
+        <button 
+          onClick={onClose} 
+          style={{ 
+            position: 'absolute', 
+            top: '20px', 
+            right: '20px', 
+            background: 'transparent', 
+            border: 'none', 
+            fontSize: '24px', 
+            cursor: 'pointer',
+            fontFamily: 'var(--font-pixel)',
+            fontWeight: 'bold',
+            color: '#ef4444',
+            zIndex: 100
+          }}
+        >
+          [x]
+        </button>
         
         <div className={styles.tableInner}>
           

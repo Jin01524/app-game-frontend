@@ -124,6 +124,25 @@ export default function StorageModal({ onClose, selectedBackpackSlotIdx = null, 
     setPromptInput(maxAmount.toString());
   };
 
+  const handleTransferAllToStorage = async () => {
+    setLoading(true);
+    try {
+      const res = await authFetch('/api/profile/transfer-all-backpack', {
+        method: 'POST'
+      });
+      const data = await res.json();
+      if (!res.ok) toast.error(data.error || 'Lỗi khi cất nhanh');
+      else {
+        toast.success(data.message || 'Đã cất nhanh tất cả vật phẩm vào kho');
+        if (data.backpack) updateBackpack(data.backpack);
+        if (data.inventory) setInventory(data.inventory);
+        setSelectedBackpackSlotIdx(null);
+        setSelectedSlot(null);
+      }
+    } catch(e) { toast.error('Lỗi kết nối'); }
+    setLoading(false);
+  };
+
   const handleDiscardItem = (itemId, amount, source) => {
     setPromptData({
       title: `Nhập số lượng muốn vứt (Tối đa ${amount}):`,
@@ -202,8 +221,21 @@ export default function StorageModal({ onClose, selectedBackpackSlotIdx = null, 
       <div className="rpg-box fade-in" style={{ background: '#fffbeb', width: '420px', maxWidth: '95vw', maxHeight: '92%', overflowY: 'auto', padding: '12px 16px', color: '#000', display: 'flex', flexDirection: 'column', gap: '12px', position: 'relative' }}>
         
         <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #ccc', paddingBottom: '6px' }}>
-          <h2 style={{ fontSize: '16px', margin: 0, fontWeight: 'bold' }}>Kho đồ</h2>
-          <button onClick={onClose} style={{ background: 'transparent', border: 'none', fontSize: '18px', cursor: 'pointer' }}>✖</button>
+          <h2 style={{ fontSize: '16px', margin: 0, fontWeight: 'bold' }}>📦 Kho đồ</h2>
+          <button 
+            onClick={onClose} 
+            style={{ 
+              background: 'transparent', 
+              border: 'none', 
+              fontSize: '14px', 
+              cursor: 'pointer',
+              fontFamily: 'var(--font-pixel)',
+              fontWeight: 'bold',
+              color: '#ef4444'
+            }}
+          >
+            [x]
+          </button>
         </div>
 
         <div style={{ display: 'flex', gap: '15px' }}>
@@ -261,6 +293,14 @@ export default function StorageModal({ onClose, selectedBackpackSlotIdx = null, 
               style={{ width: '100%', padding: '8px', background: 'var(--px-amber)', color: 'black', opacity: !selectedBackpackItem ? 0.5 : 1 }}
             >
               ↑ Cất
+            </button>
+            <button 
+              className="pixel-btn"
+              disabled={!backpack.some(item => item && item.quantity > 0)}
+              onClick={handleTransferAllToStorage}
+              style={{ width: '100%', padding: '8px', background: '#eab308', color: 'black', opacity: !backpack.some(item => item && item.quantity > 0) ? 0.5 : 1 }}
+            >
+              ⚡ Cất Nhanh
             </button>
             <button 
               className="pixel-btn"

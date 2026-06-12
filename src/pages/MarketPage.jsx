@@ -283,6 +283,9 @@ export default function MarketPage() {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
+      if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+        return;
+      }
       if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.current.left = true;
       if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.current.right = true;
       if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') keys.current.jump = true;
@@ -706,8 +709,24 @@ export default function MarketPage() {
 
       {showAnimalMenu && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-          <div className="rpg-box" style={{ background: '#fffbeb', width: '380px', padding: '20px', textAlign: 'center' }}>
-            <h2 style={{ fontSize: '20px', marginBottom: '15px' }}>Cửa Hàng Động Vật</h2>
+          <div className="rpg-box" style={{ background: '#fffbeb', width: '380px', padding: '12px 16px', color: '#000', position: 'relative' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #ccc', paddingBottom: '6px', marginBottom: '15px' }}>
+              <h2 style={{ fontSize: '16px', margin: 0, fontWeight: 'bold' }}>🛒 CỬA HÀNG ĐỘNG VẬT</h2>
+              <button 
+                onClick={() => setShowAnimalMenu(false)} 
+                style={{ 
+                  background: 'transparent', 
+                  border: 'none', 
+                  fontSize: '14px', 
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-pixel)',
+                  fontWeight: 'bold',
+                  color: '#ef4444'
+                }}
+              >
+                [x]
+              </button>
+            </div>
             
             <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
               <button onClick={() => setActiveTab('animals')} style={{flex: 1, background: activeTab === 'animals' ? '#3b82f6' : '#94a3b8', color: 'white', padding: '10px'}} className="pixel-btn">ĐỘNG VẬT</button>
@@ -749,10 +768,6 @@ export default function MarketPage() {
                 </div>
               )}
             </div>
-
-            <button className="pixel-btn" onClick={() => setShowAnimalMenu(false)} style={{ background: '#64748b', color: 'white', padding: '10px', width: '100%' }}>
-              Đóng
-            </button>
           </div>
         </div>
       )}
@@ -760,9 +775,25 @@ export default function MarketPage() {
       {/* Action Modal */}
       {showMarketMenu && market && (
         <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
-          <div className="rpg-box fade-in" style={{ width: '90%', maxWidth: '400px', background: 'white' }}>
-            <div className="px-titlebar" style={{ background: 'var(--px-green)' }}>◄ THƯƠNG NHÂN ►</div>
-            <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className="rpg-box fade-in" style={{ width: '90%', maxWidth: '400px', background: '#fffbeb', padding: '12px 16px', color: '#000', display: 'flex', flexDirection: 'column', gap: '10px', position: 'relative' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #ccc', paddingBottom: '6px' }}>
+              <h2 style={{ fontSize: '16px', margin: 0, fontWeight: 'bold' }}>🌾 THƯƠNG NHÂN</h2>
+              <button 
+                onClick={() => setShowMarketMenu(false)} 
+                style={{ 
+                  background: 'transparent', 
+                  border: 'none', 
+                  fontSize: '14px', 
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-pixel)',
+                  fontWeight: 'bold',
+                  color: '#ef4444'
+                }}
+              >
+                [x]
+              </button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               
               <div style={{ textAlign: 'center', fontSize: '0.9rem', color: 'var(--px-text)', fontFamily: 'var(--font-pixel)' }}>
                 Giá lúa hiện tại: <span style={{ color: 'var(--px-amber)', fontSize: '1.2rem' }}>{market.price} Xu</span> / 1 Lúa
@@ -794,11 +825,6 @@ export default function MarketPage() {
               </div>
 
               <div style={{ display: 'flex', gap: '12px' }}>
-                <button 
-                  onClick={() => setShowMarketMenu(false)}
-                  className="pixel-btn" style={{ flex: 1, padding: '12px', background: '#e5e7eb', border: '2px solid var(--px-border)' }}>
-                  [ HUỶ ]
-                </button>
                 <button 
                   disabled={actionLoading || riceQty === 0 || parseInt(sellInput) <= 0 || parseInt(sellInput) > riceQty}
                   onClick={handleSell}

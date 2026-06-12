@@ -491,19 +491,47 @@ export default function HousePage() {
     return () => window.removeEventListener('resize', handleResize);
   }, [gameWidth, gameHeight]);
 
+  const selectedBackpackSlotIdxRef = useRef(selectedBackpackSlotIdx);
+  useEffect(() => {
+    selectedBackpackSlotIdxRef.current = selectedBackpackSlotIdx;
+  }, [selectedBackpackSlotIdx]);
+
   // Keyboard
   useEffect(() => {
     const handleKd = (e) => {
-      if (e.key === 'ArrowLeft' || e.key === 'a') keys.current.left = true;
-      if (e.key === 'ArrowRight' || e.key === 'd') keys.current.right = true;
-      if (e.key === 'ArrowUp' || e.key === 'w') keys.current.jump = true;
-      if (e.key === ' ' || e.key === 'e') keys.current.interact = true;
+      if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+        return;
+      }
+      const key = e.key.toLowerCase();
+      if (e.key === 'ArrowLeft' || key === 'a') keys.current.left = true;
+      if (e.key === 'ArrowRight' || key === 'd') keys.current.right = true;
+      if (e.key === 'ArrowUp' || key === 'w' || e.key === ' ') keys.current.jump = true;
+      if (key === 'f') keys.current.interact = true;
+      
+      if (e.key === '1') {
+        setSelectedBackpackSlotIdx(0);
+      }
+      if (e.key === '2') {
+        setSelectedBackpackSlotIdx(1);
+      }
+      if (key === 'q') {
+        const currentSlotIdx = selectedBackpackSlotIdxRef.current;
+        const backpack = userRef.current?.backpack;
+        if (currentSlotIdx !== null && backpack && backpack[currentSlotIdx]) {
+          const item = backpack[currentSlotIdx];
+          if (item && item.quantity > 0) {
+            setDiscardPrompt({ itemId: item.item_id, maxQty: item.quantity });
+            setDiscardQtyInput(item.quantity.toString());
+          }
+        }
+      }
     };
     const handleKu = (e) => {
-      if (e.key === 'ArrowLeft' || e.key === 'a') keys.current.left = false;
-      if (e.key === 'ArrowRight' || e.key === 'd') keys.current.right = false;
-      if (e.key === 'ArrowUp' || e.key === 'w') keys.current.jump = false;
-      if (e.key === ' ' || e.key === 'e') keys.current.interact = false;
+      const key = e.key.toLowerCase();
+      if (e.key === 'ArrowLeft' || key === 'a') keys.current.left = false;
+      if (e.key === 'ArrowRight' || key === 'd') keys.current.right = false;
+      if (e.key === 'ArrowUp' || key === 'w' || e.key === ' ') keys.current.jump = false;
+      if (key === 'f') keys.current.interact = false;
     };
     const handleBlur = () => {
       keys.current.left = false;
@@ -1640,9 +1668,25 @@ export default function HousePage() {
       {/* Action Modal */ }
       {showFarmMenu && farm && (
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
-          <div className="rpg-box fade-in" style={{ width: '90%', maxWidth: '400px' }}>
-            <div className="px-titlebar">◄ TƯƠNG TÁC RUỘNG ►</div>
-            <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div className="rpg-box fade-in" style={{ width: '90%', maxWidth: '400px', padding: '12px 16px', background: '#fffbeb', color: '#000', display: 'flex', flexDirection: 'column', gap: '10px', position: 'relative' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #ccc', paddingBottom: '6px' }}>
+              <h2 style={{ fontSize: '16px', margin: 0, fontWeight: 'bold' }}>🌾 TƯƠNG TÁC RUỘNG</h2>
+              <button 
+                onClick={() => setShowFarmMenu(false)} 
+                style={{ 
+                  background: 'transparent', 
+                  border: 'none', 
+                  fontSize: '14px', 
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-pixel)',
+                  fontWeight: 'bold',
+                  color: '#ef4444'
+                }}
+              >
+                [x]
+              </button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               
               <div style={{ textAlign: 'center', fontSize: '1rem', marginBottom: '8px', color: 'var(--px-amber)' }}>
                 {isLocked && "Ruộng đang bỏ hoang."}
@@ -1727,10 +1771,6 @@ export default function HousePage() {
                   {actionLoading ? 'ĐANG NÂNG CẤP...' : `[ NÂNG CẤP LV.${farm.level + 1} - ${farm.upgradeCost} XU ]`}
                 </button>
               )}
-
-              <button className="btn btn-outline" onClick={() => setShowFarmMenu(false)} style={{ marginTop: '16px' }}>
-                [ ĐÓNG ]
-              </button>
             </div>
           </div>
         </div>
@@ -1739,8 +1779,27 @@ export default function HousePage() {
       {showCageMenu && (
         <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '20px', gap: '20px' }}>
           
-          <div className="rpg-box" style={{ background: '#fffbeb', width: '320px', padding: '20px', maxHeight: '100%', overflowY: 'auto', position: 'relative' }}>
-            <h2 style={{ fontSize: '16px', marginBottom: '15px', color: '#1e293b', textAlign: 'center' }}>CHUỒNG THÚ</h2>
+          <div className="rpg-box" style={{ background: '#fffbeb', width: '320px', padding: '12px 16px', maxHeight: '100%', overflowY: 'auto', position: 'relative' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #ccc', paddingBottom: '6px', marginBottom: '15px' }}>
+              <h2 style={{ fontSize: '16px', margin: 0, fontWeight: 'bold', color: '#1e293b' }}>🐐 CHUỒNG THÚ</h2>
+              <button 
+                onClick={() => {
+                  setShowCageMenu(false);
+                  setSelectedBackpackSlotIdx(null);
+                }} 
+                style={{ 
+                  background: 'transparent', 
+                  border: 'none', 
+                  fontSize: '14px', 
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-pixel)',
+                  fontWeight: 'bold',
+                  color: '#ef4444'
+                }}
+              >
+                [x]
+              </button>
+            </div>
             
             {/* Feed Prompt Modal Overlay */}
             {feedPrompt && (
@@ -1942,16 +2001,6 @@ export default function HousePage() {
                 </button>
               </>
             )}
-            <button 
-              className="pixel-btn" 
-              onClick={() => {
-                setShowCageMenu(false);
-                setSelectedBackpackSlotIdx(null);
-              }} 
-              style={{ background: '#64748b', color: 'white', padding: '10px', width: '100%', cursor: 'pointer' }}
-            >
-              Đóng
-            </button>
           </div>
 
         </div>

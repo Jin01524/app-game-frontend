@@ -467,9 +467,22 @@ export default function ShurikenGame({ onClose, user, socket }) {
   if (view === 'menu') {
     return (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, backgroundColor: '#0f172a', display: 'flex', flexDirection: 'column', color: 'white', fontFamily: 'var(--font-pixel)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 20px', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 10 }}>
-            <h1 style={{ margin: 0, color: '#facc15' }}>Ném Phi Tiêu</h1>
-            <button onClick={onClose} style={{ backgroundColor: '#ef4444', color: 'white', border: 'none', padding: '5px 15px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>Đóng</button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 20px', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 10, alignItems: 'center' }}>
+            <h1 style={{ margin: 0, color: '#facc15', fontSize: '24px' }}>Ném Phi Tiêu</h1>
+            <button 
+              onClick={onClose} 
+              style={{ 
+                background: 'transparent', 
+                border: 'none', 
+                fontSize: '18px', 
+                cursor: 'pointer',
+                fontFamily: 'var(--font-pixel)',
+                fontWeight: 'bold',
+                color: '#ef4444'
+              }}
+            >
+              [x]
+            </button>
           </div>
           <div style={{ flex: 1, padding: '20px', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>

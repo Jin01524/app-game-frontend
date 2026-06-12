@@ -158,7 +158,20 @@ export default function TienLenGame({ onClose, user, socket }) {
         <div style={{ color: 'white', fontWeight: 'bold', fontSize: 'clamp(12px, 1.5vh, 20px)', textShadow: '1px 1px 2px black' }}>Khán giả: {gameState.spectators.length}</div>
       </div>
       <div style={{ position: 'absolute', top: '10px', right: '20px', zIndex: 100 }}>
-        <button onClick={handleClose} style={{ backgroundColor: '#ef4444', color: 'white', border: '2px solid #7f1d1d', borderRadius: '8px', padding: '1vh 2vw', fontSize: 'clamp(14px, 2vh, 24px)', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}>Thoát</button>
+        <button 
+          onClick={handleClose} 
+          style={{ 
+            background: 'transparent', 
+            border: 'none', 
+            fontSize: '20px', 
+            cursor: 'pointer',
+            fontFamily: 'var(--font-pixel)',
+            fontWeight: 'bold',
+            color: '#ef4444'
+          }}
+        >
+          [x]
+        </button>
       </div>
 
       {gameState.status === 'waiting' && (
