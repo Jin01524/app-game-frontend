@@ -1,4 +1,4 @@
-import { toast } from '../utils/toast';
+﻿import { toast } from '../utils/toast';
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { io } from 'socket.io-client';
@@ -44,10 +44,10 @@ import sandwichImg from '../../assets/food/banh-mi-sandwich.png';
 const RECIPE_DATA = {
   cheese: {
     id: 'cheese',
-    name: 'Phô mai',
+    name: 'Ph├┤ mai',
     icon: cheeseImg,
     ingredient: 'milk',
-    ingredientName: 'Sữa bò',
+    ingredientName: 'Sß╗»a b├▓',
     ingredientIcon: milkIconImg,
     requiredPerCraft: 3,
     outputItem: 'cheese',
@@ -55,10 +55,10 @@ const RECIPE_DATA = {
   },
   bot_mi: {
     id: 'bot_mi',
-    name: 'Bột mì',
+    name: 'Bß╗Öt m├¼',
     icon: botMiImg,
     ingredient: 'lua',
-    ingredientName: 'Lúa',
+    ingredientName: 'L├║a',
     ingredientIcon: luaChinImg,
     requiredPerCraft: 10,
     outputItem: 'bot_mi',
@@ -66,10 +66,10 @@ const RECIPE_DATA = {
   },
   banh_mi: {
     id: 'banh_mi',
-    name: 'Bánh mì dài',
+    name: 'B├ính m├¼ d├ái',
     icon: banhMiImg,
     ingredient: 'bot_mi',
-    ingredientName: 'Bột mì',
+    ingredientName: 'Bß╗Öt m├¼',
     ingredientIcon: botMiImg,
     requiredPerCraft: 1,
     outputItem: 'banh_mi',
@@ -80,7 +80,7 @@ const RECIPE_DATA = {
     name: 'Sandwich',
     icon: sandwichImg,
     ingredient: 'bot_mi',
-    ingredientName: 'Bột mì',
+    ingredientName: 'Bß╗Öt m├¼',
     ingredientIcon: botMiImg,
     requiredPerCraft: 1,
     outputItem: 'sandwich',
@@ -101,13 +101,13 @@ const ITEM_ICONS = {
 
 const getItemName = (itemId) => {
   const names = {
-    lua: 'Lúa',
-    cow: 'Bò',
-    milk: 'Sữa bò',
-    rom: 'Rơm',
-    cheese: 'Phô mai',
-    bot_mi: 'Bột mì',
-    banh_mi: 'Bánh mì dài',
+    lua: 'L├║a',
+    cow: 'B├▓',
+    milk: 'Sß╗»a b├▓',
+    rom: 'Rãím',
+    cheese: 'Ph├┤ mai',
+    bot_mi: 'Bß╗Öt m├¼',
+    banh_mi: 'B├ính m├¼ d├ái',
     sandwich: 'Sandwich'
   };
   return names[itemId] || itemId;
@@ -828,7 +828,7 @@ export default function HousePage() {
             ctx.fillStyle = 'brown';
             ctx.fillRect(cow.x - cw/2, groundY - ch + 5, cw, ch);
             ctx.fillStyle = 'white';
-            ctx.fillText('Bò', cow.x, groundY - ch/2);
+            ctx.fillText('B├▓', cow.x, groundY - ch/2);
          });
       } else {
          cowStatesRef.current.forEach((cow, idx) => {
@@ -862,7 +862,7 @@ export default function HousePage() {
                let text = '';
                let textColor = 'white';
                if (displayStraw <= 0) {
-                 text = "HẾT RƠM!";
+                 text = "Hß║¥T RãáM!";
                  textColor = '#ef4444'; // Red
                } else {
                  const remainingSec = Math.max(0, 1800 - displayProgress);
@@ -923,7 +923,7 @@ export default function HousePage() {
       ctx.fillStyle = '#3e2723';
       ctx.font = '8px "Press Start 2P", monospace';
       ctx.textAlign = 'center';
-      ctx.fillText('CHUỒNG', 510, groundY - 11);
+      ctx.fillText('CHUß╗ÆNG', 510, groundY - 11);
 
 
       // Farm
@@ -974,7 +974,7 @@ export default function HousePage() {
               ctx.font = '8px "Press Start 2P", monospace';
               ctx.textAlign = 'center';
               ctx.fillStyle = '#fbbf24';
-              ctx.fillText('THU HOẠCH!', state.farmPlot.x + state.farmPlot.width/2, groundY - 40);
+              ctx.fillText('THU HOß║áCH!', state.farmPlot.x + state.farmPlot.width/2, groundY - 40);
             }
           }
         }
@@ -995,13 +995,13 @@ export default function HousePage() {
       ctx.textAlign = 'center';
       
       if (inRange && !showFarmMenu) {
-        ctx.fillText('▼', state.farmPlot.x + state.farmPlot.width/2, groundY - 50 + bounce);
+        ctx.fillText('Ôû╝', state.farmPlot.x + state.farmPlot.width/2, groundY - 50 + bounce);
       } else if (inRangeCage && !showCageMenu) {
-        ctx.fillText('▼', 495, groundY - 30 + bounce);
+        ctx.fillText('Ôû╝', 495, groundY - 30 + bounce);
       } else if (inRangeHouse && !showHouseMenu) {
-        ctx.fillText('▼', state.house.x + state.house.width/2, groundY - state.house.height - 20 + bounce);
+        ctx.fillText('Ôû╝', state.house.x + state.house.width/2, groundY - state.house.height - 20 + bounce);
       } else if (inRangeCraftingTable && !showCraftingMenu) {
-        ctx.fillText('▼', state.craftingTable.x + state.craftingTable.width/2, groundY - state.craftingTable.height - 10 + bounce);
+        ctx.fillText('Ôû╝', state.craftingTable.x + state.craftingTable.width/2, groundY - state.craftingTable.height - 10 + bounce);
       }
 
       // Player Drawing Logic
@@ -1147,7 +1147,7 @@ export default function HousePage() {
         }
       }
     } catch (e) {
-      console.error('Lỗi trừ năng lượng di chuyển:', e);
+      console.error('Lß╗ùi trß╗½ n─âng lã░ß╗úng di chuyß╗ân:', e);
     }
   };
 
@@ -1156,7 +1156,7 @@ export default function HousePage() {
     if (selectedBackpackSlotIdx === null) return;
     
     if ((user?.energy ?? 6) >= 6) {
-      toast.error('Năng lượng đã đầy (Tối đa 6)');
+      toast.error('N─âng lã░ß╗úng ─æ├ú ─æß║ºy (Tß╗æi ─æa 6)');
       return;
     }
 
@@ -1173,16 +1173,16 @@ export default function HousePage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        toast.error(data.error || 'Lỗi');
+        toast.error(data.error || 'Lß╗ùi');
       } else {
         if (data.backpack) updateBackpack(data.backpack);
         if (data.energy !== undefined) {
           updateEnergy(data.energy);
         }
-        toast.success(data.message || 'Sử dụng vật phẩm thành công');
+        toast.success(data.message || 'Sß╗¡ dß╗Ñng vß║¡t phß║®m th├ánh c├┤ng');
       }
     } catch(e) {
-      toast.error('Lỗi kết nối');
+      toast.error('Lß╗ùi kß║┐t nß╗æi');
     }
   };
 
@@ -1195,17 +1195,17 @@ export default function HousePage() {
         body: JSON.stringify({ amount })
       });
       const data = await res.json();
-      if (!res.ok) toast.error(data.error || 'Lỗi');
+      if (!res.ok) toast.error(data.error || 'Lß╗ùi');
       else {
         setSelectedBackpackSlotIdx(null);
-        // Cập nhật backpack ngay lập tức từ response
+        // Cß║¡p nhß║¡t backpack ngay lß║¡p tß╗®c tß╗½ response
         if (data.backpack) updateBackpack(data.backpack);
-        // Sync farm trong nền
+        // Sync farm trong nß╗ün
         loadFarm();
         if (socketRef.current) socketRef.current.emit('farm_action');
       }
     } catch (e) {
-      toast.error('Lỗi kết nối');
+      toast.error('Lß╗ùi kß║┐t nß╗æi');
     } finally {
       setActionLoading(false);
     }
@@ -1225,21 +1225,21 @@ export default function HousePage() {
 
   const handleAction = async (endpoint) => {
     if (endpoint === 'plant' && (user?.energy ?? 6) <= 0) {
-      toast.error('Hết năng lượng, không thể trồng lúa!');
+      toast.error('Hß║┐t n─âng lã░ß╗úng, kh├┤ng thß╗â trß╗ông l├║a!');
       return;
     }
     setActionLoading(true);
     try {
       const res = await authFetch(`/api/farm/${endpoint}`, { method: 'POST' });
       const data = await res.json();
-      if (!res.ok) toast.error(data.error || 'Lỗi');
+      if (!res.ok) toast.error(data.error || 'Lß╗ùi');
       else {
-        // Cập nhật farm state trực tiếp từ response — không cần fetch lại
+        // Cß║¡p nhß║¡t farm state trß╗▒c tiß║┐p tß╗½ response ÔÇö kh├┤ng cß║ºn fetch lß║íi
         if (data.farm) setFarm(prev => prev ? { ...prev, ...data.farm } : data.farm);
         if (data.backpack) updateBackpack(data.backpack);
         if (data.xu !== undefined) setUserXu(data.xu);
         if (data.energy !== undefined) updateEnergy(data.energy);
-        // Fallback: nếu server không trả farm data, cập nhật thủ công
+        // Fallback: nß║┐u server kh├┤ng trß║ú farm data, cß║¡p nhß║¡t thß╗º c├┤ng
         if (!data.farm) {
           if (endpoint === 'plant') {
             setFarm(prev => prev ? { ...prev, state: 'growing', planted_at: new Date().toISOString() } : prev);
@@ -1253,12 +1253,12 @@ export default function HousePage() {
             setFarm(prev => prev ? { ...prev, level: (prev.level || 0) + 1 } : prev);
           }
         }
-        // Sync đầy đủ trong nền để đảm bảo consistency
+        // Sync ─æß║ºy ─æß╗º trong nß╗ün ─æß╗â ─æß║úm bß║úo consistency
         loadFarm();
         if (socketRef.current) socketRef.current.emit('farm_action');
       }
     } catch (e) {
-      toast.error('Lỗi kết nối');
+      toast.error('Lß╗ùi kß║┐t nß╗æi');
     } finally {
       setActionLoading(false);
       if (endpoint !== 'plant') setShowFarmMenu(false);
@@ -1275,18 +1275,18 @@ export default function HousePage() {
         body: JSON.stringify({ animal: animalId })
       });
       const data = await res.json();
-      if (!res.ok) toast.error(data.error || 'Lỗi');
+      if (!res.ok) toast.error(data.error || 'Lß╗ùi');
       else {
-        // Cập nhật backpack từ response ngay lập tức
+        // Cß║¡p nhß║¡t backpack tß╗½ response ngay lß║¡p tß╗®c
         if (data.backpack) updateBackpack(data.backpack);
-        // Sync farm để có danh sách động vật mới
+        // Sync farm ─æß╗â c├│ danh s├ích ─æß╗Öng vß║¡t mß╗øi
         loadFarm();
-        toast.success('Thả thú nuôi thành công!');
+        toast.success('Thß║ú th├║ nu├┤i th├ánh c├┤ng!');
         setShowCageMenu(false);
       }
     } catch (e) {
       console.error(e);
-      toast.error('Lỗi kết nối');
+      toast.error('Lß╗ùi kß║┐t nß╗æi');
     } finally {
       setActionLoading(false);
     }
@@ -1302,18 +1302,18 @@ export default function HousePage() {
         body: JSON.stringify({ indices: selectedAnimalsToSell })
       });
       const data = await res.json();
-      if (!res.ok) toast.error(data.error || 'Lỗi');
+      if (!res.ok) toast.error(data.error || 'Lß╗ùi');
       else {
-        // Cập nhật xu ngay lập tức từ response
+        // Cß║¡p nhß║¡t xu ngay lß║¡p tß╗®c tß╗½ response
         if (data.xu !== undefined) setUserXu(data.xu);
         setSelectedAnimalsToSell([]);
         toast.success(data.message);
-        // Sync farm để cập nhật danh sách động vật
+        // Sync farm ─æß╗â cß║¡p nhß║¡t danh s├ích ─æß╗Öng vß║¡t
         loadFarm();
       }
     } catch (e) {
       console.error(e);
-      toast.error('Lỗi kết nối');
+      toast.error('Lß╗ùi kß║┐t nß╗æi');
     } finally {
       setActionLoading(false);
     }
@@ -1324,20 +1324,20 @@ export default function HousePage() {
     try {
       const res = await authFetch('/api/farm/collect-cage-products', { method: 'POST' });
       const data = await res.json();
-      if (!res.ok) toast.error(data.error || 'Lỗi');
+      if (!res.ok) toast.error(data.error || 'Lß╗ùi');
       else {
-        // Cập nhật backpack từ response ngay lập tức
+        // Cß║¡p nhß║¡t backpack tß╗½ response ngay lß║¡p tß╗®c
         if (data.backpack) updateBackpack(data.backpack);
-        // Xóa sản phẩm khỏi farm state ngay
+        // X├│a sß║ún phß║®m khß╗Åi farm state ngay
         setFarm(prev => prev ? { ...prev, cage_products: [] } : prev);
-        if (data.message.includes('Bạlo đã đầy')) toast.error(data.message);
+        if (data.message.includes('Bß║ílo ─æ├ú ─æß║ºy')) toast.error(data.message);
         else toast.success(data.message);
-        // Sync farm để cập nhật cage_products thực tế (có thể còn sót lại nếu balo đầy)
+        // Sync farm ─æß╗â cß║¡p nhß║¡t cage_products thß╗▒c tß║┐ (c├│ thß╗â c├▓n s├│t lß║íi nß║┐u balo ─æß║ºy)
         loadFarm();
       }
     } catch (e) {
       console.error(e);
-      toast.error('Lỗi kết nối');
+      toast.error('Lß╗ùi kß║┐t nß╗æi');
     } finally {
       setActionLoading(false);
     }
@@ -1346,7 +1346,7 @@ export default function HousePage() {
   const handleCraft = async () => {
     const qty = parseInt(craftQty);
     if (isNaN(qty) || qty <= 0) {
-      toast.error('Số lượng không hợp lệ');
+      toast.error('Sß╗æ lã░ß╗úng kh├┤ng hß╗úp lß╗ç');
       return;
     }
     setActionLoading(true);
@@ -1362,15 +1362,15 @@ export default function HousePage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        toast.error(data.error || 'Lỗi');
+        toast.error(data.error || 'Lß╗ùi');
       } else {
-        toast.success(data.message || 'Chế tạo thành công!');
+        toast.success(data.message || 'Chß║┐ tß║ío th├ánh c├┤ng!');
         if (data.backpack) updateBackpack(data.backpack);
         if (data.inventory) setInventory(data.inventory);
         setShowCraftingMenu(false);
       }
     } catch (e) {
-      toast.error('Lỗi kết nối');
+      toast.error('Lß╗ùi kß║┐t nß╗æi');
     } finally {
       setActionLoading(false);
     }
@@ -1408,7 +1408,7 @@ export default function HousePage() {
       <PixelCanvas />
       <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%', position: 'relative', zIndex: 1 }} />
 
-      <button onClick={() => navigate('/')} className="pixel-btn" style={{ position: 'absolute', top: '20px', right: '20px', padding: '10px 16px', background: '#dc2626', color: 'white', zIndex: 10 }}>[ THOÁT ]</button>
+      <button onClick={() => navigate('/')} className="pixel-btn" style={{ position: 'absolute', top: '20px', right: '20px', padding: '10px 16px', background: '#dc2626', color: 'white', zIndex: 10 }}>[ THO├üT ]</button>
       {/* Coin Display */}
       <div style={{ position: 'absolute', top: '20px', right: '250px', padding: '6px 16px', background: 'white', border: '4px solid #f59e0b', borderRadius: '0', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10, fontFamily: 'var(--font-pixel)', boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}>
         <img src={coinIcon} alt="Xu" style={{ width: '28px', height: '28px', imageRendering: 'pixelated' }} />
@@ -1431,7 +1431,7 @@ export default function HousePage() {
         fontFamily: 'var(--font-pixel)', 
         boxShadow: '0 4px 6px rgba(0,0,0,0.3)' 
       }}>
-        <span style={{ color: '#eab308', fontSize: '16px', fontWeight: 'bold' }}>⚡</span>
+        <span style={{ color: '#eab308', fontSize: '16px', fontWeight: 'bold' }}>ÔÜí</span>
         <div style={{ display: 'flex', gap: '3px', background: '#334155', padding: '3px', border: '2px solid #1e293b' }}>
           {Array.from({ length: 6 }).map((_, idx) => {
             const isFilled = (user?.energy ?? 6) > idx;
@@ -1453,8 +1453,8 @@ export default function HousePage() {
 
       {/* Top Info */}
       <div style={{ position: 'absolute', top: '20px', left: '20px', fontFamily: 'var(--font-pixel)', color: 'white', textShadow: '2px 2px 0 #000', pointerEvents: 'none' }}>
-        <h2 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--px-amber)' }}>{isVisiting ? `Nông Trại ${targetUsername}` : 'Thế Giới Của Bạn'}</h2>
-        <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem' }}>Dùng [◄] [►] để di chuyển</p>
+        <h2 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--px-amber)' }}>{isVisiting ? `N├┤ng Trß║íi ${targetUsername}` : 'Thß║┐ Giß╗øi Cß╗ºa Bß║ín'}</h2>
+        <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem' }}>D├╣ng [Ôùä] [Ôû║] ─æß╗â di chuyß╗ân</p>
       </div>
 
       {/* Touch Controls */}
@@ -1466,7 +1466,7 @@ export default function HousePage() {
           onContextMenu={(e) => e.preventDefault()}
           className="pixel-btn" 
           style={{ width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', background: 'rgba(0,0,0,0.5)', border: '4px solid var(--px-border)', color: 'white', touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }}>
-          ◄
+          Ôùä
         </button>
         <button 
           onPointerDown={(e) => { e.preventDefault(); keys.current.right = true; }}
@@ -1475,7 +1475,7 @@ export default function HousePage() {
           onContextMenu={(e) => e.preventDefault()}
           className="pixel-btn" 
           style={{ width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', background: 'rgba(0,0,0,0.5)', border: '4px solid var(--px-border)', color: 'white', touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }}>
-          ►
+          Ôû║
         </button>
       </div>
 
@@ -1541,7 +1541,7 @@ export default function HousePage() {
                     </span>
                   </>
                 ) : (
-                  <span style={{ fontSize: '10px', color: '#cbd5e1', fontFamily: 'var(--font-pixel)' }}>Trống</span>
+                  <span style={{ fontSize: '10px', color: '#cbd5e1', fontFamily: 'var(--font-pixel)' }}>Trß╗æng</span>
                 )}
               </div>
             );
@@ -1558,7 +1558,7 @@ export default function HousePage() {
           onContextMenu={(e) => e.preventDefault()}
           className="pixel-btn" 
           style={{ width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', background: 'rgba(0,0,0,0.5)', border: '4px solid var(--px-border)', color: 'white', touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none', marginRight: '4px' }}>
-          ▲
+          Ôû▓
         </button>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -1584,7 +1584,7 @@ export default function HousePage() {
                         cursor: (eatCooldown || actionLoading) ? 'default' : 'pointer'
                       }}
                     >
-                      {isDrinkable ? 'UỐNG' : 'ĂN'}
+                      {isDrinkable ? 'Uß╗ÉNG' : '─éN'}
                       {eatCooldown && (
                         <div style={{
                           position: 'absolute',
@@ -1615,7 +1615,7 @@ export default function HousePage() {
                       cursor: 'pointer'
                     }}
                   >
-                    VỨT
+                    Vß╗¿T
                   </button>
                 </div>
               )}
@@ -1648,15 +1648,15 @@ export default function HousePage() {
                     animation: 'pulse 1s infinite'
                   }}>
                   {canInteract && !isVisiting ? (
-                    <img src={plantIcon} alt="Ruộng" style={{width:'32px'}}/>
+                    <img src={plantIcon} alt="Ruß╗Öng" style={{width:'32px'}}/>
                   ) : canInteractCage && !isVisiting ? (
-                    <img src={khoIcon} alt="Chuồng" style={{width:'32px', filter: 'hue-rotate(90deg)'}}/>
+                    <img src={khoIcon} alt="Chuß╗ông" style={{width:'32px', filter: 'hue-rotate(90deg)'}}/>
                   ) : canInteractHouse && !isVisiting ? (
                     <img src={khoIcon} alt="Kho" style={{width:'32px'}}/>
                   ) : canInteractCraftingTable && !isVisiting ? (
-                    <img src={banCheTaoImgSrc} alt="Chế Tạo" style={{width:'32px', height:'32px', objectFit:'contain'}}/>
+                    <img src={banCheTaoImgSrc} alt="Chß║┐ Tß║ío" style={{width:'32px', height:'32px', objectFit:'contain'}}/>
                   ) : closestPlayer ? (
-                    <img src={transactionIcon} alt="Giao Dịch" style={{ width: '36px', height: '36px', imageRendering: 'pixelated' }} />
+                    <img src={transactionIcon} alt="Giao Dß╗ïch" style={{ width: '36px', height: '36px', imageRendering: 'pixelated' }} />
                   ) : null}
                 </button>
               )}
@@ -1670,7 +1670,7 @@ export default function HousePage() {
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
           <div className="rpg-box fade-in" style={{ width: '90%', maxWidth: '400px', padding: '12px 16px', background: '#fffbeb', color: '#000', display: 'flex', flexDirection: 'column', gap: '10px', position: 'relative' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #ccc', paddingBottom: '6px' }}>
-              <h2 style={{ fontSize: '16px', margin: 0, fontWeight: 'bold' }}>🌾 TƯƠNG TÁC RUỘNG</h2>
+              <h2 style={{ fontSize: '16px', margin: 0, fontWeight: 'bold' }}>­ƒî¥ Tã»ãáNG T├üC RUß╗ÿNG</h2>
               <button 
                 onClick={() => setShowFarmMenu(false)} 
                 style={{ 
@@ -1689,11 +1689,11 @@ export default function HousePage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               
               <div style={{ textAlign: 'center', fontSize: '1rem', marginBottom: '8px', color: 'var(--px-amber)' }}>
-                {isLocked && "Ruộng đang bỏ hoang."}
-                {!isLocked && farm.state === 'idle' && `Sẵn sàng gieo hạt. (Sản lượng: ${farm.yield} Lúa)`}
+                {isLocked && "Ruß╗Öng ─æang bß╗Å hoang."}
+                {!isLocked && farm.state === 'idle' && `Sß║Án s├áng gieo hß║ít. (Sß║ún lã░ß╗úng: ${farm.yield} L├║a)`}
                 {!isLocked && farm.state === 'growing' && !progress.isReady && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
-                    <span>Đang chờ lúa lớn... <span style={{color: '#4ade80'}}>({progress.remaining}s)</span></span>
+                    <span>─Éang chß╗Ø l├║a lß╗øn... <span style={{color: '#4ade80'}}>({progress.remaining}s)</span></span>
                     
                     {/* Beautiful Retro Pixel-Art Loading Bar */}
                     <div style={{
@@ -1735,12 +1735,12 @@ export default function HousePage() {
                     </div>
                   </div>
                 )}
-                {!isLocked && (farm.state === 'ready' || (farm.state === 'growing' && progress.isReady)) && <span style={{color: '#4ade80'}}>Lúa đã chín!</span>}
+                {!isLocked && (farm.state === 'ready' || (farm.state === 'growing' && progress.isReady)) && <span style={{color: '#4ade80'}}>L├║a ─æ├ú ch├¡n!</span>}
               </div>
 
               {isLocked && (
                 <button className="btn btn-primary" onClick={() => handleAction('buy')} disabled={actionLoading}>
-                  {actionLoading ? 'ĐANG MUA...' : '[ MUA RUỘNG - 100 XU ]'}
+                  {actionLoading ? '─ÉANG MUA...' : '[ MUA RUß╗ÿNG - 100 XU ]'}
                 </button>
               )}
 
@@ -1755,19 +1755,20 @@ export default function HousePage() {
                     cursor: (user?.energy ?? 6) <= 0 ? 'not-allowed' : undefined
                   }}
                 >
-                  {actionLoading ? 'ĐANG GIEO...' : ((user?.energy ?? 6) <= 0 ? '[ HẾT NĂNG LƯỢNG ]' : '[ GIEO HẠT - 10 XU ]')}
+                  {actionLoading ? '─ÉANG GIEO...' : ((user?.energy ?? 6) <= 0 ? '[ Hß║¥T N─éNG Lã»ß╗óNG ]' : '[ GIEO Hß║áT - 10 XU ]')}
                 </button>
               )}
 
               {!isLocked && (farm.state === 'ready' || (farm.state === 'growing' && progress.isReady)) && (
                 <button className="btn btn-primary" onClick={() => handleAction('harvest')} disabled={actionLoading} style={{ background: '#e6c229', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                  {actionLoading ? 'ĐANG THU HOẠCH...' : `[ THU HOẠCH +${farm.yield} LÚA ]`}
+                  {!actionLoading && <img src={sickleIcon} alt="C├íi liß╗üm" style={{ width: '20px', imageRendering: 'pixelated' }} />}
+                  {actionLoading ? '─ÉANG THU HOß║áCH...' : `[ THU HOß║áCH +${farm.yield} L├ÜA ]`}
                 </button>
               )}
 
               {!isLocked && farm.level < farm.maxLevel && (
                 <button className="btn btn-outline" onClick={() => handleAction('upgrade')} disabled={actionLoading || farm.state !== 'idle'}>
-                  {actionLoading ? 'ĐANG NÂNG CẤP...' : `[ NÂNG CẤP LV.${farm.level + 1} - ${farm.upgradeCost} XU ]`}
+                  {actionLoading ? '─ÉANG N├éNG Cß║ñP...' : `[ N├éNG Cß║ñP LV.${farm.level + 1} - ${farm.upgradeCost} XU ]`}
                 </button>
               )}
             </div>
@@ -1776,11 +1777,12 @@ export default function HousePage() {
       )}
 
       {showCageMenu && (
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', zIndex: 50, padding: '20px 20px 20px 40px', gap: '20px' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '16px 24px' }}>
           
-          <div className="rpg-box" style={{ background: '#fffbeb', width: '280px', padding: '12px 16px', maxHeight: '100%', overflowY: 'auto', position: 'relative', transform: 'translateY(-10px)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #ccc', paddingBottom: '6px', marginBottom: '15px' }}>
-              <h2 style={{ fontSize: '16px', margin: 0, fontWeight: 'bold', color: '#1e293b' }}>🐐 CHUỒNG THÚ</h2>
+          <div className="rpg-box" style={{ background: '#fffbeb', width: '680px', maxWidth: '96vw', padding: '14px 18px', maxHeight: '85%', overflowY: 'auto', position: 'relative', transform: 'translateY(-25px)' }}>
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #ccc', paddingBottom: '8px', marginBottom: '12px' }}>
+              <h2 style={{ fontSize: '16px', margin: 0, fontWeight: 'bold', color: '#1e293b' }}>ðŸ CHUá»’NG THÃš</h2>
               <button 
                 onClick={() => {
                   setShowCageMenu(false);
@@ -1799,12 +1801,12 @@ export default function HousePage() {
                 [x]
               </button>
             </div>
-            
-            {/* Feed Prompt Modal Overlay */}
+
+            {/* Feed Prompt Overlay */}
             {feedPrompt && (
               <div style={{ position: 'absolute', inset: 0, background: 'rgba(255, 251, 235, 0.95)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 60, padding: '20px' }}>
-                <div style={{ background: '#fff', border: '2px solid #3b82f6', padding: '15px', width: '100%', textAlign: 'center', borderRadius: '8px' }}>
-                  <h3 style={{ fontSize: '14px', marginBottom: '10px' }}>Nhập số lượng rơm muốn châm</h3>
+                <div style={{ background: '#fff', border: '2px solid #3b82f6', padding: '15px', width: '280px', textAlign: 'center', borderRadius: '8px' }}>
+                  <h3 style={{ fontSize: '14px', marginBottom: '10px' }}>Nháº­p sá»‘ lÆ°á»£ng rÆ¡m muá»‘n chÃ¢m</h3>
                   <input 
                     type="number" 
                     min="1" 
@@ -1822,184 +1824,230 @@ export default function HousePage() {
                         setFeedPrompt(null);
                       }}
                       style={{ flex: 1, background: '#22c55e', color: '#fff', padding: '5px' }}
-                    >Xác nhận</button>
+                    >XÃ¡c nháº­n</button>
                     <button 
                       className="pixel-btn" 
                       onClick={() => setFeedPrompt(null)}
                       style={{ flex: 1, background: '#ef4444', color: '#fff', padding: '5px' }}
-                    >Hủy</button>
+                    >Há»§y</button>
                   </div>
                 </div>
               </div>
             )}
-            
-            <div style={{ display: 'flex', gap: '5px', marginBottom: '15px', borderBottom: '2px solid #cbd5e1' }}>
-              <button 
-                onClick={() => setCageTab('feed')} 
-                style={{ flex: 1, padding: '8px 0', fontSize: '12px', background: cageTab === 'feed' ? '#e2e8f0' : 'transparent', border: 'none', borderBottom: cageTab === 'feed' ? '2px solid #3b82f6' : 'none', cursor: 'pointer', fontWeight: cageTab === 'feed' ? 'bold' : 'normal' }}
-              >
-                Máng ăn
-              </button>
-              <button 
-                onClick={() => setCageTab('animals')} 
-                style={{ flex: 1, padding: '8px 0', fontSize: '12px', background: cageTab === 'animals' ? '#e2e8f0' : 'transparent', border: 'none', borderBottom: cageTab === 'animals' ? '2px solid #3b82f6' : 'none', cursor: 'pointer', fontWeight: cageTab === 'animals' ? 'bold' : 'normal' }}
-              >
-                Thú nuôi
-              </button>
-              <button 
-                onClick={() => setCageTab('products')} 
-                style={{ flex: 1, padding: '8px 0', fontSize: '12px', background: cageTab === 'products' ? '#e2e8f0' : 'transparent', border: 'none', borderBottom: cageTab === 'products' ? '2px solid #3b82f6' : 'none', cursor: 'pointer', fontWeight: cageTab === 'products' ? 'bold' : 'normal' }}
-              >
-                Sản phẩm
-              </button>
-            </div>
 
-            {cageTab === 'feed' && (
-              <div 
-                style={{ 
-                  border: '2px dashed #94a3b8', 
-                  borderRadius: '8px', 
-                  padding: '6px 10px', 
-                  minHeight: '100px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  background: 'rgba(0,0,0,0.02)'
-                }}
-              >
-                <div style={{ marginBottom: '6px', fontSize: '11px', color: '#334155', textAlign: 'center', lineHeight: '1.2' }}>
-                  Bấm chọn Rơm từ Balo, sau đó bấm vào máng ăn.
-                </div>
-                {/* Straw Storage Slots */}
-                <div style={{ display: 'flex', gap: '5px', justifyContent: 'center', marginBottom: '5px' }}>
-                  {Array.from({ length: 4 }).map((_, idx) => {
-                    const slot = (farm?.cage_inventory || [])[idx];
-                    return (
-                      <div 
-                        key={idx} 
-                        onClick={handleClickSlot}
-                        style={{ width: '48px', height: '48px', background: '#e2e8f0', border: '2px solid #94a3b8', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', cursor: selectedFeedItem ? 'pointer' : 'default' }}
-                      >
-                        {slot ? (
-                          <>
-                            <img src={whiskIcon} style={{ width: '24px' }} alt="Rơm" />
-                            <span style={{ position: 'absolute', bottom: '2px', right: '4px', fontSize: '10px' }}>{slot.quantity}/20</span>
-                          </>
-                        ) : (
-                          <span style={{ fontSize: '10px', color: '#94a3b8' }}>Trống</span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+            {/* Wide horizontal layout: left tabs + right content */}
+            <div style={{ display: 'flex', gap: '0', minHeight: '160px' }}>
 
-            {cageTab === 'animals' && (
-              <>
-                <div style={{ marginBottom: '6px', fontSize: '11px', fontWeight: 'bold', color: '#1e293b' }}>
-                  Đang nuôi: {(farm?.animals_data || []).length}/8 con
-                </div>
-                
-                <div style={{ maxHeight: '80px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '8px', padding: '4px', background: 'rgba(0,0,0,0.05)', borderRadius: '4px' }}>
-                  {(farm?.animals_data || []).map((animal, idx) => {
-                    const isSelected = selectedAnimalsToSell.includes(idx);
-                    const progressPct = Math.min(100, Math.floor(((animal.milkProgress || 0) / 1800) * 100));
-                    return (
-                      <label key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: isSelected ? '#bae6fd' : '#f1f5f9', padding: '6px', borderRadius: '4px', border: '1px solid #cbd5e1', cursor: 'pointer' }}>
-                        <input 
-                          type="checkbox" 
-                          checked={isSelected} 
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedAnimalsToSell([...selectedAnimalsToSell, idx]);
-                            } else {
-                              setSelectedAnimalsToSell(selectedAnimalsToSell.filter(i => i !== idx));
-                            }
-                          }}
-                        />
-                        <img src={cowMove1} style={{ width: '24px' }} alt="Bò" />
-                        <span style={{ fontSize: '11px', flex: 1 }}>Bò (Sữa: {progressPct}%)</span>
-                      </label>
-                    );
-                  })}
-                  {!(farm?.animals_data || []).length && (
-                    <div style={{ fontSize: '11px', color: '#64748b', textAlign: 'center', padding: '10px' }}>Chuồng trống</div>
-                  )}
-                </div>
-
-                {selectedAnimalsToSell.length > 0 && (
-                  <button 
-                    className="pixel-btn" 
-                    disabled={actionLoading}
-                    onClick={handleSellAnimals}
-                    style={{ background: '#ef4444', color: 'white', border: '2px solid var(--px-border)', padding: '5px 10px', fontSize: '12px', width: '100%', marginBottom: '10px' }}
+              {/* Left side-tabs navigation */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', paddingRight: '14px', borderRight: '2px solid #e2e8f0', minWidth: '110px', flexShrink: 0 }}>
+                {[
+                  { key: 'feed', label: 'ðŸŒ¾ MÃ¡ng Äƒn' },
+                  { key: 'animals', label: 'ðŸ„ ThÃº nuÃ´i' },
+                  { key: 'products', label: 'ðŸ¥› Sáº£n pháº©m' },
+                ].map(tab => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setCageTab(tab.key)}
+                    style={{
+                      padding: '9px 10px',
+                      fontSize: '11px',
+                      fontFamily: 'var(--font-pixel)',
+                      background: cageTab === tab.key ? '#dbeafe' : 'transparent',
+                      border: cageTab === tab.key ? '2px solid #3b82f6' : '2px solid transparent',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontWeight: cageTab === tab.key ? 'bold' : 'normal',
+                      color: cageTab === tab.key ? '#1d4ed8' : '#475569',
+                      textAlign: 'left',
+                      transition: 'all 0.12s',
+                    }}
                   >
-                    [ BÁN {selectedAnimalsToSell.length} CON - THU VỀ {selectedAnimalsToSell.length * 150} XU ]
+                    {tab.label}
                   </button>
+                ))}
+              </div>
+
+              {/* Right content panel */}
+              <div style={{ flex: 1, paddingLeft: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+
+                {/* === TAB: MÃNG Ä‚N === */}
+                {cageTab === 'feed' && (
+                  <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+                    {/* Left: info */}
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div style={{ fontSize: '11px', color: '#334155', lineHeight: '1.5', background: 'rgba(59,130,246,0.07)', border: '1px dashed #93c5fd', borderRadius: '6px', padding: '8px 12px' }}>
+                        Chá»n <strong>RÆ¡m ðŸŒ¾</strong> tá»« Balo bÃªn dÆ°á»›i mÃ n hÃ¬nh, rá»“i báº¥m vÃ o Ã´ mÃ¡ng Äƒn bÃªn pháº£i Ä‘á»ƒ chÃ¢m rÆ¡m vÃ o chuá»“ng.
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#475569' }}>
+                        Tá»•ng rÆ¡m hiá»‡n cÃ³: <strong style={{ color: '#059669' }}>{(farm?.cage_inventory || []).reduce((s, x) => s + (x?.quantity || 0), 0)}</strong> / {4 * 20} bÃ³
+                      </div>
+                    </div>
+                    {/* Right: 4 straw slots in 2x2 grid */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', flexShrink: 0 }}>
+                      {Array.from({ length: 4 }).map((_, idx) => {
+                        const slot = (farm?.cage_inventory || [])[idx];
+                        return (
+                          <div 
+                            key={idx} 
+                            onClick={handleClickSlot}
+                            style={{ 
+                              width: '60px', height: '60px', 
+                              background: slot ? '#fef3c7' : '#e2e8f0', 
+                              border: selectedFeedItem ? '2px solid #3b82f6' : '2px solid #94a3b8', 
+                              borderRadius: '6px',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                              position: 'relative', 
+                              cursor: selectedFeedItem ? 'pointer' : 'default',
+                              boxShadow: selectedFeedItem ? '0 0 0 2px rgba(59,130,246,0.3)' : 'none',
+                              transition: 'all 0.15s'
+                            }}
+                          >
+                            {slot ? (
+                              <>
+                                <img src={whiskIcon} style={{ width: '28px' }} alt="RÆ¡m" />
+                                <span style={{ position: 'absolute', bottom: '3px', right: '5px', fontSize: '10px', fontWeight: 'bold', color: '#92400e' }}>{slot.quantity}/20</span>
+                              </>
+                            ) : (
+                              <span style={{ fontSize: '9px', color: '#94a3b8', textAlign: 'center' }}>Trá»‘ng</span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
                 )}
 
-                <div style={{ marginBottom: '6px', fontSize: '11px', fontWeight: 'bold', color: '#1e293b' }}>Kho/Balo:</div>
-                <div style={{ maxHeight: '60px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' }}>
-                  {availableCows.length > 0 ? (
-                    availableCows.map((item, idx) => (
-                      <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#e2e8f0', padding: '6px', border: '2px solid #cbd5e1' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <img src={cowMove1} style={{ width: '30px' }} alt="Bò" />
-                          <span style={{ fontSize: '12px' }}>Bò (x{item.quantity})</span>
-                        </div>
+                {/* === TAB: THÃš NUÃ”I === */}
+                {cageTab === 'animals' && (
+                  <div style={{ display: 'flex', gap: '20px' }}>
+                    {/* Left: Active Animals in cage */}
+                    <div style={{ flex: 1.1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#1e293b' }}>
+                        ðŸ„ Äang nuÃ´i: <span style={{ color: '#0284c7' }}>{(farm?.animals_data || []).length}/8 con</span>
+                      </div>
+                      <div style={{ maxHeight: '130px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px', padding: '4px', background: 'rgba(0,0,0,0.04)', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                        {(farm?.animals_data || []).map((animal, idx) => {
+                          const isSelected = selectedAnimalsToSell.includes(idx);
+                          const progressPct = Math.min(100, Math.floor(((animal.milkProgress || 0) / 1800) * 100));
+                          return (
+                            <label key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: isSelected ? '#bae6fd' : '#f8fafc', padding: '5px 8px', borderRadius: '4px', border: `1px solid ${isSelected ? '#7dd3fc' : '#e2e8f0'}`, cursor: 'pointer', transition: 'all 0.1s' }}>
+                              <input 
+                                type="checkbox" 
+                                checked={isSelected} 
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedAnimalsToSell([...selectedAnimalsToSell, idx]);
+                                  } else {
+                                    setSelectedAnimalsToSell(selectedAnimalsToSell.filter(i => i !== idx));
+                                  }
+                                }}
+                              />
+                              <img src={cowMove1} style={{ width: '22px' }} alt="BÃ²" />
+                              <span style={{ fontSize: '11px', flex: 1 }}>BÃ² #{idx + 1}</span>
+                              <span style={{ fontSize: '10px', color: '#0284c7', fontWeight: 'bold' }}>ðŸ¥› {progressPct}%</span>
+                            </label>
+                          );
+                        })}
+                        {!(farm?.animals_data || []).length && (
+                          <div style={{ fontSize: '11px', color: '#64748b', textAlign: 'center', padding: '15px 0' }}>Chuá»“ng Ä‘ang trá»‘ng</div>
+                        )}
+                      </div>
+                      {selectedAnimalsToSell.length > 0 && (
                         <button 
                           className="pixel-btn" 
                           disabled={actionLoading}
-                          onClick={() => handlePlaceAnimal('cow')}
-                          style={{ background: '#22c55e', color: 'white', padding: '5px 10px', fontSize: '10px' }}
+                          onClick={handleSellAnimals}
+                          style={{ background: '#ef4444', color: 'white', border: '2px solid var(--px-border)', padding: '6px 10px', fontSize: '10px', width: '100%' }}
                         >
-                          Thả
+                          [ BÃN {selectedAnimalsToSell.length} CON â€” THU +{selectedAnimalsToSell.length * 150} XU ]
                         </button>
-                      </div>
-                    ))
-                  ) : (
-                    <div style={{ textAlign: 'center', color: '#64748b', fontSize: '11px', padding: '6px 0' }}>
-                      Không có vật nuôi nào trong kho/balo.
+                      )}
                     </div>
-                  )}
-                </div>
-              </>
-            )}
 
-            {cageTab === 'products' && (
-              <>
-                <div style={{ marginBottom: '6px', fontSize: '11px', fontWeight: 'bold', color: '#1e293b', textAlign: 'center' }}>
-                  Sản phẩm thu được:
-                </div>
-                
-                <div style={{ maxHeight: '100px', overflowY: 'auto', display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '10px', padding: '6px', background: 'rgba(0,0,0,0.05)', borderRadius: '4px', justifyContent: 'center' }}>
-                  {(farm?.cage_products || []).length > 0 ? (
-                    (() => {
-                      const counts = {};
-                      farm.cage_products.forEach(p => counts[p] = (counts[p] || 0) + 1);
-                      return Object.entries(counts).map(([type, qty], idx) => (
-                        <div key={idx} style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', padding: '10px', borderRadius: '4px', display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '60px' }}>
-                           <span style={{ fontSize: '20px' }}>{type === 'milk' || type === 'sua' ? '🥛' : '📦'}</span>
-                           <span style={{ fontSize: '12px', fontWeight: 'bold', marginTop: '5px' }}>x{qty}</span>
-                        </div>
-                      ));
-                    })()
-                  ) : (
-                    <div style={{ fontSize: '11px', color: '#64748b', textAlign: 'center', width: '100%' }}>Chưa có sản phẩm nào.</div>
-                  )}
-                </div>
+                    {/* Right: Available cows to place */}
+                    <div style={{ flex: 0.9, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#1e293b' }}>ðŸ“¦ Kho / Balo:</div>
+                      <div style={{ maxHeight: '130px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '5px', padding: '2px' }}>
+                        {availableCows.length > 0 ? (
+                          availableCows.map((item, idx) => (
+                            <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f1f5f9', padding: '6px 10px', border: '1px solid #e2e8f0', borderRadius: '6px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <img src={cowMove1} style={{ width: '26px' }} alt="BÃ²" />
+                                <span style={{ fontSize: '11px' }}>BÃ² (x{item.quantity})</span>
+                              </div>
+                              <button 
+                                className="pixel-btn" 
+                                disabled={actionLoading}
+                                onClick={() => handlePlaceAnimal('cow')}
+                                style={{ background: '#22c55e', color: 'white', padding: '4px 10px', fontSize: '10px', border: '2px solid var(--px-border)' }}
+                              >
+                                Tháº£ vÃ o
+                              </button>
+                            </div>
+                          ))
+                        ) : (
+                          <div style={{ textAlign: 'center', color: '#64748b', fontSize: '11px', padding: '20px 0', background: 'rgba(0,0,0,0.03)', borderRadius: '6px', border: '1px dashed #cbd5e1' }}>
+                            KhÃ´ng cÃ³ bÃ² trong kho/balo.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-                <button 
-                  className="pixel-btn" 
-                  disabled={actionLoading || !(farm?.cage_products || []).length}
-                  onClick={handleCollectCageProducts}
-                  style={{ background: '#3b82f6', color: 'white', border: '2px solid var(--px-border)', padding: '8px 10px', fontSize: '12px', width: '100%', marginBottom: '15px', opacity: (farm?.cage_products || []).length ? 1 : 0.5 }}
-                >
-                  [ THU HOẠCH TẤT CẢ ]
-                </button>
-              </>
-            )}
+                {/* === TAB: Sáº¢N PHáº¨M === */}
+                {cageTab === 'products' && (
+                  <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+                    {/* Left: product grid */}
+                    <div style={{ flex: 1 }}>
+                      <div style={{ marginBottom: '8px', fontSize: '11px', fontWeight: 'bold', color: '#1e293b' }}>Sáº£n pháº©m thu Ä‘Æ°á»£c:</div>
+                      <div style={{ minHeight: '80px', maxHeight: '110px', overflowY: 'auto', display: 'flex', flexWrap: 'wrap', gap: '8px', padding: '8px', background: 'rgba(0,0,0,0.04)', borderRadius: '6px', border: '1px solid #e2e8f0', justifyContent: 'flex-start', alignContent: 'flex-start' }}>
+                        {(farm?.cage_products || []).length > 0 ? (
+                          (() => {
+                            const counts = {};
+                            farm.cage_products.forEach(p => counts[p] = (counts[p] || 0) + 1);
+                            return Object.entries(counts).map(([type, qty], idx) => (
+                              <div key={idx} style={{ background: '#fff', border: '2px solid #e2e8f0', borderRadius: '8px', padding: '8px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '55px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
+                                 <span style={{ fontSize: '22px' }}>{type === 'milk' || type === 'sua' ? 'ðŸ¥›' : 'ðŸ“¦'}</span>
+                                 <span style={{ fontSize: '11px', fontWeight: 'bold', marginTop: '4px', color: '#1e293b' }}>x{qty}</span>
+                              </div>
+                            ));
+                          })()
+                        ) : (
+                          <div style={{ fontSize: '11px', color: '#64748b', textAlign: 'center', width: '100%', padding: '20px 0' }}>ChÆ°a cÃ³ sáº£n pháº©m nÃ o.<br/>HÃ£y cho bÃ² Äƒn rÆ¡m vÃ  chá» Ä‘á»£i! ðŸ„</div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Right: Collect button */}
+                    <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center', minWidth: '120px' }}>
+                      <div style={{ fontSize: '11px', color: '#475569', textAlign: 'center' }}>
+                        {(farm?.cage_products || []).length} sáº£n pháº©m
+                      </div>
+                      <button 
+                        className="pixel-btn" 
+                        disabled={actionLoading || !(farm?.cage_products || []).length}
+                        onClick={handleCollectCageProducts}
+                        style={{ 
+                          background: '#3b82f6', 
+                          color: 'white', 
+                          border: '2px solid var(--px-border)', 
+                          padding: '12px 14px', 
+                          fontSize: '11px', 
+                          width: '100%',
+                          opacity: (farm?.cage_products || []).length ? 1 : 0.5,
+                          cursor: (farm?.cage_products || []).length ? 'pointer' : 'not-allowed',
+                          lineHeight: '1.3'
+                        }}
+                      >
+                        [ THU HOáº CH<br/>Táº¤T Cáº¢ ]
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            </div>
           </div>
 
         </div>
@@ -2021,7 +2069,7 @@ export default function HousePage() {
             <div className="rpg-box fade-in" style={{ background: '#fffbeb', width: '480px', maxHeight: '92%', overflowY: 'auto', padding: '12px 16px', color: '#000', display: 'flex', flexDirection: 'column', gap: '10px', position: 'relative' }}>
               
               <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #ccc', paddingBottom: '6px' }}>
-                <h2 style={{ fontSize: '16px', margin: 0, fontWeight: 'bold' }}>🛠️ BÀN CHẾ TẠO</h2>
+                <h2 style={{ fontSize: '16px', margin: 0, fontWeight: 'bold' }}>­ƒøá´©Å B├ÇN CHß║¥ Tß║áO</h2>
                 <button 
                   onClick={() => setShowCraftingMenu(false)} 
                   style={{ 
@@ -2041,7 +2089,7 @@ export default function HousePage() {
               <div style={{ display: 'flex', gap: '15px', flex: 1 }}>
                 {/* Recipe List */}
                 <div style={{ flex: 1, borderRight: '1px solid #cbd5e1', paddingRight: '15px', display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '180px', overflowY: 'auto' }}>
-                  <h3 style={{ fontSize: '11px', color: '#64748b', marginBottom: '5px', fontWeight: 'bold' }}>VẬT PHẨM</h3>
+                  <h3 style={{ fontSize: '11px', color: '#64748b', marginBottom: '5px', fontWeight: 'bold' }}>Vß║¼T PHß║¿M</h3>
                   {Object.values(RECIPE_DATA).map(recipe => (
                     <div 
                       key={recipe.id}
@@ -2062,7 +2110,7 @@ export default function HousePage() {
 
                 {/* Recipe Details */}
                 <div style={{ flex: 1.2, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <h3 style={{ fontSize: '11px', color: '#64748b', marginBottom: '3px', fontWeight: 'bold' }}>CÔNG THỨC</h3>
+                  <h3 style={{ fontSize: '11px', color: '#64748b', marginBottom: '3px', fontWeight: 'bold' }}>C├öNG THß╗¿C</h3>
                   
                   <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', padding: '6px 10px', borderRadius: '4px', textAlign: 'center' }}>
                     <div style={{ fontSize: '11px', fontWeight: 'bold', marginBottom: '6px', color: '#1e293b' }}>{activeRecipe.name}</div>
@@ -2073,7 +2121,7 @@ export default function HousePage() {
                           {totalRequired} {activeRecipe.ingredientName}
                         </span>
                       </div>
-                      <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#64748b' }}>➔</span>
+                      <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#64748b' }}>Ô×ö</span>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#f1f5f9', border: '1px solid #cbd5e1', padding: '4px', borderRadius: '4px', minWidth: '65px' }}>
                         <img src={activeRecipe.icon} style={{ width: '24px', height: '24px', objectFit: 'contain', imageRendering: 'pixelated' }} alt={activeRecipe.name} />
                         <span style={{ fontSize: '9px', color: '#3b82f6', fontWeight: 'bold', marginTop: '2px' }}>
@@ -2084,15 +2132,15 @@ export default function HousePage() {
                     
                     {/* Ingredient Inventory State */}
                     <div style={{ fontSize: '9px', color: '#475569', textAlign: 'left', background: 'rgba(0,0,0,0.05)', padding: '5px', borderRadius: '2px' }}>
-                      <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>{activeRecipe.ingredientName} hiện có: {totalOwned}</div>
-                      <div style={{ paddingLeft: '5px' }}>• Balo: {backpackCount}</div>
-                      <div style={{ paddingLeft: '5px' }}>• Kho: {storageCount}</div>
+                      <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>{activeRecipe.ingredientName} hiß╗çn c├│: {totalOwned}</div>
+                      <div style={{ paddingLeft: '5px' }}>ÔÇó Balo: {backpackCount}</div>
+                      <div style={{ paddingLeft: '5px' }}>ÔÇó Kho: {storageCount}</div>
                     </div>
                   </div>
 
                   {/* Quantity selector */}
                   <div style={{ fontSize: '11px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <span style={{ fontWeight: 'bold', color: '#1e293b' }}>Số lượng chế tạo:</span>
+                    <span style={{ fontWeight: 'bold', color: '#1e293b' }}>Sß╗æ lã░ß╗úng chß║┐ tß║ío:</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <button 
                         className="pixel-btn" 
@@ -2129,7 +2177,7 @@ export default function HousePage() {
 
                   {/* Target Destination Selection */}
                   <div style={{ fontSize: '11px' }}>
-                    <div style={{ fontWeight: 'bold', marginBottom: '2px', color: '#1e293b' }}>Cất sản phẩm vào:</div>
+                    <div style={{ fontWeight: 'bold', marginBottom: '2px', color: '#1e293b' }}>Cß║Ñt sß║ún phß║®m v├áo:</div>
                     <div style={{ display: 'flex', gap: '15px' }}>
                       <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
                         <input 
@@ -2143,7 +2191,7 @@ export default function HousePage() {
                           type="radio" name="craft_target" value="storage" 
                           checked={craftTarget === 'storage'} onChange={() => setCraftTarget('storage')} 
                         />
-                        Kho chứa
+                        Kho chß╗®a
                       </label>
                     </div>
                   </div>
@@ -2159,7 +2207,7 @@ export default function HousePage() {
                       opacity: (!hasEnough || craftQty <= 0) ? 0.5 : 1
                     }}
                   >
-                    {actionLoading ? 'ĐANG CHẾ TẠO...' : '[ CHẾ TẠO ]'}
+                    {actionLoading ? '─ÉANG CHß║¥ Tß║áO...' : '[ CHß║¥ Tß║áO ]'}
                   </button>
                 </div>
               </div>
@@ -2183,10 +2231,10 @@ export default function HousePage() {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '20px' }}>
           <div className="rpg-box fade-in" style={{ background: '#fffbeb', border: '4px solid var(--px-border)', padding: '20px', width: '300px', textAlign: 'center', color: '#000' }}>
             <h3 style={{ fontSize: '12px', marginBottom: '12px', fontWeight: 'bold', fontFamily: 'var(--font-pixel)' }}>
-              VỨT VẬT PHẨM
+              Vß╗¿T Vß║¼T PHß║¿M
             </h3>
             <p style={{ fontSize: '11px', margin: '0 0 12px 0' }}>
-              Bạn muốn vứt bao nhiêu <strong>{getItemName(discardPrompt.itemId)}</strong>?
+              Bß║ín muß╗æn vß╗®t bao nhi├¬u <strong>{getItemName(discardPrompt.itemId)}</strong>?
             </p>
             <input 
               type="number" 
@@ -2202,7 +2250,7 @@ export default function HousePage() {
                 onClick={async () => {
                   const qty = parseInt(discardQtyInput);
                   if (isNaN(qty) || qty <= 0 || qty > discardPrompt.maxQty) {
-                    toast.error('Số lượng không hợp lệ');
+                    toast.error('Sß╗æ lã░ß╗úng kh├┤ng hß╗úp lß╗ç');
                     return;
                   }
                   setActionLoading(true);
@@ -2214,27 +2262,27 @@ export default function HousePage() {
                     });
                     const data = await res.json();
                     if (!res.ok) {
-                      toast.error(data.error || 'Lỗi');
+                      toast.error(data.error || 'Lß╗ùi');
                     } else {
                       if (data.backpack) updateBackpack(data.backpack);
                       setSelectedBackpackSlotIdx(null);
-                      toast.success('Đã vứt vật phẩm');
+                      toast.success('─É├ú vß╗®t vß║¡t phß║®m');
                       loadFarm();
                     }
                   } catch(e) {
-                    toast.error('Lỗi kết nối');
+                    toast.error('Lß╗ùi kß║┐t nß╗æi');
                   } finally {
                     setActionLoading(false);
                     setDiscardPrompt(null);
                   }
                 }}
                 style={{ flex: 1, background: '#22c55e', color: '#fff', padding: '8px', cursor: 'pointer' }}
-              >Xác nhận</button>
+              >X├íc nhß║¡n</button>
               <button 
                 className="pixel-btn" 
                 onClick={() => setDiscardPrompt(null)}
                 style={{ flex: 1, background: '#ef4444', color: '#fff', padding: '8px', cursor: 'pointer' }}
-              >Hủy</button>
+              >Hß╗ºy</button>
             </div>
           </div>
         </div>
@@ -2255,18 +2303,18 @@ export default function HousePage() {
           background: '#1e293b', border: '4px solid var(--px-border)', borderRadius: '8px',
           padding: '20px', zIndex: 1000, color: 'white', textAlign: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.8)'
         }}>
-          <h2 style={{ color: '#facc15', marginBottom: '16px' }}>YÊU CẦU GIAO DỊCH</h2>
-          <p style={{ marginBottom: '20px' }}><strong>{pendingTradeRequest}</strong> muốn giao dịch với bạn.</p>
+          <h2 style={{ color: '#facc15', marginBottom: '16px' }}>Y├èU Cß║ªU GIAO Dß╗èCH</h2>
+          <p style={{ marginBottom: '20px' }}><strong>{pendingTradeRequest}</strong> muß╗æn giao dß╗ïch vß╗øi bß║ín.</p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
             <button className="btn btn-primary" onClick={() => {
               if (socketRef.current) socketRef.current.emit('trade_accept', { fromUsername: pendingTradeRequest });
               setShowTradeMenu({ username: pendingTradeRequest, isAccepting: true });
               setPendingTradeRequest(null);
-            }}>Đồng ý</button>
+            }}>─Éß╗ông ├¢</button>
             <button className="btn btn-outline" onClick={() => {
               if (socketRef.current) socketRef.current.emit('trade_decline', { fromUsername: pendingTradeRequest });
               setPendingTradeRequest(null);
-            }}>Từ chối</button>
+            }}>Tß╗½ chß╗æi</button>
           </div>
         </div>
       )}
