@@ -4,13 +4,35 @@ import { useAuth } from '../context/AuthContext';
 import { ITEM_ASSETS } from './BackpackModal';
 
 export default function StorageModal({ onClose }) {
-  const { user, authFetch, refreshUser } = useAuth();
+  const { user, authFetch, refreshUser, updateBackpack, addXu } = useAuth();
   const [loading, setLoading] = useState(false);
   const [inventory, setInventory] = useState([]);
   const [slots, setSlots] = useState(5);
   const [promptData, setPromptData] = useState(null);
   const [promptInput, setPromptInput] = useState('');
   const [selectedSlot, setSelectedSlot] = useState(null);
+
+  const handleBuySlot = async () => {
+    if (!user) return;
+    if ((user.xu || 0) < 250) {
+      toast.error('Không đủ xu! Cần 250 xu để mở rộng kho đồ.');
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await authFetch('/api/farm/buy-slot', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) toast.error(data.error || 'Lỗi');
+      else {
+        setSlots(prev => prev + 1);
+        addXu(-250);
+        toast.success('Mở rộng kho đồ thành công!');
+      }
+    } catch(e) {
+      toast.error('Lỗi kết nối');
+    }
+    setLoading(false);
+  };
 
   const fetchInventory = async () => {
     try {
@@ -42,8 +64,16 @@ export default function StorageModal({ onClose }) {
           const data = await res.json();
           if (!res.ok) toast.error(data.error);
           else {
-            await refreshUser();
-            await fetchInventory();
+            // Cập nhật backpack ngay lập tức từ response
+            if (data.backpack) updateBackpack(data.backpack);
+            // Cập nhật inventory local
+            if (data.inventory) setInventory(data.inventory);
+            else {
+              setInventory(prev => {
+                const updated = prev.map(i => i.item_id === itemId ? { ...i, quantity: i.quantity - qty } : i);
+                return updated.filter(i => i.quantity > 0);
+              });
+            }
             setSelectedSlot(null);
           }
         } catch(e) { toast.error('Lỗi'); }
@@ -68,8 +98,17 @@ export default function StorageModal({ onClose }) {
           const data = await res.json();
           if (!res.ok) toast.error(data.error);
           else {
-            await refreshUser();
-            await fetchInventory();
+            // Cập nhật backpack ngay lập tức từ response
+            if (data.backpack) updateBackpack(data.backpack);
+            // Cập nhật inventory local
+            if (data.inventory) setInventory(data.inventory);
+            else {
+              setInventory(prev => {
+                const existing = prev.find(i => i.item_id === itemId);
+                if (existing) return prev.map(i => i.item_id === itemId ? { ...i, quantity: i.quantity + qty } : i);
+                return [...prev, { item_id: itemId, quantity: qty }];
+              });
+            }
             setSelectedSlot(null);
           }
         } catch(e) { toast.error('Lỗi'); }
@@ -94,8 +133,15 @@ export default function StorageModal({ onClose }) {
           const data = await res.json();
           if (!res.ok) toast.error(data.error);
           else {
-            await refreshUser();
-            await fetchInventory();
+            // Cập nhật trực tiếp từ response
+            if (data.backpack) updateBackpack(data.backpack);
+            if (data.inventory) setInventory(data.inventory);
+            else if (source === 'storage') {
+              setInventory(prev => {
+                const updated = prev.map(i => i.item_id === itemId ? { ...i, quantity: i.quantity - qty } : i);
+                return updated.filter(i => i.quantity > 0);
+              });
+            }
             setSelectedSlot(null);
           }
         } catch(e) {
@@ -155,7 +201,17 @@ export default function StorageModal({ onClose }) {
           
           {/* Storage Section */}
           <div style={{ flex: 1 }}>
-            <h3 style={{ fontSize: '14px', marginBottom: '10px', color: '#1e293b' }}>📦 KHO ĐỒ ({slots} ô)</h3>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+              <h3 style={{ fontSize: '14px', margin: 0, color: '#1e293b' }}>📦 KHO ĐỒ ({slots} ô)</h3>
+              <button 
+                className="pixel-btn"
+                onClick={handleBuySlot}
+                disabled={loading}
+                style={{ fontSize: '11px', padding: '4px 8px', background: '#22c55e', color: 'white', cursor: 'pointer' }}
+              >
+                + Mở ô (250 Xu)
+              </button>
+            </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
               {inventory.map((item, i) => (
                 <div 

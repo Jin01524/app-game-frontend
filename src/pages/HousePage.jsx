@@ -149,7 +149,7 @@ export default function HousePage() {
   const navigate = useNavigate();
   const { width: gameWidth, height: gameHeight } = useGameWindowSize();
   const { username: visitUsername } = useParams();
-  const { authFetch, user, refreshUser } = useAuth();
+  const { authFetch, user, refreshUser, updateBackpack, addXu } = useAuth();
   
   const isVisiting = !!visitUsername && visitUsername !== user?.username;
   const targetUsername = isVisiting ? visitUsername : user?.username;
@@ -899,8 +899,10 @@ export default function HousePage() {
       if (!res.ok) toast.error(data.error || 'Lỗi');
       else {
         setSelectedFeedItem(null);
-        await loadFarm();
-        await refreshUser(); // Cập nhật lại Balo để đồng bộ UI
+        // Cập nhật backpack ngay lập tức từ response
+        if (data.backpack) updateBackpack(data.backpack);
+        // Sync farm trong nền
+        loadFarm();
         if (socketRef.current) socketRef.current.emit('farm_action');
       }
     } catch (e) {
@@ -923,30 +925,39 @@ export default function HousePage() {
   };
 
   const handleAction = async (endpoint) => {
-    let bodyData = null;
-    
     setActionLoading(true);
     try {
-      const opts = { method: 'POST' };
-      if (bodyData) {
-        opts.headers = { 'Content-Type': 'application/json' };
-        opts.body = JSON.stringify(bodyData);
-      }
-      const res = await authFetch(`/api/farm/${endpoint}`, opts);
+      const res = await authFetch(`/api/farm/${endpoint}`, { method: 'POST' });
       const data = await res.json();
       if (!res.ok) toast.error(data.error || 'Lỗi');
       else {
-        await loadFarm();
-        await refreshUser(); // Cập nhật lại Balo để đồng bộ UI
+        // Cập nhật farm state trực tiếp từ response — không cần fetch lại
+        if (data.farm) setFarm(data.farm);
+        if (data.backpack) updateBackpack(data.backpack);
+        if (data.xu !== undefined) setUserXu(data.xu);
+        // Fallback: nếu server không trả farm data, cập nhật thủ công
+        if (!data.farm) {
+          if (endpoint === 'plant') {
+            setFarm(prev => prev ? { ...prev, state: 'growing', planted_at: new Date().toISOString() } : prev);
+          } else if (endpoint === 'harvest') {
+            setFarm(prev => prev ? { ...prev, state: 'idle', planted_at: null } : prev);
+            if (data.message) toast.success(data.message);
+          } else if (endpoint === 'buy') {
+            setFarm(prev => prev ? { ...prev, level: 1, state: 'idle' } : { level: 1, state: 'idle' });
+            setUserXu(prev => prev - 100);
+          } else if (endpoint === 'upgrade') {
+            setFarm(prev => prev ? { ...prev, level: (prev.level || 0) + 1 } : prev);
+          }
+        }
+        // Sync đầy đủ trong nền để đảm bảo consistency
+        loadFarm();
         if (socketRef.current) socketRef.current.emit('farm_action');
       }
     } catch (e) {
       toast.error('Lỗi kết nối');
     } finally {
       setActionLoading(false);
-      if (endpoint !== 'plant') {
-        setShowFarmMenu(false);
-      }
+      if (endpoint !== 'plant') setShowFarmMenu(false);
       setShowHouseMenu(false);
     }
   };
@@ -962,8 +973,10 @@ export default function HousePage() {
       const data = await res.json();
       if (!res.ok) toast.error(data.error || 'Lỗi');
       else {
-        await loadFarm();
-        await refreshUser();
+        // Cập nhật backpack từ response ngay lập tức
+        if (data.backpack) updateBackpack(data.backpack);
+        // Sync farm để có danh sách động vật mới
+        loadFarm();
         toast.success('Thả thú nuôi thành công!');
         setShowCageMenu(false);
       }
@@ -987,10 +1000,12 @@ export default function HousePage() {
       const data = await res.json();
       if (!res.ok) toast.error(data.error || 'Lỗi');
       else {
-        await loadFarm();
-        await refreshUser();
+        // Cập nhật xu ngay lập tức từ response
+        if (data.xu !== undefined) setUserXu(data.xu);
         setSelectedAnimalsToSell([]);
         toast.success(data.message);
+        // Sync farm để cập nhật danh sách động vật
+        loadFarm();
       }
     } catch (e) {
       console.error(e);
@@ -1007,10 +1022,14 @@ export default function HousePage() {
       const data = await res.json();
       if (!res.ok) toast.error(data.error || 'Lỗi');
       else {
-        await loadFarm();
-        await refreshUser();
-        if (data.message.includes('Balo đã đầy')) toast.error(data.message);
+        // Cập nhật backpack từ response ngay lập tức
+        if (data.backpack) updateBackpack(data.backpack);
+        // Xóa sản phẩm khỏi farm state ngay
+        setFarm(prev => prev ? { ...prev, cage_products: [] } : prev);
+        if (data.message.includes('Bạlo đã đầy')) toast.error(data.message);
         else toast.success(data.message);
+        // Sync farm để cập nhật cage_products thực tế (có thể còn sót lại nếu balo đầy)
+        loadFarm();
       }
     } catch (e) {
       console.error(e);

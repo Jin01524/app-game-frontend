@@ -14,7 +14,7 @@ export const ITEM_ASSETS = {
 };
 
 export default function BackpackModal({ onClose, onOpenStorage }) {
-  const { user, authFetch, refreshUser } = useAuth();
+  const { user, authFetch, refreshUser, updateBackpack } = useAuth();
   const [loading, setLoading] = useState(false);
   const [promptData, setPromptData] = useState(null);
   const [promptInput, setPromptInput] = useState('');
@@ -33,7 +33,10 @@ export default function BackpackModal({ onClose, onOpenStorage }) {
           });
           const data = await res.json();
           if (!res.ok) toast.error(data.error);
-          else await refreshUser();
+          else {
+            if (data.backpack) updateBackpack(data.backpack);
+            else await refreshUser();
+          }
         } catch(e) {
           toast.error('Lỗi');
         }

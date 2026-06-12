@@ -117,7 +117,7 @@ CHARACTER_PRELOADS.VirtualGuy.fall.src = characterImages[`../../assets/character
 
 export default function MarketPage() {
   const navigate = useNavigate();
-  const { authFetch, user, refreshUser } = useAuth();
+  const { authFetch, user, refreshUser, updateBackpack, addXu } = useAuth();
   
   const [loading, setLoading] = useState(true);
   const [market, setMarket] = useState(null);
@@ -536,10 +536,13 @@ export default function MarketPage() {
       const data = await res.json();
       if (!res.ok) toast.error(data.error || 'Lỗi');
       else {
-        await refreshUser();
-        await fetchMarket();
+        // Cập nhật xu và storage ngay lập tức — không cần fetch lại
+        addXu(data.earned);
+        setStorageRiceQty(prev => Math.max(0, prev - parseInt(sellInput) || 0));
         toast.success(`Bán thành công! Nhận được ${data.earned} Xu.`);
         setShowMarketMenu(false);
+        // Sync nền
+        fetchMarket();
       }
     } catch (e) {
       toast.error('Lỗi kết nối');
@@ -559,7 +562,9 @@ export default function MarketPage() {
       const data = await res.json();
       if (!res.ok) setMarketMessage(data.error || 'Lỗi');
       else {
-        await refreshUser();
+        // Cập nhật backpack ngay lập tức từ response
+        if (data.backpack) updateBackpack(data.backpack);
+        else if (data.xu !== undefined) addXu(data.xu - (user?.xu || 0));
         setMarketMessage('Mua thành công! Vật nuôi đã được thêm vào Balo.');
       }
     } catch (e) {
@@ -583,7 +588,8 @@ export default function MarketPage() {
       const data = await res.json();
       if (!res.ok) setMarketMessage(data.error || 'Lỗi');
       else {
-        await refreshUser();
+        // Cập nhật backpack ngay lập tức từ response
+        if (data.backpack) updateBackpack(data.backpack);
         setMarketMessage(`Mua thành công ${qty} Rơm!`);
       }
     } catch (e) {
