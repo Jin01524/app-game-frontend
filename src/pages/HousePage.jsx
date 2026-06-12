@@ -1582,9 +1582,9 @@ export default function HousePage() {
         zIndex: (showHouseMenu || showCageMenu) ? 10001 : 10 
       }}>
         {(() => {
-          let bp = user?.backpack || [null, null];
-          if (bp.length !== 2) {
-            bp = [bp[0] || null, bp[1] || null];
+          let bp = user?.backpack || [null, null, null, null];
+          if (bp.length !== 4) {
+            bp = Array.from({ length: 4 }).map((_, idx) => bp[idx] || null);
           }
           return bp.map((slot, i) => {
             const isSelected = selectedBackpackSlotIdx === i;
