@@ -1311,7 +1311,10 @@ export default function HousePage() {
         zIndex: 10 
       }}>
         {(() => {
-          const bp = user?.backpack || [null, null];
+          let bp = user?.backpack || [null, null];
+          if (bp.length !== 2) {
+            bp = [bp[0] || null, bp[1] || null];
+          }
           return bp.map((slot, i) => {
             const isSelected = selectedBackpackSlotIdx === i;
             return (
@@ -1816,9 +1819,9 @@ export default function HousePage() {
 
         return (
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '20px' }}>
-            <div className="rpg-box fade-in" style={{ background: '#fffbeb', width: '480px', padding: '20px', color: '#000', display: 'flex', flexDirection: 'column', gap: '15px', position: 'relative' }}>
+            <div className="rpg-box fade-in" style={{ background: '#fffbeb', width: '480px', maxHeight: '92%', overflowY: 'auto', padding: '12px 16px', color: '#000', display: 'flex', flexDirection: 'column', gap: '10px', position: 'relative' }}>
               
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #ccc', paddingBottom: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #ccc', paddingBottom: '6px' }}>
                 <h2 style={{ fontSize: '16px', margin: 0, fontWeight: 'bold' }}>🛠️ BÀN CHẾ TẠO</h2>
                 <button 
                   onClick={() => setShowCraftingMenu(false)} 
@@ -1838,7 +1841,7 @@ export default function HousePage() {
 
               <div style={{ display: 'flex', gap: '15px', flex: 1 }}>
                 {/* Recipe List */}
-                <div style={{ flex: 1, borderRight: '1px solid #cbd5e1', paddingRight: '15px', display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '280px', overflowY: 'auto' }}>
+                <div style={{ flex: 1, borderRight: '1px solid #cbd5e1', paddingRight: '15px', display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '180px', overflowY: 'auto' }}>
                   <h3 style={{ fontSize: '11px', color: '#64748b', marginBottom: '5px', fontWeight: 'bold' }}>VẬT PHẨM</h3>
                   {Object.values(RECIPE_DATA).map(recipe => (
                     <div 
@@ -1859,22 +1862,22 @@ export default function HousePage() {
                 </div>
 
                 {/* Recipe Details */}
-                <div style={{ flex: 1.2, display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <h3 style={{ fontSize: '11px', color: '#64748b', marginBottom: '5px', fontWeight: 'bold' }}>CÔNG THỨC</h3>
+                <div style={{ flex: 1.2, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <h3 style={{ fontSize: '11px', color: '#64748b', marginBottom: '3px', fontWeight: 'bold' }}>CÔNG THỨC</h3>
                   
-                  <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', padding: '10px', borderRadius: '4px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '11px', fontWeight: 'bold', marginBottom: '8px', color: '#1e293b' }}>{activeRecipe.name}</div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '8px' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#f1f5f9', border: '1px solid #cbd5e1', padding: '6px', borderRadius: '4px', minWidth: '70px' }}>
-                        <img src={activeRecipe.ingredientIcon} style={{ width: '28px', height: '28px', objectFit: 'contain', imageRendering: 'pixelated' }} alt={activeRecipe.ingredientName} />
-                        <span style={{ fontSize: '9px', color: hasEnough ? '#22c55e' : '#ef4444', fontWeight: 'bold', marginTop: '4px' }}>
+                  <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', padding: '6px 10px', borderRadius: '4px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 'bold', marginBottom: '6px', color: '#1e293b' }}>{activeRecipe.name}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '6px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#f1f5f9', border: '1px solid #cbd5e1', padding: '4px', borderRadius: '4px', minWidth: '65px' }}>
+                        <img src={activeRecipe.ingredientIcon} style={{ width: '24px', height: '24px', objectFit: 'contain', imageRendering: 'pixelated' }} alt={activeRecipe.ingredientName} />
+                        <span style={{ fontSize: '9px', color: hasEnough ? '#22c55e' : '#ef4444', fontWeight: 'bold', marginTop: '2px' }}>
                           {totalRequired} {activeRecipe.ingredientName}
                         </span>
                       </div>
-                      <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#64748b' }}>➔</span>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#f1f5f9', border: '1px solid #cbd5e1', padding: '6px', borderRadius: '4px', minWidth: '70px' }}>
-                        <img src={activeRecipe.icon} style={{ width: '28px', height: '28px', objectFit: 'contain', imageRendering: 'pixelated' }} alt={activeRecipe.name} />
-                        <span style={{ fontSize: '9px', color: '#3b82f6', fontWeight: 'bold', marginTop: '4px' }}>
+                      <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#64748b' }}>➔</span>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#f1f5f9', border: '1px solid #cbd5e1', padding: '4px', borderRadius: '4px', minWidth: '65px' }}>
+                        <img src={activeRecipe.icon} style={{ width: '24px', height: '24px', objectFit: 'contain', imageRendering: 'pixelated' }} alt={activeRecipe.name} />
+                        <span style={{ fontSize: '9px', color: '#3b82f6', fontWeight: 'bold', marginTop: '2px' }}>
                           {totalOutput} {activeRecipe.name}
                         </span>
                       </div>
@@ -1927,7 +1930,7 @@ export default function HousePage() {
 
                   {/* Target Destination Selection */}
                   <div style={{ fontSize: '11px' }}>
-                    <div style={{ fontWeight: 'bold', marginBottom: '5px', color: '#1e293b' }}>Cất sản phẩm vào:</div>
+                    <div style={{ fontWeight: 'bold', marginBottom: '2px', color: '#1e293b' }}>Cất sản phẩm vào:</div>
                     <div style={{ display: 'flex', gap: '15px' }}>
                       <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
                         <input 
