@@ -253,6 +253,11 @@ export default function HousePage() {
   // Input states
   const keys = useRef({ left: false, right: false, jump: false, interact: false });
   const closestPlayerRef = useRef(null);
+  const userRef = useRef(user);
+
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
 
   // Game state
   const gameState = useRef({
@@ -336,13 +341,14 @@ export default function HousePage() {
     });
     
     socketRef.current.on('connect', () => {
+      const currentUser = userRef.current;
       socketRef.current.emit('join_house', {
         hostUsername: targetUsername,
         player: { 
           ...gameState.current.player, 
-          username: user?.username, 
-          displayName: user ? (user.displayName || user.username) : 'Player',
-          characterType: user?.characterType || 'FrogNinja'
+          username: currentUser?.username, 
+          displayName: currentUser ? (currentUser.displayName || currentUser.username) : 'Player',
+          characterType: currentUser?.characterType || 'FrogNinja'
         }
       });
     });
@@ -392,7 +398,7 @@ export default function HousePage() {
     });
 
     return () => socketRef.current.disconnect();
-  }, [targetUsername, user]);
+  }, [targetUsername, user?.username]);
 
   // Load images
   useEffect(() => {
@@ -453,9 +459,20 @@ export default function HousePage() {
       if (e.key === 'ArrowUp' || e.key === 'w') keys.current.jump = false;
       if (e.key === ' ' || e.key === 'e') keys.current.interact = false;
     };
+    const handleBlur = () => {
+      keys.current.left = false;
+      keys.current.right = false;
+      keys.current.jump = false;
+      keys.current.interact = false;
+    };
     window.addEventListener('keydown', handleKd);
     window.addEventListener('keyup', handleKu);
-    return () => { window.removeEventListener('keydown', handleKd); window.removeEventListener('keyup', handleKu); };
+    window.addEventListener('blur', handleBlur);
+    return () => { 
+      window.removeEventListener('keydown', handleKd); 
+      window.removeEventListener('keyup', handleKu); 
+      window.removeEventListener('blur', handleBlur);
+    };
   }, []);
 
   // Game Loop
@@ -516,7 +533,10 @@ export default function HousePage() {
       closestPlayerRef.current = closestPlayer;
       setClosestPlayer(prev => prev !== closestPlayer ? closestPlayer : prev);
 
-      if (!showFarmMenu && !showHouseMenu && !showCageMenu && !showCraftingMenu && !loading) {
+      const menuOpen = showFarmMenu || showHouseMenu || showCageMenu || showCraftingMenu || showBackpackMenu || showStorageMenu || !!showTradeMenu || !!pendingTradeRequest;
+      const canMove = !menuOpen && !loading;
+
+      if (canMove) {
         const speed = 250; // px/s
         let isMoving = false;
         
@@ -937,7 +957,7 @@ export default function HousePage() {
         ctx.fillText(name, px + pState.width/2, py - 10);
       };
 
-      const isMoving = (keys.current.left || keys.current.right) && !showFarmMenu && !showHouseMenu && !loading;
+      const isMoving = (keys.current.left || keys.current.right) && canMove;
       
       if (socketRef.current && (time - lastEmitTime.current > 50)) {
         lastEmitTime.current = time;
