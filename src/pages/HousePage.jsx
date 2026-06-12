@@ -234,8 +234,9 @@ export default function HousePage() {
   // Auto-refresh when crop finishes growing
   useEffect(() => {
     if (farm && farm.state === 'growing' && farm.planted_at) {
+      const growthTimeSec = farm.crop_growth_time || 30;
       const diff = Date.now() - parsePlantedAt(farm.planted_at);
-      const remainingMs = Math.max(0, 30000 - diff);
+      const remainingMs = Math.max(0, (growthTimeSec * 1000) - diff);
       
       const timeout = setTimeout(() => {
         loadFarm();
@@ -243,11 +244,11 @@ export default function HousePage() {
       
       const interval = setInterval(() => {
         const d = (Date.now() - parsePlantedAt(farm.planted_at)) / 1000;
-        setFarmTimeLeft(Math.max(0, 30 - d));
+        setFarmTimeLeft(Math.max(0, growthTimeSec - d));
       }, 100);
 
       // Initialize right away
-      setFarmTimeLeft(Math.max(0, 30 - diff / 1000));
+      setFarmTimeLeft(Math.max(0, growthTimeSec - diff / 1000));
 
       return () => {
         clearTimeout(timeout);
@@ -742,11 +743,12 @@ export default function HousePage() {
           }
         }
         if (farm.state === 'growing' && farm.planted_at) {
+          const growthTimeSec = farm.crop_growth_time || 30;
           const diff = (Date.now() - parsePlantedAt(farm.planted_at)) / 1000;
-          const remaining = Math.max(0, 30 - diff);
+          const remaining = Math.max(0, growthTimeSec - diff);
           
           if (remaining > 0) {
-            const progress = Math.min(1, Math.max(0, diff / 30));
+            const progress = Math.min(1, Math.max(0, diff / growthTimeSec));
             const barWidth = 80;
             const barHeight = 8;
             const barX = state.farmPlot.x + state.farmPlot.width/2 - barWidth/2;
@@ -932,7 +934,7 @@ export default function HousePage() {
       if (!res.ok) toast.error(data.error || 'Lỗi');
       else {
         // Cập nhật farm state trực tiếp từ response — không cần fetch lại
-        if (data.farm) setFarm(data.farm);
+        if (data.farm) setFarm(prev => prev ? { ...prev, ...data.farm } : data.farm);
         if (data.backpack) updateBackpack(data.backpack);
         if (data.xu !== undefined) setUserXu(data.xu);
         // Fallback: nếu server không trả farm data, cập nhật thủ công
@@ -1045,9 +1047,10 @@ export default function HousePage() {
     if (!farm || farm.state !== 'growing' || !farm.planted_at) {
       return { remaining: 0, percent: 0, isReady: farm?.state === 'ready' };
     }
+    const growthTimeSec = farm.crop_growth_time || 30;
     const diff = (Date.now() - parsePlantedAt(farm.planted_at)) / 1000;
-    const remaining = Math.max(0, 30 - diff);
-    const percent = Math.min(100, Math.max(0, (diff / 30) * 100));
+    const remaining = Math.max(0, growthTimeSec - diff);
+    const percent = Math.min(100, Math.max(0, (diff / growthTimeSec) * 100));
     const isReady = remaining <= 0;
     return { remaining: Math.ceil(remaining), percent, isReady };
   };

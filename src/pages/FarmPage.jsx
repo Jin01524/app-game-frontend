@@ -58,9 +58,10 @@ export default function FarmPage() {
   // Auto-refresh when growing finishes
   useEffect(() => {
     if (farm && farm.state === 'growing' && farm.planted_at) {
+      const growthTime = farm.crop_growth_time || 30;
       const planted = new Date(farm.planted_at + 'Z');
       const diff = (now - planted) / 1000;
-      if (diff >= 30) {
+      if (diff >= growthTime) {
         loadFarm();
       }
     }
@@ -87,8 +88,9 @@ export default function FarmPage() {
 
   let timeLeft = 0;
   if (farm && farm.state === 'growing' && farm.planted_at) {
+    const growthTime = farm.crop_growth_time || 30;
     const planted = new Date(farm.planted_at + 'Z');
-    timeLeft = Math.max(0, 30 - Math.floor((now - planted) / 1000));
+    timeLeft = Math.max(0, growthTime - Math.floor((now - planted) / 1000));
   }
 
   const isLocked = !farm || farm.level === 0;
