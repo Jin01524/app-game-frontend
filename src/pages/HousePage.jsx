@@ -1779,7 +1779,7 @@ export default function HousePage() {
       {showCageMenu && (
         <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '20px', gap: '20px' }}>
           
-          <div className="rpg-box" style={{ background: '#fffbeb', width: '320px', padding: '12px 16px', maxHeight: '100%', overflowY: 'auto', position: 'relative' }}>
+          <div className="rpg-box" style={{ background: '#fffbeb', width: '320px', height: '254px', padding: '12px 16px', overflowY: 'auto', position: 'relative', boxSizing: 'border-box' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #ccc', paddingBottom: '6px', marginBottom: '15px' }}>
               <h2 style={{ fontSize: '16px', margin: 0, fontWeight: 'bold', color: '#1e293b' }}>🐐 CHUỒNG THÚ</h2>
               <button 
