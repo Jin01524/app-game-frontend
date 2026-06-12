@@ -37,6 +37,59 @@ import TradeModal from '../components/TradeModal';
 import LandscapeEnforcer from '../components/LandscapeEnforcer';
 import { useGameWindowSize } from '../hooks/useGameWindowSize';
 
+import cheeseImg from '../../assets/food/cheese.png';
+import botMiImg from '../../assets/food/bot-mi.png';
+import banhMiImg from '../../assets/food/banh-mi.png';
+import sandwichImg from '../../assets/food/banh-mi-sandwich.png';
+
+const RECIPE_DATA = {
+  cheese: {
+    id: 'cheese',
+    name: 'Phô mai',
+    icon: cheeseImg,
+    ingredient: 'milk',
+    ingredientName: 'Sữa bò',
+    ingredientIcon: milkIconImg,
+    requiredPerCraft: 3,
+    outputItem: 'cheese',
+    outputPerCraft: 1
+  },
+  bot_mi: {
+    id: 'bot_mi',
+    name: 'Bột mì',
+    icon: botMiImg,
+    ingredient: 'lua',
+    ingredientName: 'Lúa',
+    ingredientIcon: luaChinImg,
+    requiredPerCraft: 10,
+    outputItem: 'bot_mi',
+    outputPerCraft: 2
+  },
+  banh_mi: {
+    id: 'banh_mi',
+    name: 'Bánh mì dài',
+    icon: banhMiImg,
+    ingredient: 'bot_mi',
+    ingredientName: 'Bột mì',
+    ingredientIcon: botMiImg,
+    requiredPerCraft: 1,
+    outputItem: 'banh_mi',
+    outputPerCraft: 2
+  },
+  sandwich: {
+    id: 'sandwich',
+    name: 'Sandwich',
+    icon: sandwichImg,
+    ingredient: 'bot_mi',
+    ingredientName: 'Bột mì',
+    ingredientIcon: botMiImg,
+    requiredPerCraft: 1,
+    outputItem: 'sandwich',
+    outputPerCraft: 2
+  }
+};
+
+
 const characterImages = import.meta.glob('../../assets/character/**/*.png', { eager: true, import: 'default' });
 
 const CHARACTER_PRELOADS = {
@@ -185,6 +238,8 @@ export default function HousePage() {
   const [showCageMenu, setShowCageMenu] = useState(false);
   const [showCraftingMenu, setShowCraftingMenu] = useState(false);
   const [craftTarget, setCraftTarget] = useState('backpack');
+  const [selectedRecipeId, setSelectedRecipeId] = useState('cheese');
+  const [craftQty, setCraftQty] = useState(1);
   const [cageTab, setCageTab] = useState('feed');
   const [feedPrompt, setFeedPrompt] = useState(null);
   const [feedQtyInput, setFeedQtyInput] = useState('');
@@ -204,7 +259,7 @@ export default function HousePage() {
     player: { x: 200, y: 0, vy: 0, isGrounded: true, width: 32, height: 48, facing: 1, walkCycle: 0, characterType: user?.characterType || 'FrogNinja' },
     farmPlot: { x: 650, width: 128 },
     house: { x: 80, width: 80, height: 80 },
-    craftingTable: { x: 1150, width: 60, height: 60 },
+    craftingTable: { x: 1150, width: 50, height: 50 },
     lastTime: performance.now(),
     cameraX: 0
   });
@@ -1076,13 +1131,22 @@ export default function HousePage() {
     }
   };
 
-  const handleCraftCheese = async () => {
+  const handleCraft = async () => {
+    const qty = parseInt(craftQty);
+    if (isNaN(qty) || qty <= 0) {
+      toast.error('Số lượng không hợp lệ');
+      return;
+    }
     setActionLoading(true);
     try {
       const res = await authFetch('/api/farm/craft', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ target: craftTarget })
+        body: JSON.stringify({
+          recipeId: selectedRecipeId,
+          quantity: qty,
+          target: craftTarget
+        })
       });
       const data = await res.json();
       if (!res.ok) {
@@ -1575,106 +1639,160 @@ export default function HousePage() {
         </div>
       )}
 
-      {showCraftingMenu && (
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '20px' }}>
-          <div className="rpg-box fade-in" style={{ background: '#fffbeb', width: '380px', padding: '20px', color: '#000', display: 'flex', flexDirection: 'column', gap: '15px', position: 'relative' }}>
-            
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #ccc', paddingBottom: '10px' }}>
-              <h2 style={{ fontSize: '16px', margin: 0, fontWeight: 'bold' }}>🛠️ BÀN CHẾ TẠO</h2>
-              <button onClick={() => setShowCraftingMenu(false)} style={{ background: 'transparent', border: 'none', fontSize: '18px', cursor: 'pointer' }}>✖</button>
-            </div>
+      {showCraftingMenu && (() => {
+        const activeRecipe = RECIPE_DATA[selectedRecipeId] || RECIPE_DATA.cheese;
+        const totalRequired = activeRecipe.requiredPerCraft * craftQty;
+        const totalOutput = activeRecipe.outputPerCraft * craftQty;
 
-            <div style={{ display: 'flex', gap: '15px', flex: 1 }}>
-              {/* Recipe List */}
-              <div style={{ flex: 1, borderRight: '1px solid #cbd5e1', paddingRight: '15px' }}>
-                <h3 style={{ fontSize: '11px', color: '#64748b', marginBottom: '10px', fontWeight: 'bold' }}>VẬT PHẨM</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div 
+        const backpackCount = getBackpackItemCount(user?.backpack || [], activeRecipe.ingredient);
+        const storageItem = inventory.find(i => i.item_id === activeRecipe.ingredient);
+        const storageCount = storageItem ? storageItem.quantity : 0;
+        const totalOwned = backpackCount + storageCount;
+        const hasEnough = totalOwned >= totalRequired;
+
+        return (
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '20px' }}>
+            <div className="rpg-box fade-in" style={{ background: '#fffbeb', width: '480px', padding: '20px', color: '#000', display: 'flex', flexDirection: 'column', gap: '15px', position: 'relative' }}>
+              
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #ccc', paddingBottom: '10px' }}>
+                <h2 style={{ fontSize: '16px', margin: 0, fontWeight: 'bold' }}>🛠️ BÀN CHẾ TẠO</h2>
+                <button onClick={() => setShowCraftingMenu(false)} style={{ background: 'transparent', border: 'none', fontSize: '18px', cursor: 'pointer' }}>✖</button>
+              </div>
+
+              <div style={{ display: 'flex', gap: '15px', flex: 1 }}>
+                {/* Recipe List */}
+                <div style={{ flex: 1, borderRight: '1px solid #cbd5e1', paddingRight: '15px', display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '280px', overflowY: 'auto' }}>
+                  <h3 style={{ fontSize: '11px', color: '#64748b', marginBottom: '5px', fontWeight: 'bold' }}>VẬT PHẨM</h3>
+                  {Object.values(RECIPE_DATA).map(recipe => (
+                    <div 
+                      key={recipe.id}
+                      onClick={() => { setSelectedRecipeId(recipe.id); setCraftQty(1); }}
+                      style={{ 
+                        display: 'flex', alignItems: 'center', gap: '8px', 
+                        background: selectedRecipeId === recipe.id ? '#e0f2fe' : '#fff', 
+                        border: selectedRecipeId === recipe.id ? '2px solid #0284c7' : '2px solid #cbd5e1', 
+                        padding: '6px 8px', borderRadius: '4px', cursor: 'pointer',
+                        transition: 'all 0.1s'
+                      }}
+                    >
+                      <img src={recipe.icon} style={{ width: '24px', height: '24px', objectFit: 'contain', imageRendering: 'pixelated' }} alt={recipe.name} />
+                      <span style={{ fontSize: '11px', fontWeight: 'bold' }}>{recipe.name}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Recipe Details */}
+                <div style={{ flex: 1.2, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <h3 style={{ fontSize: '11px', color: '#64748b', marginBottom: '5px', fontWeight: 'bold' }}>CÔNG THỨC</h3>
+                  
+                  <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', padding: '10px', borderRadius: '4px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 'bold', marginBottom: '8px', color: '#1e293b' }}>{activeRecipe.name}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '8px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#f1f5f9', border: '1px solid #cbd5e1', padding: '6px', borderRadius: '4px', minWidth: '70px' }}>
+                        <img src={activeRecipe.ingredientIcon} style={{ width: '28px', height: '28px', objectFit: 'contain', imageRendering: 'pixelated' }} alt={activeRecipe.ingredientName} />
+                        <span style={{ fontSize: '9px', color: hasEnough ? '#22c55e' : '#ef4444', fontWeight: 'bold', marginTop: '4px' }}>
+                          {totalRequired} {activeRecipe.ingredientName}
+                        </span>
+                      </div>
+                      <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#64748b' }}>➔</span>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#f1f5f9', border: '1px solid #cbd5e1', padding: '6px', borderRadius: '4px', minWidth: '70px' }}>
+                        <img src={activeRecipe.icon} style={{ width: '28px', height: '28px', objectFit: 'contain', imageRendering: 'pixelated' }} alt={activeRecipe.name} />
+                        <span style={{ fontSize: '9px', color: '#3b82f6', fontWeight: 'bold', marginTop: '4px' }}>
+                          {totalOutput} {activeRecipe.name}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {/* Ingredient Inventory State */}
+                    <div style={{ fontSize: '9px', color: '#475569', textAlign: 'left', background: 'rgba(0,0,0,0.05)', padding: '5px', borderRadius: '2px' }}>
+                      <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>{activeRecipe.ingredientName} hiện có: {totalOwned}</div>
+                      <div style={{ paddingLeft: '5px' }}>• Balo: {backpackCount}</div>
+                      <div style={{ paddingLeft: '5px' }}>• Kho: {storageCount}</div>
+                    </div>
+                  </div>
+
+                  {/* Quantity selector */}
+                  <div style={{ fontSize: '11px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <span style={{ fontWeight: 'bold', color: '#1e293b' }}>Số lượng chế tạo:</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <button 
+                        className="pixel-btn" 
+                        onClick={() => setCraftQty(q => Math.max(1, q - 1))}
+                        style={{ padding: '2px 8px', fontSize: '12px', background: '#e2e8f0', border: '2px solid var(--px-border)', cursor: 'pointer' }}
+                      >-</button>
+                      <input 
+                        type="number" 
+                        min="1" 
+                        value={craftQty} 
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value);
+                          if (!isNaN(val) && val > 0) setCraftQty(val);
+                        }}
+                        style={{ width: '50px', padding: '4px', textAlign: 'center', border: '2px solid #cbd5e1', borderRadius: '4px', fontSize: '11px' }}
+                      />
+                      <button 
+                        className="pixel-btn" 
+                        onClick={() => setCraftQty(q => q + 1)}
+                        style={{ padding: '2px 8px', fontSize: '12px', background: '#e2e8f0', border: '2px solid var(--px-border)', cursor: 'pointer' }}
+                      >+</button>
+                      <button 
+                        className="pixel-btn" 
+                        onClick={() => {
+                          if (activeRecipe.requiredPerCraft > 0) {
+                            const maxCrafts = Math.floor(totalOwned / activeRecipe.requiredPerCraft);
+                            setCraftQty(Math.max(1, maxCrafts));
+                          }
+                        }}
+                        style={{ padding: '4px 8px', fontSize: '10px', background: '#facc15', border: '2px solid var(--px-border)', marginLeft: 'auto', cursor: 'pointer' }}
+                      >MAX</button>
+                    </div>
+                  </div>
+
+                  {/* Target Destination Selection */}
+                  <div style={{ fontSize: '11px' }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: '5px', color: '#1e293b' }}>Cất sản phẩm vào:</div>
+                    <div style={{ display: 'flex', gap: '15px' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                        <input 
+                          type="radio" name="craft_target" value="backpack" 
+                          checked={craftTarget === 'backpack'} onChange={() => setCraftTarget('backpack')} 
+                        />
+                        Balo
+                      </label>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                        <input 
+                          type="radio" name="craft_target" value="storage" 
+                          checked={craftTarget === 'storage'} onChange={() => setCraftTarget('storage')} 
+                        />
+                        Kho chứa
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Craft Button */}
+                  <button 
+                    className="pixel-btn"
+                    disabled={actionLoading || !hasEnough || craftQty <= 0}
+                    onClick={handleCraft}
                     style={{ 
-                      display: 'flex', alignItems: 'center', gap: '8px', 
-                      background: '#fff', border: '2px solid #3b82f6', 
-                      padding: '8px', borderRadius: '4px', cursor: 'pointer' 
+                      background: '#22c55e', color: 'white', border: '2px solid var(--px-border)', 
+                      padding: '10px', fontSize: '12px', width: '100%', cursor: 'pointer',
+                      opacity: (!hasEnough || craftQty <= 0) ? 0.5 : 1
                     }}
                   >
-                    <span style={{ fontSize: '20px' }}>🧀</span>
-                    <span style={{ fontSize: '12px', fontWeight: 'bold' }}>Phô mai</span>
-                  </div>
+                    {actionLoading ? 'ĐANG CHẾ TẠO...' : '[ CHẾ TẠO ]'}
+                  </button>
                 </div>
               </div>
 
-              {/* Recipe Details */}
-              <div style={{ flex: 1.2, display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <h3 style={{ fontSize: '11px', color: '#64748b', marginBottom: '5px', fontWeight: 'bold' }}>CÔNG THỨC</h3>
-                
-                <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', padding: '10px', borderRadius: '4px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 'bold', marginBottom: '8px' }}>Phô mai (Cheese)</div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '8px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                      <span style={{ fontSize: '20px' }}>🥛</span>
-                      <span style={{ fontSize: '9px', color: '#ef4444', fontWeight: 'bold' }}>3 Sữa bò</span>
-                    </div>
-                    <span style={{ fontSize: '14px', fontWeight: 'bold' }}>➔</span>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                      <span style={{ fontSize: '20px' }}>🧀</span>
-                      <span style={{ fontSize: '9px', color: '#22c55e', fontWeight: 'bold' }}>1 Phô mai</span>
-                    </div>
-                  </div>
-                  
-                  {/* Milk Inventory State */}
-                  <div style={{ fontSize: '9px', color: '#475569', textAlign: 'left', background: 'rgba(0,0,0,0.05)', padding: '5px', borderRadius: '2px' }}>
-                    <div>🥛 Sữa hiện có:</div>
-                    <div style={{ paddingLeft: '5px' }}>• Balo: {getBackpackItemCount(user?.backpack || [], 'milk')} bình</div>
-                    <div style={{ paddingLeft: '5px' }}>• Kho: {(() => {
-                      const milkInv = inventory.find(i => i.item_id === 'milk');
-                      return milkInv ? milkInv.quantity : 0;
-                    })()} bình</div>
-                  </div>
-                </div>
+              <button className="pixel-btn" onClick={() => setShowCraftingMenu(false)} style={{ background: '#64748b', color: 'white', padding: '10px', width: '100%', cursor: 'pointer' }}>
+                Đóng
+              </button>
 
-                {/* Target Destination Selection */}
-                <div style={{ fontSize: '11px' }}>
-                  <div style={{ fontWeight: 'bold', marginBottom: '5px', color: '#1e293b' }}>Cất phô mai vào:</div>
-                  <div style={{ display: 'flex', gap: '15px' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-                      <input 
-                        type="radio" name="craft_target" value="backpack" 
-                        checked={craftTarget === 'backpack'} onChange={() => setCraftTarget('backpack')} 
-                      />
-                      Balo
-                    </label>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-                      <input 
-                        type="radio" name="craft_target" value="storage" 
-                        checked={craftTarget === 'storage'} onChange={() => setCraftTarget('storage')} 
-                      />
-                      Kho chứa
-                    </label>
-                  </div>
-                </div>
-
-                {/* Craft Button */}
-                <button 
-                  className="pixel-btn"
-                  disabled={actionLoading || (getBackpackItemCount(user?.backpack || [], 'milk') + (inventory.find(i => i.item_id === 'milk')?.quantity || 0)) < 3}
-                  onClick={handleCraftCheese}
-                  style={{ 
-                    background: '#22c55e', color: 'white', border: '2px solid var(--px-border)', 
-                    padding: '10px', fontSize: '12px', width: '100%', cursor: 'pointer',
-                    opacity: (getBackpackItemCount(user?.backpack || [], 'milk') + (inventory.find(i => i.item_id === 'milk')?.quantity || 0)) < 3 ? 0.5 : 1
-                  }}
-                >
-                  {actionLoading ? 'ĐANG CHẾ TẠO...' : '[ CHẾ TẠO ]'}
-                </button>
-              </div>
             </div>
-
-            <button className="pixel-btn" onClick={() => setShowCraftingMenu(false)} style={{ background: '#64748b', color: 'white', padding: '10px', width: '100%' }}>
-              Đóng
-            </button>
-
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {showHouseMenu && <StorageModal onClose={() => setShowHouseMenu(false)} />}
       

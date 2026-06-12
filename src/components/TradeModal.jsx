@@ -7,13 +7,19 @@ import luanonIcon from "../../assets/lua-non.png";
 import luachinIcon from "../../assets/lua-chin.png";
 import suaIcon from "../../assets/milk.png";
 import cheeseImg from "../../assets/food/cheese.png";
+import botMiImg from "../../assets/food/bot-mi.png";
+import banhMiImg from "../../assets/food/banh-mi.png";
+import sandwichImg from "../../assets/food/banh-mi-sandwich.png";
 
 const ITEM_ICONS = {
   'lua_non': luanonIcon,
   'lua_chin': luachinIcon,
   'sua': suaIcon,
   'milk': suaIcon,
-  'cheese': cheeseImg
+  'cheese': cheeseImg,
+  'bot_mi': botMiImg,
+  'banh_mi': banhMiImg,
+  'sandwich': sandwichImg
 };
 
 function getItemIcon(itemId) {
@@ -26,7 +32,10 @@ const ITEM_NAMES = {
   'hat_giong': 'Hạt Giống',
   'sua': 'Sữa Bò',
   'milk': 'Sữa Bò',
-  'cheese': 'Phô Mai'
+  'cheese': 'Phô Mai',
+  'bot_mi': 'Bột Mì',
+  'banh_mi': 'Bánh Mì',
+  'sandwich': 'Sandwich'
 };
 
 export default function TradeModal({ targetUsername, onClose, socket, isAccepting = false }) {
