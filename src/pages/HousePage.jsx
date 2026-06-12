@@ -1761,7 +1761,6 @@ export default function HousePage() {
 
               {!isLocked && (farm.state === 'ready' || (farm.state === 'growing' && progress.isReady)) && (
                 <button className="btn btn-primary" onClick={() => handleAction('harvest')} disabled={actionLoading} style={{ background: '#e6c229', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                  {!actionLoading && <img src={sickleIcon} alt="Cái liềm" style={{ width: '20px', imageRendering: 'pixelated' }} />}
                   {actionLoading ? 'ĐANG THU HOẠCH...' : `[ THU HOẠCH +${farm.yield} LÚA ]`}
                 </button>
               )}
@@ -1777,9 +1776,9 @@ export default function HousePage() {
       )}
 
       {showCageMenu && (
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '20px', gap: '20px' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', zIndex: 50, padding: '20px 20px 20px 40px', gap: '20px' }}>
           
-          <div className="rpg-box" style={{ background: '#fffbeb', width: '320px', padding: '12px 16px', maxHeight: '100%', overflowY: 'auto', position: 'relative' }}>
+          <div className="rpg-box" style={{ background: '#fffbeb', width: '280px', padding: '12px 16px', maxHeight: '100%', overflowY: 'auto', position: 'relative', transform: 'translateY(-10px)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #ccc', paddingBottom: '6px', marginBottom: '15px' }}>
               <h2 style={{ fontSize: '16px', margin: 0, fontWeight: 'bold', color: '#1e293b' }}>🐐 CHUỒNG THÚ</h2>
               <button 
@@ -1860,19 +1859,19 @@ export default function HousePage() {
                 style={{ 
                   border: '2px dashed #94a3b8', 
                   borderRadius: '8px', 
-                  padding: '15px', 
-                  minHeight: '150px',
+                  padding: '6px 10px', 
+                  minHeight: '100px',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'center',
                   background: 'rgba(0,0,0,0.02)'
                 }}
               >
-                <div style={{ marginBottom: '15px', fontSize: '12px', color: '#334155', textAlign: 'center' }}>
+                <div style={{ marginBottom: '6px', fontSize: '11px', color: '#334155', textAlign: 'center', lineHeight: '1.2' }}>
                   Bấm chọn Rơm từ Balo, sau đó bấm vào máng ăn.
                 </div>
                 {/* Straw Storage Slots */}
-                <div style={{ display: 'flex', gap: '5px', justifyContent: 'center', marginBottom: '15px' }}>
+                <div style={{ display: 'flex', gap: '5px', justifyContent: 'center', marginBottom: '5px' }}>
                   {Array.from({ length: 4 }).map((_, idx) => {
                     const slot = (farm?.cage_inventory || [])[idx];
                     return (
@@ -1898,16 +1897,16 @@ export default function HousePage() {
 
             {cageTab === 'animals' && (
               <>
-                <div style={{ marginBottom: '10px', fontSize: '12px', fontWeight: 'bold', color: '#1e293b' }}>
+                <div style={{ marginBottom: '6px', fontSize: '11px', fontWeight: 'bold', color: '#1e293b' }}>
                   Đang nuôi: {(farm?.animals_data || []).length}/8 con
                 </div>
                 
-                <div style={{ maxHeight: '120px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '15px', padding: '5px', background: 'rgba(0,0,0,0.05)', borderRadius: '4px' }}>
+                <div style={{ maxHeight: '80px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '8px', padding: '4px', background: 'rgba(0,0,0,0.05)', borderRadius: '4px' }}>
                   {(farm?.animals_data || []).map((animal, idx) => {
                     const isSelected = selectedAnimalsToSell.includes(idx);
                     const progressPct = Math.min(100, Math.floor(((animal.milkProgress || 0) / 1800) * 100));
                     return (
-                      <label key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: isSelected ? '#bae6fd' : '#f1f5f9', padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e1', cursor: 'pointer' }}>
+                      <label key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: isSelected ? '#bae6fd' : '#f1f5f9', padding: '6px', borderRadius: '4px', border: '1px solid #cbd5e1', cursor: 'pointer' }}>
                         <input 
                           type="checkbox" 
                           checked={isSelected} 
@@ -1934,17 +1933,17 @@ export default function HousePage() {
                     className="pixel-btn" 
                     disabled={actionLoading}
                     onClick={handleSellAnimals}
-                    style={{ background: '#ef4444', color: 'white', border: '2px solid var(--px-border)', padding: '5px 10px', fontSize: '12px', width: '100%', marginBottom: '15px' }}
+                    style={{ background: '#ef4444', color: 'white', border: '2px solid var(--px-border)', padding: '5px 10px', fontSize: '12px', width: '100%', marginBottom: '10px' }}
                   >
                     [ BÁN {selectedAnimalsToSell.length} CON - THU VỀ {selectedAnimalsToSell.length * 150} XU ]
                   </button>
                 )}
 
-                <div style={{ marginBottom: '10px', fontSize: '12px', fontWeight: 'bold', color: '#1e293b' }}>Kho/Balo:</div>
-                <div style={{ maxHeight: '100px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '15px' }}>
+                <div style={{ marginBottom: '6px', fontSize: '11px', fontWeight: 'bold', color: '#1e293b' }}>Kho/Balo:</div>
+                <div style={{ maxHeight: '60px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' }}>
                   {availableCows.length > 0 ? (
                     availableCows.map((item, idx) => (
-                      <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#e2e8f0', padding: '10px', border: '2px solid #cbd5e1' }}>
+                      <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#e2e8f0', padding: '6px', border: '2px solid #cbd5e1' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                           <img src={cowMove1} style={{ width: '30px' }} alt="Bò" />
                           <span style={{ fontSize: '12px' }}>Bò (x{item.quantity})</span>
@@ -1960,7 +1959,7 @@ export default function HousePage() {
                       </div>
                     ))
                   ) : (
-                    <div style={{ textAlign: 'center', color: '#64748b', fontSize: '12px', padding: '10px 0' }}>
+                    <div style={{ textAlign: 'center', color: '#64748b', fontSize: '11px', padding: '6px 0' }}>
                       Không có vật nuôi nào trong kho/balo.
                     </div>
                   )}
@@ -1970,11 +1969,11 @@ export default function HousePage() {
 
             {cageTab === 'products' && (
               <>
-                <div style={{ marginBottom: '10px', fontSize: '12px', fontWeight: 'bold', color: '#1e293b', textAlign: 'center' }}>
+                <div style={{ marginBottom: '6px', fontSize: '11px', fontWeight: 'bold', color: '#1e293b', textAlign: 'center' }}>
                   Sản phẩm thu được:
                 </div>
                 
-                <div style={{ maxHeight: '150px', overflowY: 'auto', display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '15px', padding: '10px', background: 'rgba(0,0,0,0.05)', borderRadius: '4px', justifyContent: 'center' }}>
+                <div style={{ maxHeight: '100px', overflowY: 'auto', display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '10px', padding: '6px', background: 'rgba(0,0,0,0.05)', borderRadius: '4px', justifyContent: 'center' }}>
                   {(farm?.cage_products || []).length > 0 ? (
                     (() => {
                       const counts = {};
