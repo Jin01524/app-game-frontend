@@ -259,7 +259,7 @@ export default function HousePage() {
     player: { x: 200, y: 0, vy: 0, isGrounded: true, width: 32, height: 48, facing: 1, walkCycle: 0, characterType: user?.characterType || 'FrogNinja' },
     farmPlot: { x: 650, width: 128 },
     house: { x: 80, width: 80, height: 80 },
-    craftingTable: { x: 1150, width: 50, height: 50 },
+    craftingTable: { x: 1150, width: 40, height: 40 },
     lastTime: performance.now(),
     cameraX: 0
   });
@@ -1656,7 +1656,20 @@ export default function HousePage() {
               
               <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #ccc', paddingBottom: '10px' }}>
                 <h2 style={{ fontSize: '16px', margin: 0, fontWeight: 'bold' }}>🛠️ BÀN CHẾ TẠO</h2>
-                <button onClick={() => setShowCraftingMenu(false)} style={{ background: 'transparent', border: 'none', fontSize: '18px', cursor: 'pointer' }}>✖</button>
+                <button 
+                  onClick={() => setShowCraftingMenu(false)} 
+                  style={{ 
+                    background: 'transparent', 
+                    border: 'none', 
+                    fontSize: '14px', 
+                    cursor: 'pointer',
+                    fontFamily: 'var(--font-pixel)',
+                    fontWeight: 'bold',
+                    color: '#ef4444'
+                  }}
+                >
+                  [x]
+                </button>
               </div>
 
               <div style={{ display: 'flex', gap: '15px', flex: 1 }}>
@@ -1785,9 +1798,7 @@ export default function HousePage() {
                 </div>
               </div>
 
-              <button className="pixel-btn" onClick={() => setShowCraftingMenu(false)} style={{ background: '#64748b', color: 'white', padding: '10px', width: '100%', cursor: 'pointer' }}>
-                Đóng
-              </button>
+
 
             </div>
           </div>
