@@ -243,7 +243,7 @@ export default function HousePage() {
   const navigate = useNavigate();
   const { width: gameWidth, height: gameHeight } = useGameWindowSize();
   const { username: visitUsername } = useParams();
-  const { authFetch, user, refreshUser, updateBackpack, addXu } = useAuth();
+  const { authFetch, user, refreshUser, updateBackpack, addXu, updateEnergy } = useAuth();
   
   const isVisiting = !!visitUsername && visitUsername !== user?.username;
   const targetUsername = isVisiting ? visitUsername : user?.username;
@@ -285,6 +285,14 @@ export default function HousePage() {
   const [selectedFeedItem, setSelectedFeedItem] = useState(null);
   const [saving, setSaving] = useState(false);
   const [droppedItems, setDroppedItems] = useState([]);
+  const [eatCooldown, setEatCooldown] = useState(false);
+
+  const selectedBackpackItem = (selectedBackpackSlotIdx !== null && user?.backpack && user.backpack[selectedBackpackSlotIdx] && user.backpack[selectedBackpackSlotIdx].quantity > 0)
+    ? user.backpack[selectedBackpackSlotIdx]
+    : null;
+  const isEdible = selectedBackpackItem && ['banh_mi', 'sandwich'].includes(selectedBackpackItem.item_id);
+  const isDrinkable = selectedBackpackItem && selectedBackpackItem.item_id === 'milk';
+  const canConsume = isEdible || isDrinkable;
 
 
   // Input states
@@ -996,7 +1004,7 @@ export default function HousePage() {
               itemW = (imgW / imgH) * 25;
             }
             const heldBounce = Math.sin(Date.now() / 150) * 1.5;
-            ctx.drawImage(itemImg, 15 - itemW/2, 28 - itemH/2 + heldBounce, itemW, itemH);
+             ctx.drawImage(itemImg, 20 - itemW/2, 28 - itemH/2 + heldBounce, itemW, itemH);
           }
         }
         ctx.restore();
@@ -1054,6 +1062,49 @@ export default function HousePage() {
     return () => cancelAnimationFrame(rafId);
   }, [farm, showFarmMenu, showHouseMenu, showCageMenu, showCraftingMenu, showTradeMenu, pendingTradeRequest, selectedBackpackSlotIdx, user, loading, gameWidth, gameHeight]);
 
+  // Periodically refresh user to sync energy decay and other states
+  useEffect(() => {
+    if (!user) return;
+    const interval = setInterval(() => {
+      refreshUser();
+    }, 2 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [refreshUser, user]);
+
+  const handleConsumeItem = async () => {
+    if (eatCooldown || actionLoading) return;
+    if (selectedBackpackSlotIdx === null) return;
+    
+    if ((user?.energy ?? 6) >= 6) {
+      toast.error('Năng lượng đã đầy (Tối đa 6)');
+      return;
+    }
+
+    setEatCooldown(true);
+    setTimeout(() => {
+      setEatCooldown(false);
+    }, 200);
+
+    try {
+      const res = await authFetch('/api/profile/consume', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slotIdx: selectedBackpackSlotIdx })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || 'Lỗi');
+      } else {
+        if (data.backpack) updateBackpack(data.backpack);
+        if (data.energy !== undefined) {
+          updateEnergy(data.energy);
+        }
+        toast.success(data.message || 'Sử dụng vật phẩm thành công');
+      }
+    } catch(e) {
+      toast.error('Lỗi kết nối');
+    }
+  };
 
   const submitFeed = async (amount) => {
     setActionLoading(true);
@@ -1066,7 +1117,7 @@ export default function HousePage() {
       const data = await res.json();
       if (!res.ok) toast.error(data.error || 'Lỗi');
       else {
-        setSelectedFeedItem(null);
+        setSelectedBackpackSlotIdx(null);
         // Cập nhật backpack ngay lập tức từ response
         if (data.backpack) updateBackpack(data.backpack);
         // Sync farm trong nền
@@ -1081,8 +1132,8 @@ export default function HousePage() {
   };
 
   const handleClickSlot = () => {
-    if (selectedFeedItem && selectedFeedItem.item_id === 'rom') {
-      const qty = parseInt(selectedFeedItem.quantity || '0', 10);
+    if (selectedBackpackItem && selectedBackpackItem.item_id === 'rom') {
+      const qty = parseInt(selectedBackpackItem.quantity || '0', 10);
       if (qty > 1) { // They asked if quantity > 1 (or 2). Let's use > 1 as it makes sense for multiple items.
         setFeedPrompt({ maxQty: qty });
         setFeedQtyInput(qty.toString());
@@ -1103,6 +1154,7 @@ export default function HousePage() {
         if (data.farm) setFarm(prev => prev ? { ...prev, ...data.farm } : data.farm);
         if (data.backpack) updateBackpack(data.backpack);
         if (data.xu !== undefined) setUserXu(data.xu);
+        if (data.energy !== undefined) updateEnergy(data.energy);
         // Fallback: nếu server không trả farm data, cập nhật thủ công
         if (!data.farm) {
           if (endpoint === 'plant') {
@@ -1279,6 +1331,42 @@ export default function HousePage() {
         <span style={{ fontSize: '1.2rem', color: '#d97706', fontWeight: 'bold', textShadow: '1px 1px 0 #fff' }}>{user?.xu?.toLocaleString() || 0}</span>
       </div>
 
+      {/* Energy Bar */}
+      <div style={{ 
+        position: 'absolute', 
+        top: '20px', 
+        right: '460px', 
+        padding: '6px 12px', 
+        background: 'white', 
+        border: '4px solid #3b82f6', 
+        borderRadius: '0', 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: '10px', 
+        zIndex: 10, 
+        fontFamily: 'var(--font-pixel)', 
+        boxShadow: '0 4px 6px rgba(0,0,0,0.3)' 
+      }}>
+        <span style={{ color: '#eab308', fontSize: '16px', fontWeight: 'bold' }}>⚡</span>
+        <div style={{ display: 'flex', gap: '3px', background: '#334155', padding: '3px', border: '2px solid #1e293b' }}>
+          {Array.from({ length: 6 }).map((_, idx) => {
+            const isFilled = (user?.energy ?? 6) > idx;
+            return (
+              <div 
+                key={idx} 
+                style={{ 
+                  width: '12px', 
+                  height: '16px', 
+                  background: isFilled ? '#22c55e' : '#475569',
+                  transition: 'background 0.2s' 
+                }} 
+              />
+            );
+          })}
+        </div>
+        <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#1e293b' }}>{user?.energy ?? 6}/6</span>
+      </div>
+
       {/* Top Info */}
       <div style={{ position: 'absolute', top: '20px', left: '20px', fontFamily: 'var(--font-pixel)', color: 'white', textShadow: '2px 2px 0 #000', pointerEvents: 'none' }}>
         <h2 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--px-amber)' }}>{isVisiting ? `Nông Trại ${targetUsername}` : 'Thế Giới Của Bạn'}</h2>
@@ -1315,7 +1403,7 @@ export default function HousePage() {
         transform: 'translateX(-50%)', 
         display: 'flex', 
         gap: '12px', 
-        zIndex: showHouseMenu ? 10001 : 10 
+        zIndex: (showHouseMenu || showCageMenu) ? 10001 : 10 
       }}>
         {(() => {
           let bp = user?.backpack || [null, null];
@@ -1393,28 +1481,59 @@ export default function HousePage() {
           {!showFarmMenu && !showHouseMenu && !showCageMenu && !showCraftingMenu && (
             <>
               {selectedBackpackSlotIdx !== null && user?.backpack && user.backpack[selectedBackpackSlotIdx] && (
-                <button 
-                  onClick={() => {
-                    const item = user.backpack[selectedBackpackSlotIdx];
-                    if (item && item.quantity > 0) {
-                      setDiscardPrompt({ itemId: item.item_id, maxQty: item.quantity });
-                      setDiscardQtyInput(item.quantity.toString());
-                    }
-                  }}
-                  className="pixel-btn"
-                  style={{ 
-                    padding: '10px 16px', 
-                    background: '#dc2626', 
-                    color: 'white', 
-                    border: '4px solid var(--px-border)',
-                    fontSize: '11px',
-                    fontFamily: 'var(--font-pixel)',
-                    boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
-                    cursor: 'pointer'
-                  }}
-                >
-                  VỨT
-                </button>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {canConsume && (
+                    <button 
+                      onClick={handleConsumeItem}
+                      disabled={eatCooldown || actionLoading}
+                      className="pixel-btn"
+                      style={{ 
+                        position: 'relative',
+                        overflow: 'hidden',
+                        padding: '10px 16px', 
+                        background: '#16a34a', 
+                        color: 'white', 
+                        border: '4px solid var(--px-border)',
+                        fontSize: '11px',
+                        fontFamily: 'var(--font-pixel)',
+                        boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
+                        cursor: (eatCooldown || actionLoading) ? 'default' : 'pointer'
+                      }}
+                    >
+                      {isDrinkable ? 'UỐNG' : 'ĂN'}
+                      {eatCooldown && (
+                        <div style={{
+                          position: 'absolute',
+                          inset: 0,
+                          background: 'rgba(0,0,0,0.4)',
+                          animation: 'cooldown-swipe 0.2s linear forwards'
+                        }} />
+                      )}
+                    </button>
+                  )}
+                  <button 
+                    onClick={() => {
+                      const item = user.backpack[selectedBackpackSlotIdx];
+                      if (item && item.quantity > 0) {
+                        setDiscardPrompt({ itemId: item.item_id, maxQty: item.quantity });
+                        setDiscardQtyInput(item.quantity.toString());
+                      }
+                    }}
+                    className="pixel-btn"
+                    style={{ 
+                      padding: '10px 16px', 
+                      background: '#dc2626', 
+                      color: 'white', 
+                      border: '4px solid var(--px-border)',
+                      fontSize: '11px',
+                      fontFamily: 'var(--font-pixel)',
+                      boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    VỨT
+                  </button>
+                </div>
               )}
 
               {(((canInteract || canInteractHouse || canInteractCage || canInteractCraftingTable) && !isVisiting) || closestPlayer) && (
@@ -1758,58 +1877,18 @@ export default function HousePage() {
                 </button>
               </>
             )}
-            <button className="pixel-btn" onClick={() => setShowCageMenu(false)} style={{ background: '#64748b', color: 'white', padding: '10px', width: '100%' }}>
+            <button 
+              className="pixel-btn" 
+              onClick={() => {
+                setShowCageMenu(false);
+                setSelectedBackpackSlotIdx(null);
+              }} 
+              style={{ background: '#64748b', color: 'white', padding: '10px', width: '100%', cursor: 'pointer' }}
+            >
               Đóng
             </button>
           </div>
 
-          {cageTab === 'feed' && (
-            <div className="rpg-box" style={{ background: '#fffbeb', width: '200px', padding: '15px', maxHeight: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '15px' }}>
-                <img src={bagIcon} alt="Balo" style={{ width: '24px', height: '24px', imageRendering: 'pixelated' }} />
-                <h3 style={{ fontSize: '14px', margin: 0, color: '#1e293b' }}>Balo</h3>
-              </div>
-              
-              <div style={{ display: 'flex', gap: '10px' }}>
-                {(user?.backpack || [null, null]).map((item, i) => (
-                  <div 
-                    key={i} 
-                    onClick={() => {
-                      if (item) {
-                        setSelectedFeedItem(selectedFeedItem === item ? null : item);
-                      }
-                    }}
-                    style={{ 
-                      width: '48px', height: '48px', background: '#e2e8f0', 
-                      border: selectedFeedItem === item ? '2px solid #3b82f6' : '2px solid #cbd5e1', 
-                      boxShadow: selectedFeedItem === item ? '0 0 8px rgba(59, 130, 246, 0.8)' : 'none',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative',
-                      cursor: item ? 'pointer' : 'default',
-                      transition: 'all 0.1s'
-                    }}
-                  >
-                    {item ? (
-                      <>
-                        <img 
-                          src={ITEM_ICONS[item.item_id] || bagIcon} 
-                          style={{ width: '28px', height: '28px', objectFit: 'contain', imageRendering: 'pixelated' }} 
-                          alt={item.item_id} 
-                        />
-                        <span style={{ position: 'absolute', bottom: '2px', right: '4px', fontSize: '10px', fontWeight: 'bold', color: '#1e293b' }}>
-                          {item.quantity}
-                        </span>
-                      </>
-                    ) : (
-                      <span style={{ fontSize: '10px', color: '#94a3b8' }}>Trống</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-              <div style={{ fontSize: '11px', color: '#64748b', marginTop: '15px', textAlign: 'center' }}>
-                Bấm chọn vật phẩm
-              </div>
-            </div>
-          )}
         </div>
       )}
 
@@ -2084,6 +2163,10 @@ export default function HousePage() {
           0% { transform: scale(1); }
           50% { transform: scale(1.05); }
           100% { transform: scale(1); }
+        }
+        @keyframes cooldown-swipe {
+          from { width: 100%; }
+          to { width: 0%; }
         }
       `}</style>
       </div>

@@ -90,8 +90,12 @@ export function AuthProvider({ children }) {
     setUser((prev) => prev ? { ...prev, backpack } : prev);
   }, []);
 
+  const updateEnergy = useCallback((energy) => {
+    setUser((prev) => prev ? { ...prev, energy } : prev);
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, updateAvatar, updateCharacterType, addXu, refreshUser, authFetch, updateBackpack }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, updateAvatar, updateCharacterType, addXu, refreshUser, authFetch, updateBackpack, updateEnergy }}>
       {children}
     </AuthContext.Provider>
   );
