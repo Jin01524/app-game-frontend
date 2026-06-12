@@ -4,6 +4,15 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { io } from 'socket.io-client';
 import PixelCanvas from '../components/PixelCanvas';
+import {
+  BackpackHotbar,
+  DiscardItemPrompt,
+  EnergyBar,
+  MOVEMENT_DRAIN_SECONDS,
+  SelectedItemActions,
+  drawHeldItem,
+  drawMovementDrainBar
+} from '../components/GameHud';
 
 import tree1Img from '../../assets/tree1.png';
 import tree2Img from '../../assets/tree2.png';
@@ -117,7 +126,7 @@ CHARACTER_PRELOADS.VirtualGuy.fall.src = characterImages[`../../assets/character
 
 export default function MarketPage() {
   const navigate = useNavigate();
-  const { authFetch, user, refreshUser, updateBackpack, addXu } = useAuth();
+  const { authFetch, user, refreshUser, updateBackpack, updateEnergy, addXu } = useAuth();
   
   const [loading, setLoading] = useState(true);
   const [market, setMarket] = useState(null);
@@ -140,6 +149,9 @@ export default function MarketPage() {
   const socketRef = useRef(null);
   const otherPlayersRef = useRef({});
   const closestPlayerRef = useRef(null);
+  const moveTimeAccumulator = useRef(0);
+  const selectedBackpackSlotIdxRef = useRef(null);
+  const userRef = useRef(user);
 
   const gameState = useRef({
     player: {
@@ -178,6 +190,28 @@ export default function MarketPage() {
   const [closestPlayer, setClosestPlayer] = useState(null);
   const [showTradeMenu, setShowTradeMenu] = useState(null); // stores targetUsername
   const [pendingTradeRequest, setPendingTradeRequest] = useState(null);
+  const [selectedBackpackSlotIdx, setSelectedBackpackSlotIdx] = useState(null);
+  const [discardPrompt, setDiscardPrompt] = useState(null);
+  const [discardQtyInput, setDiscardQtyInput] = useState('');
+  const [eatCooldown, setEatCooldown] = useState(false);
+
+  const selectedBackpackItem = (
+    selectedBackpackSlotIdx !== null &&
+    user?.backpack &&
+    user.backpack[selectedBackpackSlotIdx] &&
+    user.backpack[selectedBackpackSlotIdx].quantity > 0
+  ) ? user.backpack[selectedBackpackSlotIdx] : null;
+  const isEdible = selectedBackpackItem && ['banh_mi', 'sandwich', 'cheese'].includes(selectedBackpackItem.item_id);
+  const isDrinkable = selectedBackpackItem && selectedBackpackItem.item_id === 'milk';
+  const canConsume = isEdible || isDrinkable;
+
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
+
+  useEffect(() => {
+    selectedBackpackSlotIdxRef.current = selectedBackpackSlotIdx;
+  }, [selectedBackpackSlotIdx]);
 
   useEffect(() => {
     const state = gameState.current;
@@ -286,9 +320,21 @@ export default function MarketPage() {
       if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
         return;
       }
+      const key = e.key.toLowerCase();
       if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.current.left = true;
       if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.current.right = true;
       if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') keys.current.jump = true;
+      if (e.key === '1') setSelectedBackpackSlotIdx(0);
+      if (e.key === '2') setSelectedBackpackSlotIdx(1);
+      if (key === 'q') {
+        const currentSlotIdx = selectedBackpackSlotIdxRef.current;
+        const backpack = userRef.current?.backpack;
+        const item = currentSlotIdx !== null ? backpack?.[currentSlotIdx] : null;
+        if (item && item.quantity > 0) {
+          setDiscardPrompt({ itemId: item.item_id, maxQty: item.quantity });
+          setDiscardQtyInput(item.quantity.toString());
+        }
+      }
       if (e.code === 'KeyF') {
         if (canInteract && !showMarketMenu) {
           setShowMarketMenu(true);
@@ -323,22 +369,39 @@ export default function MarketPage() {
     let lastEmitTime = 0;
 
     const loop = (time) => {
-      const dt = (time - lastTime) / 1000;
+      const dt = Math.min((time - lastTime) / 1000, 0.1);
       lastTime = time;
 
       const state = gameState.current;
       canvas.width = gameWidth;
       canvas.height = gameHeight;
 
-      const speed = 250;
       const gravity = 2000;
       const jumpPower = -600;
+      const menuOpen = showMarketMenu || showAnimalMenu || !!showTradeMenu || !!pendingTradeRequest;
+      const canMove = !menuOpen && !loading;
+      const currentEnergy = userRef.current?.energy !== undefined && userRef.current?.energy !== null ? userRef.current.energy : 6;
+      const speed = currentEnergy <= 0 ? 125 : 250;
 
       let isMoving = false;
-      if (!showMarketMenu && !showAnimalMenu) {
+      const currentlyMoving = ((keys.current.left || keys.current.right) && canMove) || (!state.player.isGrounded && canMove);
+      if (currentlyMoving) {
+        moveTimeAccumulator.current += dt;
+        if (moveTimeAccumulator.current >= MOVEMENT_DRAIN_SECONDS) {
+          moveTimeAccumulator.current = 0;
+          if (currentEnergy > 0) {
+            updateEnergy(currentEnergy - 1);
+            handleDrainEnergy();
+          }
+        }
+      } else {
+        moveTimeAccumulator.current = Math.max(0, moveTimeAccumulator.current - dt * 1.5);
+      }
+
+      if (canMove) {
         if (keys.current.left) { state.player.x -= speed * dt; state.player.facing = -1; isMoving = true; }
         if (keys.current.right) { state.player.x += speed * dt; state.player.facing = 1; isMoving = true; }
-        if (keys.current.jump && state.player.isGrounded) { state.player.vy = jumpPower; state.player.isGrounded = false; }
+        if (keys.current.jump && state.player.isGrounded && currentEnergy > 0) { state.player.vy = jumpPower; state.player.isGrounded = false; }
       }
 
       state.player.vy += gravity * dt;
@@ -365,7 +428,8 @@ export default function MarketPage() {
           isMoving,
           username: user?.username,
           displayName: user ? (user.displayName || user.username) : 'Player',
-          characterType: user?.characterType || 'FrogNinja'
+          characterType: user?.characterType || 'FrogNinja',
+          heldItemId: selectedBackpackSlotIdx !== null && user?.backpack?.[selectedBackpackSlotIdx] ? user.backpack[selectedBackpackSlotIdx].item_id : null
         });
       }
 
@@ -451,6 +515,10 @@ export default function MarketPage() {
       const drawCharacter = (pState, isMe) => {
         const px = pState.x;
         const py = groundY - pState.height + pState.y;
+
+        if (isMe) {
+          drawMovementDrainBar(ctx, px, py, pState.height, moveTimeAccumulator.current);
+        }
         
         ctx.save();
         ctx.translate(px + pState.width/2, py);
@@ -482,6 +550,10 @@ export default function MarketPage() {
           ctx.fillStyle = 'red';
           ctx.fillRect(-16, pState.height - 32, 32, 32);
         }
+
+        if (pState.heldItemId) {
+          drawHeldItem(ctx, pState.heldItemId, time);
+        }
         ctx.restore();
 
         const dName = pState.displayName || 'Player';
@@ -509,7 +581,8 @@ export default function MarketPage() {
         isMoving,
         displayName: user ? (user.displayName || user.username) : 'Player',
         username: user?.username,
-        characterType: user?.characterType || 'FrogNinja'
+        characterType: user?.characterType || 'FrogNinja',
+        heldItemId: selectedBackpackSlotIdx !== null && user?.backpack?.[selectedBackpackSlotIdx] ? user.backpack[selectedBackpackSlotIdx].item_id : null
       }, true);
       
       ctx.restore();
@@ -526,7 +599,89 @@ export default function MarketPage() {
     };
     rafId = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(rafId);
-  }, [market, showMarketMenu, showAnimalMenu, user, loading]);
+  }, [market, showMarketMenu, showAnimalMenu, showTradeMenu, pendingTradeRequest, selectedBackpackSlotIdx, user, loading, gameWidth, gameHeight]);
+
+  useEffect(() => {
+    if (!user) return;
+    const interval = setInterval(() => {
+      refreshUser();
+    }, 2 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [refreshUser, user]);
+
+  const handleDrainEnergy = async () => {
+    try {
+      const res = await authFetch('/api/profile/drain-energy', {
+        method: 'POST'
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.energy !== undefined) updateEnergy(data.energy);
+      }
+    } catch (e) {
+      console.error('Lỗi trừ năng lượng di chuyển:', e);
+    }
+  };
+
+  const handleConsumeItem = async () => {
+    if (eatCooldown || actionLoading || selectedBackpackSlotIdx === null) return;
+    if ((user?.energy ?? 6) >= 6) {
+      toast.error('Năng lượng đã đầy (Tối đa 6)');
+      return;
+    }
+
+    setEatCooldown(true);
+    setTimeout(() => setEatCooldown(false), 200);
+
+    try {
+      const res = await authFetch('/api/profile/consume', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slotIdx: selectedBackpackSlotIdx })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || 'Lỗi');
+      } else {
+        if (data.backpack) updateBackpack(data.backpack);
+        if (data.energy !== undefined) updateEnergy(data.energy);
+        toast.success(data.message || 'Sử dụng vật phẩm thành công');
+      }
+    } catch (e) {
+      toast.error('Lỗi kết nối');
+    }
+  };
+
+  const confirmDiscardItem = async () => {
+    if (!discardPrompt) return;
+    const qty = parseInt(discardQtyInput, 10);
+    if (Number.isNaN(qty) || qty <= 0 || qty > discardPrompt.maxQty) {
+      toast.error('Số lượng không hợp lệ');
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      const res = await authFetch('/api/profile/discard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ itemId: discardPrompt.itemId, amount: qty, source: 'backpack' })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || 'Lỗi');
+      } else {
+        if (data.backpack) updateBackpack(data.backpack);
+        setSelectedBackpackSlotIdx(null);
+        setDiscardPrompt(null);
+        toast.success('Đã vứt vật phẩm');
+      }
+    } catch (e) {
+      toast.error('Lỗi kết nối');
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   const handleSell = async () => {
     setActionLoading(true);
@@ -636,6 +791,8 @@ export default function MarketPage() {
         <span style={{ fontSize: '1.2rem', color: '#d97706', fontWeight: 'bold', textShadow: '1px 1px 0 #fff' }}>{user?.xu?.toLocaleString() || 0}</span>
       </div>
 
+      <EnergyBar energy={user?.energy} style={{ top: '76px', right: '20px' }} />
+
       <button onClick={() => setShowBackpackMenu(true)} className="pixel-btn" style={{ position: 'absolute', top: '20px', right: '140px', padding: '10px', background: '#eab308', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10 }}>
         <img src={bagIcon} alt="Balo" style={{ width: '24px', height: '24px', imageRendering: 'pixelated' }} />
         <span>Balo</span>
@@ -662,6 +819,12 @@ export default function MarketPage() {
         </button>
       </div>
 
+      <BackpackHotbar
+        backpack={user?.backpack}
+        selectedSlotIdx={selectedBackpackSlotIdx}
+        onSelectSlot={setSelectedBackpackSlotIdx}
+      />
+
       <div style={{ position: 'absolute', bottom: '20px', right: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', zIndex: 20 }}>
         <button 
           onPointerDown={(e) => { e.preventDefault(); keys.current.jump = true; }}
@@ -672,6 +835,22 @@ export default function MarketPage() {
           style={{ width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', background: 'rgba(0,0,0,0.5)', border: '4px solid var(--px-border)', color: 'white', touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }}>
           ▲
         </button>
+        {!showMarketMenu && !showAnimalMenu && (
+          <SelectedItemActions
+            item={selectedBackpackItem}
+            canConsume={canConsume}
+            isDrinkable={isDrinkable}
+            onConsume={handleConsumeItem}
+            onDiscard={() => {
+              if (selectedBackpackItem) {
+                setDiscardPrompt({ itemId: selectedBackpackItem.item_id, maxQty: selectedBackpackItem.quantity });
+                setDiscardQtyInput(selectedBackpackItem.quantity.toString());
+              }
+            }}
+            disabled={actionLoading}
+            cooldown={eatCooldown}
+          />
+        )}
         {!showMarketMenu && !showAnimalMenu && (
           <button 
             onClick={() => {
@@ -839,6 +1018,15 @@ export default function MarketPage() {
       )}
 
       {showBackpackMenu && <BackpackModal onClose={() => setShowBackpackMenu(false)} onOpenStorage={() => toast.error('Về nông trại để mở Kho!')} />}
+      <DiscardItemPrompt
+        itemId={discardPrompt?.itemId}
+        maxQty={discardPrompt?.maxQty}
+        value={discardQtyInput}
+        onChange={setDiscardQtyInput}
+        onConfirm={confirmDiscardItem}
+        onCancel={() => setDiscardPrompt(null)}
+        loading={actionLoading}
+      />
       {showTradeMenu && (
         <TradeModal 
           targetUsername={showTradeMenu.username} 

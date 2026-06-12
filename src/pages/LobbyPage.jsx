@@ -1,10 +1,20 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from '../utils/toast';
 import { useAuth } from '../context/AuthContext';
 import { io } from 'socket.io-client';
 import PixelCanvas from '../components/PixelCanvas';
 import BackpackModal from '../components/BackpackModal';
 import TradeModal from '../components/TradeModal';
+import {
+  BackpackHotbar,
+  DiscardItemPrompt,
+  EnergyBar,
+  MOVEMENT_DRAIN_SECONDS,
+  SelectedItemActions,
+  drawHeldItem,
+  drawMovementDrainBar
+} from '../components/GameHud';
 import TienLenGame from '../components/games/TienLenGame';
 import ShurikenGame from '../components/games/ShurikenGame';
 import { useGameWindowSize } from '../hooks/useGameWindowSize';
@@ -112,7 +122,7 @@ CHARACTER_PRELOADS.VirtualGuy.fall.src = characterImages[`../../assets/character
 
 export default function LobbyPage() {
   const navigate = useNavigate();
-  const { user, refreshUser } = useAuth();
+  const { user, authFetch, refreshUser, updateBackpack, updateEnergy } = useAuth();
   const { width: gameWidth, height: gameHeight } = useGameWindowSize();
   
   const [showBackpackMenu, setShowBackpackMenu] = useState(false);
@@ -123,6 +133,11 @@ export default function LobbyPage() {
   const [pendingTradeRequest, setPendingTradeRequest] = useState(null);
   const [canInteractCasino, setCanInteractCasino] = useState(false);
   const [showCasinoMenu, setShowCasinoMenu] = useState(false);
+  const [selectedBackpackSlotIdx, setSelectedBackpackSlotIdx] = useState(null);
+  const [discardPrompt, setDiscardPrompt] = useState(null);
+  const [discardQtyInput, setDiscardQtyInput] = useState('');
+  const [actionLoading, setActionLoading] = useState(false);
+  const [eatCooldown, setEatCooldown] = useState(false);
 
   const canvasRef = useRef(null);
   const keys = useRef({ left: false, right: false, jump: false });
@@ -130,6 +145,9 @@ export default function LobbyPage() {
   const otherPlayersRef = useRef({});
   const closestPlayerRef = useRef(null);
   const canInteractCasinoRef = useRef(false);
+  const moveTimeAccumulator = useRef(0);
+  const selectedBackpackSlotIdxRef = useRef(null);
+  const userRef = useRef(user);
 
   const gameState = useRef({
     player: {
@@ -148,6 +166,24 @@ export default function LobbyPage() {
     groundImg: null,
     casinoImg: null
   });
+
+  const selectedBackpackItem = (
+    selectedBackpackSlotIdx !== null &&
+    user?.backpack &&
+    user.backpack[selectedBackpackSlotIdx] &&
+    user.backpack[selectedBackpackSlotIdx].quantity > 0
+  ) ? user.backpack[selectedBackpackSlotIdx] : null;
+  const isEdible = selectedBackpackItem && ['banh_mi', 'sandwich', 'cheese'].includes(selectedBackpackItem.item_id);
+  const isDrinkable = selectedBackpackItem && selectedBackpackItem.item_id === 'milk';
+  const canConsume = isEdible || isDrinkable;
+
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
+
+  useEffect(() => {
+    selectedBackpackSlotIdxRef.current = selectedBackpackSlotIdx;
+  }, [selectedBackpackSlotIdx]);
 
   // Load assets
   useEffect(() => {
@@ -235,20 +271,38 @@ export default function LobbyPage() {
 
     const update = (dt, time) => {
       const p = state.player;
+      const menuOpen = showCasinoMenu || showTienLen || showShuriken || !!showTradeMenu || !!pendingTradeRequest;
+      const canMove = !menuOpen;
+      const currentEnergy = userRef.current?.energy !== undefined && userRef.current?.energy !== null ? userRef.current.energy : 6;
+      const speed = currentEnergy <= 0 ? 125 : SPEED;
       
       p.isMoving = false;
-      if (keys.current.left) {
-        p.x -= SPEED * dt;
+      const currentlyMoving = ((keys.current.left || keys.current.right) && canMove) || (!p.isGrounded && canMove);
+      if (currentlyMoving) {
+        moveTimeAccumulator.current += dt;
+        if (moveTimeAccumulator.current >= MOVEMENT_DRAIN_SECONDS) {
+          moveTimeAccumulator.current = 0;
+          if (currentEnergy > 0) {
+            updateEnergy(currentEnergy - 1);
+            handleDrainEnergy();
+          }
+        }
+      } else {
+        moveTimeAccumulator.current = Math.max(0, moveTimeAccumulator.current - dt * 1.5);
+      }
+
+      if (canMove && keys.current.left) {
+        p.x -= speed * dt;
         p.facing = -1;
         p.isMoving = true;
       }
-      if (keys.current.right) {
-        p.x += SPEED * dt;
+      if (canMove && keys.current.right) {
+        p.x += speed * dt;
         p.facing = 1;
         p.isMoving = true;
       }
 
-      if (keys.current.jump && p.isGrounded) {
+      if (canMove && keys.current.jump && p.isGrounded && currentEnergy > 0) {
         p.vy = JUMP_POWER;
         p.isGrounded = false;
       }
@@ -303,7 +357,12 @@ export default function LobbyPage() {
           facing: state.player.facing,
           isMoving: state.player.isMoving,
           isGrounded: state.player.isGrounded,
-          characterType: user?.characterType || 'FrogNinja'
+          width: state.player.width,
+          height: state.player.height,
+          username: user?.username,
+          displayName: user ? (user.displayName || user.username) : 'Player',
+          characterType: user?.characterType || 'FrogNinja',
+          heldItemId: selectedBackpackSlotIdx !== null && user?.backpack?.[selectedBackpackSlotIdx] ? user.backpack[selectedBackpackSlotIdx].item_id : null
         });
       }
     };
@@ -340,6 +399,10 @@ export default function LobbyPage() {
         const groundY = canvas.height - GROUND_HEIGHT;
         const py = groundY - 48 + y;
 
+        if (isMe) {
+          drawMovementDrainBar(ctx, x, py, 48, moveTimeAccumulator.current);
+        }
+
         ctx.fillStyle = isMe ? '#4ade80' : 'white';
         ctx.font = '10px "Press Start 2P", monospace';
         ctx.textAlign = 'center';
@@ -369,6 +432,9 @@ export default function LobbyPage() {
           const w = imgToDraw.width * 1.5;
           const h = imgToDraw.height * 1.5;
           ctx.drawImage(imgToDraw, -w/2, 48 - h, w, h);
+          if (playerData.heldItemId) {
+            drawHeldItem(ctx, playerData.heldItemId, time);
+          }
           ctx.restore();
         }
       };
@@ -379,7 +445,10 @@ export default function LobbyPage() {
       });
       drawPlayer({
         ...state.player,
-        characterType: user?.characterType || 'FrogNinja'
+        username: user?.username,
+        displayName: user ? (user.displayName || user.username) : 'Player',
+        characterType: user?.characterType || 'FrogNinja',
+        heldItemId: selectedBackpackSlotIdx !== null && user?.backpack?.[selectedBackpackSlotIdx] ? user.backpack[selectedBackpackSlotIdx].item_id : null
       }, true);
 
       // Draw Ground
@@ -409,7 +478,7 @@ export default function LobbyPage() {
     animationFrameId = requestAnimationFrame(loop);
 
     return () => cancelAnimationFrame(animationFrameId);
-  }, []);
+  }, [gameWidth, gameHeight, user, showCasinoMenu, showTienLen, showShuriken, showTradeMenu, pendingTradeRequest, selectedBackpackSlotIdx]);
 
   // Events
   useEffect(() => {
@@ -421,6 +490,17 @@ export default function LobbyPage() {
       if (e.key === 'ArrowLeft' || key === 'a') keys.current.left = true;
       if (e.key === 'ArrowRight' || key === 'd') keys.current.right = true;
       if (e.key === 'ArrowUp' || key === 'w' || e.key === ' ') keys.current.jump = true;
+      if (e.key === '1') setSelectedBackpackSlotIdx(0);
+      if (e.key === '2') setSelectedBackpackSlotIdx(1);
+      if (key === 'q') {
+        const currentSlotIdx = selectedBackpackSlotIdxRef.current;
+        const backpack = userRef.current?.backpack;
+        const item = currentSlotIdx !== null ? backpack?.[currentSlotIdx] : null;
+        if (item && item.quantity > 0) {
+          setDiscardPrompt({ itemId: item.item_id, maxQty: item.quantity });
+          setDiscardQtyInput(item.quantity.toString());
+        }
+      }
       if (key === 'f') {
         if (canInteractCasinoRef.current) {
           setShowCasinoMenu(true);
@@ -442,6 +522,88 @@ export default function LobbyPage() {
       window.removeEventListener('keyup', handleKeyUp);
     };
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    const interval = setInterval(() => {
+      refreshUser();
+    }, 2 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [refreshUser, user]);
+
+  const handleDrainEnergy = async () => {
+    try {
+      const res = await authFetch('/api/profile/drain-energy', {
+        method: 'POST'
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.energy !== undefined) updateEnergy(data.energy);
+      }
+    } catch (e) {
+      console.error('Lỗi trừ năng lượng di chuyển:', e);
+    }
+  };
+
+  const handleConsumeItem = async () => {
+    if (eatCooldown || actionLoading || selectedBackpackSlotIdx === null) return;
+    if ((user?.energy ?? 6) >= 6) {
+      toast.error('Năng lượng đã đầy (Tối đa 6)');
+      return;
+    }
+
+    setEatCooldown(true);
+    setTimeout(() => setEatCooldown(false), 200);
+
+    try {
+      const res = await authFetch('/api/profile/consume', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slotIdx: selectedBackpackSlotIdx })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || 'Lỗi');
+      } else {
+        if (data.backpack) updateBackpack(data.backpack);
+        if (data.energy !== undefined) updateEnergy(data.energy);
+        toast.success(data.message || 'Sử dụng vật phẩm thành công');
+      }
+    } catch (e) {
+      toast.error('Lỗi kết nối');
+    }
+  };
+
+  const confirmDiscardItem = async () => {
+    if (!discardPrompt) return;
+    const qty = parseInt(discardQtyInput, 10);
+    if (Number.isNaN(qty) || qty <= 0 || qty > discardPrompt.maxQty) {
+      toast.error('Số lượng không hợp lệ');
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      const res = await authFetch('/api/profile/discard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ itemId: discardPrompt.itemId, amount: qty, source: 'backpack' })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || 'Lỗi');
+      } else {
+        if (data.backpack) updateBackpack(data.backpack);
+        setSelectedBackpackSlotIdx(null);
+        setDiscardPrompt(null);
+        toast.success('Đã vứt vật phẩm');
+      }
+    } catch (e) {
+      toast.error('Lỗi kết nối');
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   return (
     <LandscapeEnforcer>
@@ -478,6 +640,8 @@ export default function LobbyPage() {
         </button>
       </div>
 
+      <EnergyBar energy={user?.energy} style={{ top: '76px', right: '20px' }} />
+
       {/* Mobile Controls */}
       <div style={{ position: 'absolute', bottom: '20px', left: '20px', display: 'flex', gap: '16px', zIndex: 10 }}>
         <button 
@@ -500,6 +664,12 @@ export default function LobbyPage() {
         </button>
       </div>
 
+      <BackpackHotbar
+        backpack={user?.backpack}
+        selectedSlotIdx={selectedBackpackSlotIdx}
+        onSelectSlot={setSelectedBackpackSlotIdx}
+      />
+
       <div style={{ position: 'absolute', bottom: '20px', right: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', zIndex: 20 }}>
         <button 
           onPointerDown={(e) => { e.preventDefault(); keys.current.jump = true; }}
@@ -510,6 +680,22 @@ export default function LobbyPage() {
           style={{ width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', background: 'rgba(0,0,0,0.5)', border: '4px solid var(--px-border)', color: 'white', touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }}>
           ▲
         </button>
+        {!showCasinoMenu && !showTienLen && !showShuriken && !showTradeMenu && !pendingTradeRequest && (
+          <SelectedItemActions
+            item={selectedBackpackItem}
+            canConsume={canConsume}
+            isDrinkable={isDrinkable}
+            onConsume={handleConsumeItem}
+            onDiscard={() => {
+              if (selectedBackpackItem) {
+                setDiscardPrompt({ itemId: selectedBackpackItem.item_id, maxQty: selectedBackpackItem.quantity });
+                setDiscardQtyInput(selectedBackpackItem.quantity.toString());
+              }
+            }}
+            disabled={actionLoading}
+            cooldown={eatCooldown}
+          />
+        )}
         <button 
           onClick={() => {
             if (canInteractCasino) {
@@ -550,6 +736,16 @@ export default function LobbyPage() {
       {showBackpackMenu && (
         <BackpackModal onClose={() => setShowBackpackMenu(false)} onOpenStorage={() => {}} />
       )}
+      
+      <DiscardItemPrompt
+        itemId={discardPrompt?.itemId}
+        maxQty={discardPrompt?.maxQty}
+        value={discardQtyInput}
+        onChange={setDiscardQtyInput}
+        onConfirm={confirmDiscardItem}
+        onCancel={() => setDiscardPrompt(null)}
+        loading={actionLoading}
+      />
       
       {showTradeMenu && (
         <TradeModal 
