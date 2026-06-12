@@ -113,6 +113,18 @@ const getItemName = (itemId) => {
   return names[itemId] || itemId;
 };
 
+const itemImageCache = {};
+const getLoadedItemImage = (itemId) => {
+  if (!itemId) return null;
+  if (itemImageCache[itemId]) return itemImageCache[itemId];
+  const iconPath = ITEM_ICONS[itemId];
+  if (!iconPath) return null;
+  const img = new Image();
+  img.src = iconPath;
+  itemImageCache[itemId] = img;
+  return img;
+};
+
 
 const characterImages = import.meta.glob('../../assets/character/**/*.png', { eager: true, import: 'default' });
 
@@ -970,6 +982,16 @@ export default function HousePage() {
           const h = currentImg.height * 1.5;
           ctx.drawImage(currentImg, -w/2, pState.height - h, w, h);
         }
+
+        if (pState.heldItemId) {
+          const itemImg = getLoadedItemImage(pState.heldItemId);
+          if (itemImg && itemImg.complete && itemImg.width > 0) {
+            const itemW = 20;
+            const itemH = 20;
+            const heldBounce = Math.sin(Date.now() / 150) * 1.5;
+            ctx.drawImage(itemImg, 10 - itemW/2, 28 - itemH/2 + heldBounce, itemW, itemH);
+          }
+        }
         ctx.restore();
         
         ctx.fillStyle = isMe ? '#4ade80' : 'white';
@@ -997,7 +1019,8 @@ export default function HousePage() {
           isMoving,
           username: user?.username,
           displayName: user ? (user.displayName || user.username) : 'Player',
-          characterType: user?.characterType || 'FrogNinja'
+          characterType: user?.characterType || 'FrogNinja',
+          heldItemId: selectedBackpackSlotIdx !== null && user?.backpack && user.backpack[selectedBackpackSlotIdx] ? user.backpack[selectedBackpackSlotIdx].item_id : null
         });
       }
 
@@ -1013,7 +1036,8 @@ export default function HousePage() {
         isMoving,
         displayName: user ? (user.displayName || user.username) : 'Player',
         username: user?.username,
-        characterType: user?.characterType || 'FrogNinja'
+        characterType: user?.characterType || 'FrogNinja',
+        heldItemId: selectedBackpackSlotIdx !== null && user?.backpack && user.backpack[selectedBackpackSlotIdx] ? user.backpack[selectedBackpackSlotIdx].item_id : null
       }, true);
 
       ctx.restore();
@@ -1021,7 +1045,7 @@ export default function HousePage() {
     };
     rafId = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(rafId);
-  }, [farm, showFarmMenu, showHouseMenu, showCageMenu, user, loading, gameWidth, gameHeight]);
+  }, [farm, showFarmMenu, showHouseMenu, showCageMenu, showCraftingMenu, showTradeMenu, pendingTradeRequest, selectedBackpackSlotIdx, user, loading, gameWidth, gameHeight]);
 
 
   const submitFeed = async (amount) => {
