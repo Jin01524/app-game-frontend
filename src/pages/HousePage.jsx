@@ -1668,7 +1668,7 @@ export default function HousePage() {
       {/* Action Modal */ }
       {showFarmMenu && farm && (
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
-          <div className="rpg-box fade-in" style={{ width: '90%', maxWidth: '400px', padding: '12px 16px', background: '#fffbeb', color: '#000', display: 'flex', flexDirection: 'column', gap: '10px', position: 'relative' }}>
+          <div className="rpg-box fade-in" style={{ width: '90%', maxWidth: '400px', padding: '12px 16px', background: '#fffbeb', color: '#000', display: 'flex', flexDirection: 'column', gap: '10px', position: 'relative', marginTop: '-50px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #ccc', paddingBottom: '6px' }}>
               <h2 style={{ fontSize: '16px', margin: 0, fontWeight: 'bold' }}>🌾 TƯƠNG TÁC RUỘNG</h2>
               <button 
@@ -1779,7 +1779,7 @@ export default function HousePage() {
       {showCageMenu && (
         <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '20px', gap: '20px' }}>
           
-          <div className="rpg-box" style={{ background: '#fffbeb', width: '320px', height: '254px', padding: '12px 16px', overflowY: 'auto', position: 'relative', boxSizing: 'border-box' }}>
+          <div className="rpg-box" style={{ background: '#fffbeb', width: '320px', height: '254px', padding: '12px 16px', overflowY: 'auto', position: 'relative', boxSizing: 'border-box', marginTop: '-50px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #ccc', paddingBottom: '6px', marginBottom: '15px' }}>
               <h2 style={{ fontSize: '16px', margin: 0, fontWeight: 'bold', color: '#1e293b' }}>🐐 CHUỒNG THÚ</h2>
               <button 
@@ -2019,7 +2019,7 @@ export default function HousePage() {
 
         return (
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '20px' }}>
-            <div className="rpg-box fade-in" style={{ background: '#fffbeb', width: '480px', maxHeight: '92%', overflowY: 'auto', padding: '12px 16px', color: '#000', display: 'flex', flexDirection: 'column', gap: '10px', position: 'relative' }}>
+            <div className="rpg-box fade-in" style={{ background: '#fffbeb', width: '480px', maxHeight: '92%', overflowY: 'auto', padding: '12px 16px', color: '#000', display: 'flex', flexDirection: 'column', gap: '10px', position: 'relative', marginTop: '-50px' }}>
               
               <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #ccc', paddingBottom: '6px' }}>
                 <h2 style={{ fontSize: '16px', margin: 0, fontWeight: 'bold' }}>🛠️ BÀN CHẾ TẠO</h2>

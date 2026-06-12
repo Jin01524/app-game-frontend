@@ -218,7 +218,7 @@ export default function StorageModal({ onClose, selectedBackpackSlotIdx = null, 
         </div>
       )}
 
-      <div className="rpg-box fade-in" style={{ background: '#fffbeb', width: '420px', maxWidth: '95vw', maxHeight: '92%', overflowY: 'auto', padding: '12px 16px', color: '#000', display: 'flex', flexDirection: 'column', gap: '12px', position: 'relative' }}>
+      <div className="rpg-box fade-in" style={{ background: '#fffbeb', width: '420px', maxWidth: '95vw', maxHeight: '92%', overflowY: 'auto', padding: '12px 16px', color: '#000', display: 'flex', flexDirection: 'column', gap: '12px', position: 'relative', marginTop: '-50px' }}>
         
         <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #ccc', paddingBottom: '6px' }}>
           <h2 style={{ fontSize: '16px', margin: 0, fontWeight: 'bold' }}>📦 Kho đồ</h2>

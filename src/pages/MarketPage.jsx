@@ -890,7 +890,7 @@ export default function MarketPage() {
 
       {showAnimalMenu && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-          <div className="rpg-box" style={{ background: '#fffbeb', width: '380px', padding: '12px 16px', color: '#000', position: 'relative' }}>
+          <div className="rpg-box" style={{ background: '#fffbeb', width: '380px', padding: '12px 16px', color: '#000', position: 'relative', marginTop: '-50px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #ccc', paddingBottom: '6px', marginBottom: '15px' }}>
               <h2 style={{ fontSize: '16px', margin: 0, fontWeight: 'bold' }}>🛒 CỬA HÀNG ĐỘNG VẬT</h2>
               <button 
@@ -956,7 +956,7 @@ export default function MarketPage() {
       {/* Action Modal */}
       {showMarketMenu && market && (
         <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
-          <div className="rpg-box fade-in" style={{ width: '90%', maxWidth: '400px', background: '#fffbeb', padding: '12px 16px', color: '#000', display: 'flex', flexDirection: 'column', gap: '10px', position: 'relative' }}>
+          <div className="rpg-box fade-in" style={{ width: '90%', maxWidth: '400px', background: '#fffbeb', padding: '12px 16px', color: '#000', display: 'flex', flexDirection: 'column', gap: '10px', position: 'relative', marginTop: '-50px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #ccc', paddingBottom: '6px' }}>
               <h2 style={{ fontSize: '16px', margin: 0, fontWeight: 'bold' }}>🌾 THƯƠNG NHÂN</h2>
               <button 
