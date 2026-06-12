@@ -291,7 +291,7 @@ export default function HousePage() {
   const selectedBackpackItem = (selectedBackpackSlotIdx !== null && user?.backpack && user.backpack[selectedBackpackSlotIdx] && user.backpack[selectedBackpackSlotIdx].quantity > 0)
     ? user.backpack[selectedBackpackSlotIdx]
     : null;
-  const isEdible = selectedBackpackItem && ['banh_mi', 'sandwich'].includes(selectedBackpackItem.item_id);
+  const isEdible = selectedBackpackItem && ['banh_mi', 'sandwich', 'cheese'].includes(selectedBackpackItem.item_id);
   const isDrinkable = selectedBackpackItem && selectedBackpackItem.item_id === 'milk';
   const canConsume = isEdible || isDrinkable;
 
@@ -588,7 +588,7 @@ export default function HousePage() {
 
       if (currentlyMoving) {
         moveTimeAccumulator.current += dt;
-        if (moveTimeAccumulator.current >= 10) {
+        if (moveTimeAccumulator.current >= 8) {
           moveTimeAccumulator.current = 0;
           if (currentEnergy > 0) {
             updateEnergy(currentEnergy - 1);
@@ -596,7 +596,7 @@ export default function HousePage() {
           }
         }
       } else {
-        moveTimeAccumulator.current = Math.max(0, moveTimeAccumulator.current - dt);
+        moveTimeAccumulator.current = Math.max(0, moveTimeAccumulator.current - dt * 1.5);
       }
 
       if (canMove) {
@@ -997,7 +997,7 @@ export default function HousePage() {
           
           // Draw yellow progress (fill from bottom up)
           ctx.fillStyle = '#facc15';
-          const progressHeight = Math.min(barHeight, (moveTimeAccumulator.current / 10) * barHeight);
+          const progressHeight = Math.min(barHeight, (moveTimeAccumulator.current / 8) * barHeight);
           ctx.fillRect(bx, by + barHeight - progressHeight, barWidth, progressHeight);
         }
 
