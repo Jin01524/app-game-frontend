@@ -51,9 +51,9 @@ const VEHICLES_METADATA = [
   { id: 'old_car_white', name: 'Ô tô cổ trắng', price: 1200, img: oldCarWhiteImg },
   { id: 'cheap_car_white', name: 'Ô tô giá rẻ trắng', price: 1500, img: cheapCarWhiteImg },
   { id: 'cheap_car_Dark-Blue-Grey', name: 'Ô tô xanh xám', price: 1600, img: cheapCarDarkBlueGreyImg },
-  { id: 'vf3_red', name: 'VinFast VF3 đỏ', price: 2500, img: vf3RedImg },
-  { id: 'vf3_blue', name: 'VinFast VF3 xanh', price: 2600, img: vf3BlueImg },
-  { id: 'vf3_yellow', name: 'VinFast VF3 vàng', price: 3000, img: vf3YellowImg }
+  { id: 'vf3_red', name: 'VinFast VF3 đỏ', price: 2000, img: vf3RedImg },
+  { id: 'vf3_blue', name: 'VinFast VF3 xanh', price: 2000, img: vf3BlueImg },
+  { id: 'vf3_yellow', name: 'VinFast VF3 vàng', price: 2000, img: vf3YellowImg }
 ];
 
 const CHARACTER_PRELOADS = {
