@@ -10,6 +10,7 @@ import sickleIcon from '../../assets/sickle.png';
 import plantIcon from '../../assets/plant.png';
 import khoIcon from '../../assets/kho.png';
 import chuongGoImgSrc from '../../assets/chuong_go.png';
+import banCheTaoImgSrc from '../../assets/ban-che-tao.png';
 
 import luaNonImg from '../../assets/lua-non.png';
 import luaChinImg from '../../assets/lua-chin.png';
@@ -145,6 +146,10 @@ const parsePlantedAt = (plantedAt) => {
   return isNaN(parsed.getTime()) ? new Date(plantedAt).getTime() : parsed.getTime();
 };
 
+const getBackpackItemCount = (backpack, itemId) => {
+  return (backpack || []).reduce((sum, slot) => sum + (slot && slot.item_id === itemId ? slot.quantity : 0), 0);
+};
+
 export default function HousePage() {
   const navigate = useNavigate();
   const { width: gameWidth, height: gameHeight } = useGameWindowSize();
@@ -169,6 +174,7 @@ export default function HousePage() {
   const [pendingTradeRequest, setPendingTradeRequest] = useState(null);
   const [canInteractHouse, setCanInteractHouse] = useState(false);
   const [canInteractCage, setCanInteractCage] = useState(false);
+  const [canInteractCraftingTable, setCanInteractCraftingTable] = useState(false);
   const [closestPlayer, setClosestPlayer] = useState(null);
   const [inventory, setInventory] = useState([]);
   const [inventorySlots, setInventorySlots] = useState(5);
@@ -177,6 +183,8 @@ export default function HousePage() {
   const [showFarmMenu, setShowFarmMenu] = useState(false);
   const [showHouseMenu, setShowHouseMenu] = useState(false);
   const [showCageMenu, setShowCageMenu] = useState(false);
+  const [showCraftingMenu, setShowCraftingMenu] = useState(false);
+  const [craftTarget, setCraftTarget] = useState('backpack');
   const [cageTab, setCageTab] = useState('feed');
   const [feedPrompt, setFeedPrompt] = useState(null);
   const [feedQtyInput, setFeedQtyInput] = useState('');
@@ -196,6 +204,7 @@ export default function HousePage() {
     player: { x: 200, y: 0, vy: 0, isGrounded: true, width: 32, height: 48, facing: 1, walkCycle: 0, characterType: user?.characterType || 'FrogNinja' },
     farmPlot: { x: 650, width: 128 },
     house: { x: 80, width: 80, height: 80 },
+    craftingTable: { x: 1150, width: 60, height: 60 },
     lastTime: performance.now(),
     cameraX: 0
   });
@@ -340,6 +349,10 @@ export default function HousePage() {
     const imgH = new Image(); imgH.src = houseImg; imgH.onload = () => { state.imgHouse = imgH; };
 
     const imgChuong = new Image(); imgChuong.src = chuongGoImgSrc; imgChuong.onload = () => { state.imgChuong = imgChuong; };
+    
+    const imgCraftingTable = new Image();
+    imgCraftingTable.src = banCheTaoImgSrc;
+    imgCraftingTable.onload = () => { state.imgCraftingTable = imgCraftingTable; };
 
     const imgT1 = new Image(); imgT1.src = tree1Img; imgT1.onload = () => { state.imgTree1 = imgT1; };
     const imgT2 = new Image(); imgT2.src = tree2Img; imgT2.onload = () => { state.imgTree2 = imgT2; };
@@ -417,6 +430,9 @@ export default function HousePage() {
       const distCage = Math.abs(state.player.x + state.player.width/2 - 495); // Adjusted center for width 270
       const inRangeCage = distCage < 150;
 
+      const distCraftingTable = Math.abs(state.player.x + state.player.width/2 - (state.craftingTable.x + state.craftingTable.width/2));
+      const inRangeCraftingTable = distCraftingTable < 80;
+
       // Handle item pickup
       if (!isVisiting && droppedItemsRef.current.length > 0) {
         const pRect = { x: state.player.x, y: canvas.height - 100 - state.player.height + state.player.y, w: state.player.width, h: state.player.height };
@@ -445,7 +461,7 @@ export default function HousePage() {
       closestPlayerRef.current = closestPlayer;
       setClosestPlayer(prev => prev !== closestPlayer ? closestPlayer : prev);
 
-      if (!showFarmMenu && !showHouseMenu && !showCageMenu && !loading) {
+      if (!showFarmMenu && !showHouseMenu && !showCageMenu && !showCraftingMenu && !loading) {
         const speed = 250; // px/s
         let isMoving = false;
         
@@ -490,8 +506,8 @@ export default function HousePage() {
         // Update React state only if we need to show/hide the UI button
         setCanInteract((prev) => (prev !== inRange ? inRange : prev));
         setCanInteractHouse((prev) => (prev !== inRangeHouse ? inRangeHouse : prev));
-        
         setCanInteractCage((prev) => (prev !== inRangeCage ? inRangeCage : prev));
+        setCanInteractCraftingTable((prev) => (prev !== inRangeCraftingTable ? inRangeCraftingTable : prev));
 
         if (keys.current.interact && !isVisiting) {
           if (inRangeHouse && !showHouseMenu) {
@@ -503,6 +519,9 @@ export default function HousePage() {
           } else if (inRange && !showFarmMenu) {
             keys.current.interact = false;
             setShowFarmMenu(true);
+          } else if (inRangeCraftingTable && !showCraftingMenu) {
+            keys.current.interact = false;
+            setShowCraftingMenu(true);
           } else if (closestPlayerRef.current) {
             keys.current.interact = false;
             setShowTradeMenu(closestPlayerRef.current);
@@ -581,6 +600,20 @@ export default function HousePage() {
         const h2 = 220;
         const w2 = state.imgTree2.width * (h2 / state.imgTree2.height);
         ctx.drawImage(state.imgTree2, worldWidth - 100 - w2/2, groundY - h2, w2, h2);
+      }
+
+      // Draw Crafting Table
+      const ctxTable = state.craftingTable;
+      if (state.imgCraftingTable && state.imgCraftingTable.complete) {
+        ctx.drawImage(state.imgCraftingTable, ctxTable.x, groundY - ctxTable.height, ctxTable.width, ctxTable.height);
+      } else {
+        // Fallback brick-colored block
+        ctx.fillStyle = '#8b5a2b';
+        ctx.fillRect(ctxTable.x, groundY - ctxTable.height, ctxTable.width, ctxTable.height);
+        ctx.fillStyle = '#fff';
+        ctx.font = '8px "Press Start 2P", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('CRAFT', ctxTable.x + ctxTable.width/2, groundY - ctxTable.height/2);
       }
       
       // Update and Draw Cows (behind the cage)
@@ -801,6 +834,8 @@ export default function HousePage() {
         ctx.fillText('▼', 495, groundY - 30 + bounce);
       } else if (inRangeHouse && !showHouseMenu) {
         ctx.fillText('▼', state.house.x + state.house.width/2, groundY - state.house.height - 20 + bounce);
+      } else if (inRangeCraftingTable && !showCraftingMenu) {
+        ctx.fillText('▼', state.craftingTable.x + state.craftingTable.width/2, groundY - state.craftingTable.height - 10 + bounce);
       }
 
       // Player Drawing Logic
@@ -1041,6 +1076,30 @@ export default function HousePage() {
     }
   };
 
+  const handleCraftCheese = async () => {
+    setActionLoading(true);
+    try {
+      const res = await authFetch('/api/farm/craft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target: craftTarget })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || 'Lỗi');
+      } else {
+        toast.success(data.message || 'Chế tạo thành công!');
+        if (data.backpack) updateBackpack(data.backpack);
+        if (data.inventory) setInventory(data.inventory);
+        setShowCraftingMenu(false);
+      }
+    } catch (e) {
+      toast.error('Lỗi kết nối');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const isLocked = !farm || farm.level === 0;
 
   const getGrowingProgress = () => {
@@ -1125,7 +1184,7 @@ export default function HousePage() {
           ▲
         </button>
 
-        {!showFarmMenu && !showHouseMenu && !showCageMenu && (
+        {!showFarmMenu && !showHouseMenu && !showCageMenu && !showCraftingMenu && (
           <button 
             onClick={() => {
               if (canInteract && !isVisiting) {
@@ -1134,6 +1193,8 @@ export default function HousePage() {
                 setShowCageMenu(true);
               } else if (canInteractHouse && !isVisiting) {
                 setShowHouseMenu(true);
+              } else if (canInteractCraftingTable && !isVisiting) {
+                setShowCraftingMenu(true);
               } else if (closestPlayerRef.current) {
                 setShowTradeMenu({ username: closestPlayerRef.current, isAccepting: false });
               }
@@ -1148,7 +1209,7 @@ export default function HousePage() {
               userSelect: 'none',
               WebkitUserSelect: 'none',
               WebkitTouchCallout: 'none',
-              animation: (((canInteract || canInteractHouse || canInteractCage) && !isVisiting) || closestPlayer) ? 'pulse 1s infinite' : 'none'
+              animation: (((canInteract || canInteractHouse || canInteractCage || canInteractCraftingTable) && !isVisiting) || closestPlayer) ? 'pulse 1s infinite' : 'none'
             }}>
             {canInteract && !isVisiting ? (
               <img src={plantIcon} alt="Ruộng" style={{width:'32px'}}/>
@@ -1156,6 +1217,8 @@ export default function HousePage() {
               <img src={khoIcon} alt="Chuồng" style={{width:'32px', filter: 'hue-rotate(90deg)'}}/>
             ) : canInteractHouse && !isVisiting ? (
               <img src={khoIcon} alt="Kho" style={{width:'32px'}}/>
+            ) : canInteractCraftingTable && !isVisiting ? (
+              <img src={banCheTaoImgSrc} alt="Chế Tạo" style={{width:'32px', height:'32px', objectFit:'contain'}}/>
             ) : closestPlayer ? (
               <img src={transactionIcon} alt="Giao Dịch" style={{ width: '36px', height: '36px', imageRendering: 'pixelated' }} />
             ) : null}
@@ -1509,6 +1572,107 @@ export default function HousePage() {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {showCraftingMenu && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '20px' }}>
+          <div className="rpg-box fade-in" style={{ background: '#fffbeb', width: '380px', padding: '20px', color: '#000', display: 'flex', flexDirection: 'column', gap: '15px', position: 'relative' }}>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #ccc', paddingBottom: '10px' }}>
+              <h2 style={{ fontSize: '16px', margin: 0, fontWeight: 'bold' }}>🛠️ BÀN CHẾ TẠO</h2>
+              <button onClick={() => setShowCraftingMenu(false)} style={{ background: 'transparent', border: 'none', fontSize: '18px', cursor: 'pointer' }}>✖</button>
+            </div>
+
+            <div style={{ display: 'flex', gap: '15px', flex: 1 }}>
+              {/* Recipe List */}
+              <div style={{ flex: 1, borderRight: '1px solid #cbd5e1', paddingRight: '15px' }}>
+                <h3 style={{ fontSize: '11px', color: '#64748b', marginBottom: '10px', fontWeight: 'bold' }}>VẬT PHẨM</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div 
+                    style={{ 
+                      display: 'flex', alignItems: 'center', gap: '8px', 
+                      background: '#fff', border: '2px solid #3b82f6', 
+                      padding: '8px', borderRadius: '4px', cursor: 'pointer' 
+                    }}
+                  >
+                    <span style={{ fontSize: '20px' }}>🧀</span>
+                    <span style={{ fontSize: '12px', fontWeight: 'bold' }}>Phô mai</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Recipe Details */}
+              <div style={{ flex: 1.2, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <h3 style={{ fontSize: '11px', color: '#64748b', marginBottom: '5px', fontWeight: 'bold' }}>CÔNG THỨC</h3>
+                
+                <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', padding: '10px', borderRadius: '4px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 'bold', marginBottom: '8px' }}>Phô mai (Cheese)</div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '8px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <span style={{ fontSize: '20px' }}>🥛</span>
+                      <span style={{ fontSize: '9px', color: '#ef4444', fontWeight: 'bold' }}>3 Sữa bò</span>
+                    </div>
+                    <span style={{ fontSize: '14px', fontWeight: 'bold' }}>➔</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <span style={{ fontSize: '20px' }}>🧀</span>
+                      <span style={{ fontSize: '9px', color: '#22c55e', fontWeight: 'bold' }}>1 Phô mai</span>
+                    </div>
+                  </div>
+                  
+                  {/* Milk Inventory State */}
+                  <div style={{ fontSize: '9px', color: '#475569', textAlign: 'left', background: 'rgba(0,0,0,0.05)', padding: '5px', borderRadius: '2px' }}>
+                    <div>🥛 Sữa hiện có:</div>
+                    <div style={{ paddingLeft: '5px' }}>• Balo: {getBackpackItemCount(user?.backpack || [], 'milk')} bình</div>
+                    <div style={{ paddingLeft: '5px' }}>• Kho: {(() => {
+                      const milkInv = inventory.find(i => i.item_id === 'milk');
+                      return milkInv ? milkInv.quantity : 0;
+                    })()} bình</div>
+                  </div>
+                </div>
+
+                {/* Target Destination Selection */}
+                <div style={{ fontSize: '11px' }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: '5px', color: '#1e293b' }}>Cất phô mai vào:</div>
+                  <div style={{ display: 'flex', gap: '15px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                      <input 
+                        type="radio" name="craft_target" value="backpack" 
+                        checked={craftTarget === 'backpack'} onChange={() => setCraftTarget('backpack')} 
+                      />
+                      Balo
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                      <input 
+                        type="radio" name="craft_target" value="storage" 
+                        checked={craftTarget === 'storage'} onChange={() => setCraftTarget('storage')} 
+                      />
+                      Kho chứa
+                    </label>
+                  </div>
+                </div>
+
+                {/* Craft Button */}
+                <button 
+                  className="pixel-btn"
+                  disabled={actionLoading || (getBackpackItemCount(user?.backpack || [], 'milk') + (inventory.find(i => i.item_id === 'milk')?.quantity || 0)) < 3}
+                  onClick={handleCraftCheese}
+                  style={{ 
+                    background: '#22c55e', color: 'white', border: '2px solid var(--px-border)', 
+                    padding: '10px', fontSize: '12px', width: '100%', cursor: 'pointer',
+                    opacity: (getBackpackItemCount(user?.backpack || [], 'milk') + (inventory.find(i => i.item_id === 'milk')?.quantity || 0)) < 3 ? 0.5 : 1
+                  }}
+                >
+                  {actionLoading ? 'ĐANG CHẾ TẠO...' : '[ CHẾ TẠO ]'}
+                </button>
+              </div>
+            </div>
+
+            <button className="pixel-btn" onClick={() => setShowCraftingMenu(false)} style={{ background: '#64748b', color: 'white', padding: '10px', width: '100%' }}>
+              Đóng
+            </button>
+
+          </div>
         </div>
       )}
 

@@ -5,12 +5,14 @@ import luaChinImg from '../../assets/lua-chin.png';
 import cowImg from '../../assets/animals/cow/cow_move_01.png';
 import milkImg from '../../assets/milk.png';
 import romImg from '../../assets/whisk.png';
+import cheeseImg from '../../assets/food/cheese.png';
 
 export const ITEM_ASSETS = {
   lua: { name: 'Lúa', icon: luaChinImg },
   cow: { name: 'Bò', icon: cowImg },
   milk: { name: 'Sữa bò', icon: milkImg },
   rom: { name: 'Rơm', icon: romImg },
+  cheese: { name: 'Phô mai', icon: cheeseImg },
 };
 
 export default function BackpackModal({ onClose, onOpenStorage }) {
