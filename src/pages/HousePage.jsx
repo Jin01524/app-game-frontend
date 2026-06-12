@@ -1315,7 +1315,7 @@ export default function HousePage() {
         transform: 'translateX(-50%)', 
         display: 'flex', 
         gap: '12px', 
-        zIndex: 10 
+        zIndex: showHouseMenu ? 10001 : 10 
       }}>
         {(() => {
           let bp = user?.backpack || [null, null];
@@ -1979,7 +1979,13 @@ export default function HousePage() {
         );
       })()}
 
-      {showHouseMenu && <StorageModal onClose={() => setShowHouseMenu(false)} />}
+      {showHouseMenu && (
+        <StorageModal 
+          onClose={() => setShowHouseMenu(false)} 
+          selectedBackpackSlotIdx={selectedBackpackSlotIdx}
+          setSelectedBackpackSlotIdx={setSelectedBackpackSlotIdx}
+        />
+      )}
       
       {discardPrompt && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '20px' }}>

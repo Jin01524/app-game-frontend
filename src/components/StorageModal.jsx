@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { ITEM_ASSETS } from './BackpackModal';
 
-export default function StorageModal({ onClose }) {
+export default function StorageModal({ onClose, selectedBackpackSlotIdx = null, setSelectedBackpackSlotIdx = () => {} }) {
   const { user, authFetch, refreshUser, updateBackpack, addXu } = useAuth();
   const [loading, setLoading] = useState(false);
   const [inventory, setInventory] = useState([]);
@@ -11,6 +11,12 @@ export default function StorageModal({ onClose }) {
   const [promptData, setPromptData] = useState(null);
   const [promptInput, setPromptInput] = useState('');
   const [selectedSlot, setSelectedSlot] = useState(null);
+
+  useEffect(() => {
+    if (selectedBackpackSlotIdx !== null) {
+      setSelectedSlot(null);
+    }
+  }, [selectedBackpackSlotIdx]);
 
   const handleBuySlot = async () => {
     if (!user) return;
@@ -155,6 +161,9 @@ export default function StorageModal({ onClose }) {
 
   if (!user) return null;
   const backpack = user.backpack || [null, null];
+  const selectedBackpackItem = (selectedBackpackSlotIdx !== null && backpack[selectedBackpackSlotIdx] && backpack[selectedBackpackSlotIdx].quantity > 0)
+    ? backpack[selectedBackpackSlotIdx]
+    : null;
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -190,10 +199,10 @@ export default function StorageModal({ onClose }) {
         </div>
       )}
 
-      <div className="rpg-box fade-in" style={{ background: '#fffbeb', width: '500px', maxWidth: '95vw', maxHeight: '92%', overflowY: 'auto', padding: '12px 16px', color: '#000', display: 'flex', flexDirection: 'column', gap: '12px', position: 'relative' }}>
+      <div className="rpg-box fade-in" style={{ background: '#fffbeb', width: '420px', maxWidth: '95vw', maxHeight: '92%', overflowY: 'auto', padding: '12px 16px', color: '#000', display: 'flex', flexDirection: 'column', gap: '12px', position: 'relative' }}>
         
         <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #ccc', paddingBottom: '6px' }}>
-          <h2 style={{ fontSize: '16px', margin: 0, fontWeight: 'bold' }}>Kho đồ & Balo</h2>
+          <h2 style={{ fontSize: '16px', margin: 0, fontWeight: 'bold' }}>Kho đồ</h2>
           <button onClick={onClose} style={{ background: 'transparent', border: 'none', fontSize: '18px', cursor: 'pointer' }}>✖</button>
         </div>
 
@@ -216,7 +225,10 @@ export default function StorageModal({ onClose }) {
               {inventory.map((item, i) => (
                 <div 
                   key={i} 
-                  onClick={() => setSelectedSlot({ source: 'storage', itemId: item.item_id, quantity: item.quantity })}
+                  onClick={() => {
+                    setSelectedSlot({ source: 'storage', itemId: item.item_id, quantity: item.quantity });
+                    setSelectedBackpackSlotIdx(null);
+                  }}
                   style={{ 
                     background: '#f8fafc', 
                     border: selectedSlot?.source === 'storage' && selectedSlot?.itemId === item.item_id ? '3px solid #3b82f6' : '2px solid #94a3b8', 
@@ -236,56 +248,34 @@ export default function StorageModal({ onClose }) {
           <div style={{ width: '80px', display: 'flex', flexDirection: 'column', gap: '15px', justifyContent: 'center', alignItems: 'center' }}>
             <button 
               className="pixel-btn"
-              disabled={!selectedSlot || selectedSlot.source !== 'storage'}
+              disabled={!selectedSlot}
               onClick={() => handleTransferToBackpack(selectedSlot.itemId, selectedSlot.quantity)}
-              style={{ width: '100%', padding: '8px', background: '#3b82f6', color: 'white', opacity: (!selectedSlot || selectedSlot.source !== 'storage') ? 0.5 : 1 }}
+              style={{ width: '100%', padding: '8px', background: '#3b82f6', color: 'white', opacity: !selectedSlot ? 0.5 : 1 }}
             >
               ↓ Lấy
             </button>
             <button 
               className="pixel-btn"
-              disabled={!selectedSlot || selectedSlot.source !== 'backpack'}
-              onClick={() => handleTransferToStorage(selectedSlot.itemId, selectedSlot.quantity)}
-              style={{ width: '100%', padding: '8px', background: 'var(--px-amber)', color: 'black', opacity: (!selectedSlot || selectedSlot.source !== 'backpack') ? 0.5 : 1 }}
+              disabled={!selectedBackpackItem}
+              onClick={() => handleTransferToStorage(selectedBackpackItem.item_id, selectedBackpackItem.quantity)}
+              style={{ width: '100%', padding: '8px', background: 'var(--px-amber)', color: 'black', opacity: !selectedBackpackItem ? 0.5 : 1 }}
             >
               ↑ Cất
             </button>
             <button 
               className="pixel-btn"
-              disabled={!selectedSlot}
-              onClick={() => handleDiscardItem(selectedSlot.itemId, selectedSlot.quantity, selectedSlot.source)}
-              style={{ width: '100%', padding: '8px', background: '#ef4444', color: 'white', opacity: !selectedSlot ? 0.5 : 1 }}
+              disabled={!selectedSlot && !selectedBackpackItem}
+              onClick={() => {
+                if (selectedSlot) {
+                  handleDiscardItem(selectedSlot.itemId, selectedSlot.quantity, 'storage');
+                } else if (selectedBackpackItem) {
+                  handleDiscardItem(selectedBackpackItem.item_id, selectedBackpackItem.quantity, 'backpack');
+                }
+              }}
+              style={{ width: '100%', padding: '8px', background: '#ef4444', color: 'white', opacity: (!selectedSlot && !selectedBackpackItem) ? 0.5 : 1 }}
             >
               ✖ Vứt
             </button>
-          </div>
-
-          {/* Backpack Section */}
-          <div style={{ width: '120px' }}>
-            <h3 style={{ fontSize: '14px', marginBottom: '10px', color: '#1e293b' }}>🎒 BALO</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {backpack.map((slot, i) => (
-                <div 
-                  key={i} 
-                  onClick={() => { if (slot && slot.quantity > 0) setSelectedSlot({ source: 'backpack', itemId: slot.item_id, quantity: slot.quantity }) }}
-                  style={{ 
-                    background: '#f8fafc', 
-                    border: selectedSlot?.source === 'backpack' && selectedSlot?.itemId === slot?.item_id ? '3px solid #3b82f6' : '2px solid #94a3b8', 
-                    height: '64px', 
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', 
-                    position: 'relative', cursor: slot && slot.quantity > 0 ? 'pointer' : 'default' 
-                }}>
-                  {slot && slot.quantity > 0 ? (
-                    <>
-                      <img src={ITEM_ASSETS[slot.item_id]?.icon} alt={slot.item_id} style={{ height: '32px', objectFit: 'contain' }} />
-                      <div style={{ fontSize: '10px', fontWeight: 'bold' }}>{slot.quantity} / 64</div>
-                    </>
-                  ) : (
-                    <div style={{ color: '#cbd5e1', fontSize: '10px' }}>Trống</div>
-                  )}
-                </div>
-              ))}
-            </div>
           </div>
 
         </div>
