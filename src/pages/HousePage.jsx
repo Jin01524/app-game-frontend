@@ -31,7 +31,6 @@ import milkIconImg from '../../assets/milk.png';
 import transactionIcon from '../../assets/transaction.png';
 import coinIcon from '../../assets/coin-tl4.2.png';
 
-import BackpackModal from '../components/BackpackModal';
 import StorageModal from '../components/StorageModal';
 import TradeModal from '../components/TradeModal';
 import LandscapeEnforcer from '../components/LandscapeEnforcer';
@@ -98,6 +97,20 @@ const ITEM_ICONS = {
   bot_mi: botMiImg,
   banh_mi: banhMiImg,
   sandwich: sandwichImg
+};
+
+const getItemName = (itemId) => {
+  const names = {
+    lua: 'Lúa',
+    cow: 'Bò',
+    milk: 'Sữa bò',
+    rom: 'Rơm',
+    cheese: 'Phô mai',
+    bot_mi: 'Bột mì',
+    banh_mi: 'Bánh mì dài',
+    sandwich: 'Sandwich'
+  };
+  return names[itemId] || itemId;
 };
 
 
@@ -251,12 +264,13 @@ export default function HousePage() {
   const [craftTarget, setCraftTarget] = useState('backpack');
   const [selectedRecipeId, setSelectedRecipeId] = useState('cheese');
   const [craftQty, setCraftQty] = useState(1);
+  const [selectedBackpackSlotIdx, setSelectedBackpackSlotIdx] = useState(null);
+  const [discardPrompt, setDiscardPrompt] = useState(null);
+  const [discardQtyInput, setDiscardQtyInput] = useState('');
   const [cageTab, setCageTab] = useState('feed');
   const [feedPrompt, setFeedPrompt] = useState(null);
   const [feedQtyInput, setFeedQtyInput] = useState('');
   const [selectedFeedItem, setSelectedFeedItem] = useState(null);
-  const [showBackpackMenu, setShowBackpackMenu] = useState(false);
-  const [showStorageMenu, setShowStorageMenu] = useState(false);
   const [saving, setSaving] = useState(false);
   const [droppedItems, setDroppedItems] = useState([]);
 
@@ -544,7 +558,7 @@ export default function HousePage() {
       closestPlayerRef.current = closestPlayer;
       setClosestPlayer(prev => prev !== closestPlayer ? closestPlayer : prev);
 
-      const menuOpen = showFarmMenu || showHouseMenu || showCageMenu || showCraftingMenu || showBackpackMenu || showStorageMenu || !!showTradeMenu || !!pendingTradeRequest;
+      const menuOpen = showFarmMenu || showHouseMenu || showCageMenu || showCraftingMenu || !!showTradeMenu || !!pendingTradeRequest;
       const canMove = !menuOpen && !loading;
 
       if (canMove) {
@@ -1234,11 +1248,6 @@ export default function HousePage() {
         <span style={{ fontSize: '1.2rem', color: '#d97706', fontWeight: 'bold', textShadow: '1px 1px 0 #fff' }}>{user?.xu?.toLocaleString() || 0}</span>
       </div>
 
-      <button onClick={() => setShowBackpackMenu(true)} className="pixel-btn" style={{ position: 'absolute', top: '20px', right: '140px', padding: '10px', background: '#eab308', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10 }}>
-          <img src={bagIcon} alt="Balo" style={{ width: '24px', height: '24px', imageRendering: 'pixelated' }} />
-          <span>Balo</span>
-        </button>
-
       {/* Top Info */}
       <div style={{ position: 'absolute', top: '20px', left: '20px', fontFamily: 'var(--font-pixel)', color: 'white', textShadow: '2px 2px 0 #000', pointerEvents: 'none' }}>
         <h2 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--px-amber)' }}>{isVisiting ? `Nông Trại ${targetUsername}` : 'Thế Giới Của Bạn'}</h2>
@@ -1267,7 +1276,74 @@ export default function HousePage() {
         </button>
       </div>
 
-      <div style={{ position: 'absolute', bottom: '20px', right: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', zIndex: 20 }}>
+      {/* Bottom Backpack Slots */}
+      <div style={{ 
+        position: 'absolute', 
+        bottom: '20px', 
+        left: '50%', 
+        transform: 'translateX(-50%)', 
+        display: 'flex', 
+        gap: '12px', 
+        zIndex: 10 
+      }}>
+        {(() => {
+          const bp = user?.backpack || [null, null];
+          return bp.map((slot, i) => {
+            const isSelected = selectedBackpackSlotIdx === i;
+            return (
+              <div 
+                key={i} 
+                onClick={() => {
+                  if (slot && slot.quantity > 0) {
+                    setSelectedBackpackSlotIdx(isSelected ? null : i);
+                  } else {
+                    setSelectedBackpackSlotIdx(null);
+                  }
+                }}
+                style={{ 
+                  width: '60px', 
+                  height: '60px', 
+                  background: '#e2e8f0', 
+                  border: isSelected ? '4px solid #3b82f6' : '4px solid #94a3b8', 
+                  boxShadow: isSelected ? '0 0 10px rgba(59, 130, 246, 0.8)' : 'none',
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  position: 'relative', 
+                  cursor: (slot && slot.quantity > 0) ? 'pointer' : 'default',
+                  transition: 'all 0.1s'
+                }}
+              >
+                {slot && slot.quantity > 0 ? (
+                  <>
+                    <img 
+                      src={ITEM_ICONS[slot.item_id] || bagIcon} 
+                      alt={slot.item_id} 
+                      style={{ width: '36px', height: '36px', objectFit: 'contain', imageRendering: 'pixelated' }} 
+                    />
+                    <span style={{ 
+                      position: 'absolute', 
+                      bottom: '2px', 
+                      right: '4px', 
+                      fontSize: '10px', 
+                      fontWeight: 'bold', 
+                      color: '#1e293b',
+                      textShadow: '1px 1px 0 #fff' 
+                    }}>
+                      {slot.quantity}
+                    </span>
+                  </>
+                ) : (
+                  <span style={{ fontSize: '10px', color: '#cbd5e1', fontFamily: 'var(--font-pixel)' }}>Trống</span>
+                )}
+              </div>
+            );
+          });
+        })()}
+      </div>
+
+      <div style={{ position: 'absolute', bottom: '20px', right: '20px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '16px', zIndex: 20 }}>
         
         <button 
           onPointerDown={(e) => { e.preventDefault(); keys.current.jump = true; }}
@@ -1275,50 +1351,81 @@ export default function HousePage() {
           onPointerLeave={() => keys.current.jump = false}
           onContextMenu={(e) => e.preventDefault()}
           className="pixel-btn" 
-          style={{ width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', background: 'rgba(0,0,0,0.5)', border: '4px solid var(--px-border)', color: 'white', touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }}>
+          style={{ width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', background: 'rgba(0,0,0,0.5)', border: '4px solid var(--px-border)', color: 'white', touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none', marginRight: '4px' }}>
           ▲
         </button>
 
-        {!showFarmMenu && !showHouseMenu && !showCageMenu && !showCraftingMenu && (
-          <button 
-            onClick={() => {
-              if (canInteract && !isVisiting) {
-                setShowFarmMenu(true);
-              } else if (canInteractCage && !isVisiting) {
-                setShowCageMenu(true);
-              } else if (canInteractHouse && !isVisiting) {
-                setShowHouseMenu(true);
-              } else if (canInteractCraftingTable && !isVisiting) {
-                setShowCraftingMenu(true);
-              } else if (closestPlayerRef.current) {
-                setShowTradeMenu({ username: closestPlayerRef.current, isAccepting: false });
-              }
-            }}
-            className="pixel-btn"
-            style={{ 
-              width: '68px', height: '68px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'rgb(59, 130, 246)', 
-              border: '4px solid #1e3a8a', padding: '0',
-              boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
-              touchAction: 'none',
-              userSelect: 'none',
-              WebkitUserSelect: 'none',
-              WebkitTouchCallout: 'none',
-              animation: (((canInteract || canInteractHouse || canInteractCage || canInteractCraftingTable) && !isVisiting) || closestPlayer) ? 'pulse 1s infinite' : 'none'
-            }}>
-            {canInteract && !isVisiting ? (
-              <img src={plantIcon} alt="Ruộng" style={{width:'32px'}}/>
-            ) : canInteractCage && !isVisiting ? (
-              <img src={khoIcon} alt="Chuồng" style={{width:'32px', filter: 'hue-rotate(90deg)'}}/>
-            ) : canInteractHouse && !isVisiting ? (
-              <img src={khoIcon} alt="Kho" style={{width:'32px'}}/>
-            ) : canInteractCraftingTable && !isVisiting ? (
-              <img src={banCheTaoImgSrc} alt="Chế Tạo" style={{width:'32px', height:'32px', objectFit:'contain'}}/>
-            ) : closestPlayer ? (
-              <img src={transactionIcon} alt="Giao Dịch" style={{ width: '36px', height: '36px', imageRendering: 'pixelated' }} />
-            ) : null}
-          </button>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          {!showFarmMenu && !showHouseMenu && !showCageMenu && !showCraftingMenu && (
+            <>
+              {selectedBackpackSlotIdx !== null && user?.backpack && user.backpack[selectedBackpackSlotIdx] && (
+                <button 
+                  onClick={() => {
+                    const item = user.backpack[selectedBackpackSlotIdx];
+                    if (item && item.quantity > 0) {
+                      setDiscardPrompt({ itemId: item.item_id, maxQty: item.quantity });
+                      setDiscardQtyInput(item.quantity.toString());
+                    }
+                  }}
+                  className="pixel-btn"
+                  style={{ 
+                    padding: '10px 16px', 
+                    background: '#dc2626', 
+                    color: 'white', 
+                    border: '4px solid var(--px-border)',
+                    fontSize: '11px',
+                    fontFamily: 'var(--font-pixel)',
+                    boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
+                    cursor: 'pointer'
+                  }}
+                >
+                  VỨT
+                </button>
+              )}
+
+              {(((canInteract || canInteractHouse || canInteractCage || canInteractCraftingTable) && !isVisiting) || closestPlayer) && (
+                <button 
+                  onClick={() => {
+                    if (canInteract && !isVisiting) {
+                      setShowFarmMenu(true);
+                    } else if (canInteractCage && !isVisiting) {
+                      setShowCageMenu(true);
+                    } else if (canInteractHouse && !isVisiting) {
+                      setShowHouseMenu(true);
+                    } else if (canInteractCraftingTable && !isVisiting) {
+                      setShowCraftingMenu(true);
+                    } else if (closestPlayerRef.current) {
+                      setShowTradeMenu({ username: closestPlayerRef.current, isAccepting: false });
+                    }
+                  }}
+                  className="pixel-btn"
+                  style={{ 
+                    width: '68px', height: '68px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'rgb(59, 130, 246)', 
+                    border: '4px solid #1e3a8a', padding: '0',
+                    boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
+                    touchAction: 'none',
+                    userSelect: 'none',
+                    WebkitUserSelect: 'none',
+                    WebkitTouchCallout: 'none',
+                    animation: 'pulse 1s infinite'
+                  }}>
+                  {canInteract && !isVisiting ? (
+                    <img src={plantIcon} alt="Ruộng" style={{width:'32px'}}/>
+                  ) : canInteractCage && !isVisiting ? (
+                    <img src={khoIcon} alt="Chuồng" style={{width:'32px', filter: 'hue-rotate(90deg)'}}/>
+                  ) : canInteractHouse && !isVisiting ? (
+                    <img src={khoIcon} alt="Kho" style={{width:'32px'}}/>
+                  ) : canInteractCraftingTable && !isVisiting ? (
+                    <img src={banCheTaoImgSrc} alt="Chế Tạo" style={{width:'32px', height:'32px', objectFit:'contain'}}/>
+                  ) : closestPlayer ? (
+                    <img src={transactionIcon} alt="Giao Dịch" style={{ width: '36px', height: '36px', imageRendering: 'pixelated' }} />
+                  ) : null}
+                </button>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
       {/* Action Modal */ }
@@ -1840,7 +1947,66 @@ export default function HousePage() {
 
       {showHouseMenu && <StorageModal onClose={() => setShowHouseMenu(false)} />}
       
-      {showBackpackMenu && <BackpackModal onClose={() => setShowBackpackMenu(false)} onOpenStorage={() => { setShowBackpackMenu(false); setShowHouseMenu(true); }} />}
+      {discardPrompt && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '20px' }}>
+          <div className="rpg-box fade-in" style={{ background: '#fffbeb', border: '4px solid var(--px-border)', padding: '20px', width: '300px', textAlign: 'center', color: '#000' }}>
+            <h3 style={{ fontSize: '12px', marginBottom: '12px', fontWeight: 'bold', fontFamily: 'var(--font-pixel)' }}>
+              VỨT VẬT PHẨM
+            </h3>
+            <p style={{ fontSize: '11px', margin: '0 0 12px 0' }}>
+              Bạn muốn vứt bao nhiêu <strong>{getItemName(discardPrompt.itemId)}</strong>?
+            </p>
+            <input 
+              type="number" 
+              min="1" 
+              max={discardPrompt.maxQty} 
+              value={discardQtyInput} 
+              onChange={e => setDiscardQtyInput(e.target.value)}
+              style={{ width: '100%', padding: '6px', marginBottom: '15px', textAlign: 'center', border: '2px solid #cbd5e1', borderRadius: '4px', fontSize: '14px' }}
+            />
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button 
+                className="pixel-btn" 
+                onClick={async () => {
+                  const qty = parseInt(discardQtyInput);
+                  if (isNaN(qty) || qty <= 0 || qty > discardPrompt.maxQty) {
+                    toast.error('Số lượng không hợp lệ');
+                    return;
+                  }
+                  setActionLoading(true);
+                  try {
+                    const res = await authFetch('/api/profile/discard', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ itemId: discardPrompt.itemId, amount: qty, source: 'backpack' })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) {
+                      toast.error(data.error || 'Lỗi');
+                    } else {
+                      if (data.backpack) updateBackpack(data.backpack);
+                      setSelectedBackpackSlotIdx(null);
+                      toast.success('Đã vứt vật phẩm');
+                      loadFarm();
+                    }
+                  } catch(e) {
+                    toast.error('Lỗi kết nối');
+                  } finally {
+                    setActionLoading(false);
+                    setDiscardPrompt(null);
+                  }
+                }}
+                style={{ flex: 1, background: '#22c55e', color: '#fff', padding: '8px', cursor: 'pointer' }}
+              >Xác nhận</button>
+              <button 
+                className="pixel-btn" 
+                onClick={() => setDiscardPrompt(null)}
+                style={{ flex: 1, background: '#ef4444', color: '#fff', padding: '8px', cursor: 'pointer' }}
+              >Hủy</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showTradeMenu && (
         <TradeModal 
