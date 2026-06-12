@@ -190,10 +190,10 @@ export default function StorageModal({ onClose }) {
         </div>
       )}
 
-      <div className="rpg-box fade-in" style={{ background: '#fffbeb', width: '500px', maxWidth: '95vw', padding: '20px', color: '#000', display: 'flex', flexDirection: 'column', gap: '20px', position: 'relative' }}>
+      <div className="rpg-box fade-in" style={{ background: '#fffbeb', width: '500px', maxWidth: '95vw', maxHeight: '92%', overflowY: 'auto', padding: '12px 16px', color: '#000', display: 'flex', flexDirection: 'column', gap: '12px', position: 'relative' }}>
         
-        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #ccc', paddingBottom: '10px' }}>
-          <h2 style={{ fontSize: '18px', margin: 0 }}>Kho đồ & Balo</h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #ccc', paddingBottom: '6px' }}>
+          <h2 style={{ fontSize: '16px', margin: 0, fontWeight: 'bold' }}>Kho đồ & Balo</h2>
           <button onClick={onClose} style={{ background: 'transparent', border: 'none', fontSize: '18px', cursor: 'pointer' }}>✖</button>
         </div>
 
@@ -201,18 +201,18 @@ export default function StorageModal({ onClose }) {
           
           {/* Storage Section */}
           <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-              <h3 style={{ fontSize: '14px', margin: 0, color: '#1e293b' }}>📦 KHO ĐỒ ({slots} ô)</h3>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+              <h3 style={{ fontSize: '13px', margin: 0, color: '#1e293b' }}>📦 KHO ĐỒ ({slots} ô)</h3>
               <button 
                 className="pixel-btn"
                 onClick={handleBuySlot}
                 disabled={loading}
-                style={{ fontSize: '11px', padding: '4px 8px', background: '#22c55e', color: 'white', cursor: 'pointer' }}
+                style={{ fontSize: '10px', padding: '3px 6px', background: '#22c55e', color: 'white', cursor: 'pointer' }}
               >
                 + Mở ô (250 Xu)
               </button>
             </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', maxHeight: '150px', overflowY: 'auto', padding: '2px' }}>
               {inventory.map((item, i) => (
                 <div 
                   key={i} 

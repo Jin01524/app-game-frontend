@@ -986,14 +986,14 @@ export default function HousePage() {
         if (pState.heldItemId) {
           const itemImg = getLoadedItemImage(pState.heldItemId);
           if (itemImg && itemImg.complete && itemImg.width > 0) {
-            let itemW = 20;
-            let itemH = 20;
+            let itemW = 25;
+            let itemH = 25;
             const imgW = itemImg.width;
             const imgH = itemImg.height;
             if (imgW > imgH) {
-              itemH = (imgH / imgW) * 20;
+              itemH = (imgH / imgW) * 25;
             } else if (imgH > imgW) {
-              itemW = (imgW / imgH) * 20;
+              itemW = (imgW / imgH) * 25;
             }
             const heldBounce = Math.sin(Date.now() / 150) * 1.5;
             ctx.drawImage(itemImg, 15 - itemW/2, 28 - itemH/2 + heldBounce, itemW, itemH);
