@@ -89,6 +89,17 @@ const RECIPE_DATA = {
   }
 };
 
+const ITEM_ICONS = {
+  lua: luaChinImg,
+  cow: cowMove1,
+  milk: milkIconImg,
+  rom: whiskIcon,
+  cheese: cheeseImg,
+  bot_mi: botMiImg,
+  banh_mi: banhMiImg,
+  sandwich: sandwichImg
+};
+
 
 const characterImages = import.meta.glob('../../assets/character/**/*.png', { eager: true, import: 'default' });
 
@@ -1637,14 +1648,16 @@ export default function HousePage() {
                     }}
                   >
                     {item ? (
-                      item.item_id === 'rom' ? (
-                        <>
-                          <img src={whiskIcon} style={{ width: '24px' }} alt="Rơm" />
-                          <span style={{ position: 'absolute', bottom: '2px', right: '4px', fontSize: '10px' }}>{item.quantity}</span>
-                        </>
-                      ) : (
-                        <span style={{ fontSize: '10px' }}>{item.item_id} x{item.quantity}</span>
-                      )
+                      <>
+                        <img 
+                          src={ITEM_ICONS[item.item_id] || bagIcon} 
+                          style={{ width: '28px', height: '28px', objectFit: 'contain', imageRendering: 'pixelated' }} 
+                          alt={item.item_id} 
+                        />
+                        <span style={{ position: 'absolute', bottom: '2px', right: '4px', fontSize: '10px', fontWeight: 'bold', color: '#1e293b' }}>
+                          {item.quantity}
+                        </span>
+                      </>
                     ) : (
                       <span style={{ fontSize: '10px', color: '#94a3b8' }}>Trống</span>
                     )}
