@@ -100,36 +100,52 @@ export default function MyMoviesPage() {
 
   // Save watch duration
   const saveWatchTime = useCallback((playerInstance) => {
-    if (!startTimeRef.current || !activeEpisodeRef.current || !movieRef.current) return;
-    const duration = Math.round((Date.now() - startTimeRef.current) / 1000);
-    startTimeRef.current = null; // Reset
-    
-    if (duration <= 0) return;
-    
-    const lastPosition = Math.round(playerInstance ? playerInstance.getCurrentTime() : 0);
-    
-    const payload = {
-      movieId: movieRef.current.id,
-      partIndex: activePartIndexRef.current,
-      episodeIndex: activeEpisodeIndexRef.current,
-      duration: duration,
-      lastPosition: lastPosition
-    };
-    
-    const token = localStorage.getItem('tl42_token');
-    fetch(`${import.meta.env.VITE_API_URL || ''}/api/movies/watch-time`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(payload),
-      keepalive: true
-    }).catch(err => console.error('Failed to save watch-time:', err));
+    try {
+      if (!startTimeRef.current || !activeEpisodeRef.current || !movieRef.current) return;
+      const duration = Math.round((Date.now() - startTimeRef.current) / 1000);
+      startTimeRef.current = null; // Reset
+      
+      if (duration <= 0) return;
+      
+      let lastPosition = 0;
+      if (playerInstance && typeof playerInstance.getCurrentTime === 'function') {
+        try {
+          lastPosition = Math.round(playerInstance.getCurrentTime());
+        } catch (e) {
+          console.error('Error getting current time from player:', e);
+        }
+      }
+      
+      const payload = {
+        movieId: movieRef.current.id,
+        partIndex: activePartIndexRef.current,
+        episodeIndex: activeEpisodeIndexRef.current,
+        duration: duration,
+        lastPosition: lastPosition
+      };
+      
+      const token = localStorage.getItem('tl42_token');
+      fetch(`${import.meta.env.VITE_API_URL || ''}/api/movies/watch-time`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload),
+        keepalive: true
+      }).catch(err => console.error('Failed to save watch-time:', err));
+    } catch (err) {
+      console.error('Error in saveWatchTime:', err);
+    }
   }, []);
 
   // Initialize YT Player API
   const initPlayer = useCallback((videoId, resumeSecs) => {
+    if (!videoId) {
+      console.warn('initPlayer called without videoId');
+      return;
+    }
+
     if (playerRef.current) {
       try {
         playerRef.current.destroy();
@@ -138,51 +154,65 @@ export default function MyMoviesPage() {
     }
     
     const createPlayer = () => {
-      if (!ytPlayerContainerRef.current) return;
-      ytPlayerContainerRef.current.innerHTML = '';
-      const playerDiv = document.createElement('div');
-      ytPlayerContainerRef.current.appendChild(playerDiv);
+      try {
+        if (!ytPlayerContainerRef.current) return;
+        ytPlayerContainerRef.current.innerHTML = '';
+        const playerDiv = document.createElement('div');
+        ytPlayerContainerRef.current.appendChild(playerDiv);
 
-      playerRef.current = new window.YT.Player(playerDiv, {
-        height: '100%',
-        width: '100%',
-        videoId: videoId,
-        playerVars: {
-          autoplay: 1,
-          modestbranding: 1,
-          rel: 0,
-          start: resumeSecs || 0
-        },
-        events: {
-          onReady: (event) => {
-            if (resumeSecs > 0) {
-              setSeekMsg(`Tiếp tục xem từ ${formatTimeLabel(resumeSecs)}`);
-              // Clear message after 3s
-              setTimeout(() => setSeekMsg(''), 3000);
-            }
+        playerRef.current = new window.YT.Player(playerDiv, {
+          height: '100%',
+          width: '100%',
+          videoId: videoId,
+          playerVars: {
+            autoplay: 1,
+            modestbranding: 1,
+            rel: 0,
+            start: resumeSecs || 0
           },
-          onStateChange: (event) => {
-            // PLAYING
-            if (event.data === window.YT.PlayerState.PLAYING) {
-              startTimeRef.current = Date.now();
-            } 
-            // PAUSED or ENDED
-            else if (
-              event.data === window.YT.PlayerState.PAUSED ||
-              event.data === window.YT.PlayerState.ENDED
-            ) {
-              saveWatchTime(event.target);
+          events: {
+            onReady: (event) => {
+              if (resumeSecs > 0) {
+                setSeekMsg(`Tiếp tục xem từ ${formatTimeLabel(resumeSecs)}`);
+                // Clear message after 3s
+                setTimeout(() => setSeekMsg(''), 3000);
+              }
+            },
+            onStateChange: (event) => {
+              // PLAYING
+              if (event.data === window.YT.PlayerState.PLAYING) {
+                startTimeRef.current = Date.now();
+              } 
+              // PAUSED or ENDED
+              else if (
+                event.data === window.YT.PlayerState.PAUSED ||
+                event.data === window.YT.PlayerState.ENDED
+              ) {
+                saveWatchTime(event.target);
+              }
             }
           }
-        }
-      });
+        });
+      } catch (err) {
+        console.error('Error in createPlayer inside initPlayer:', err);
+      }
     };
 
     if (window.YT && window.YT.Player) {
       createPlayer();
     } else {
-      // Set up global callback
-      window.onYouTubeIframeAPIReady = createPlayer;
+      // Set up global callback (chaining to avoid overwriting existing callbacks)
+      const previousCallback = window.onYouTubeIframeAPIReady;
+      window.onYouTubeIframeAPIReady = () => {
+        if (typeof previousCallback === 'function') {
+          try {
+            previousCallback();
+          } catch (e) {
+            console.error('Error in previous onYouTubeIframeAPIReady callback:', e);
+          }
+        }
+        createPlayer();
+      };
       
       // Load script if not already loaded
       if (!document.getElementById('yt-iframe-api-script')) {
@@ -223,40 +253,48 @@ export default function MyMoviesPage() {
 
   // Handle episode change
   const handleSelectEpisode = (pIdx, eIdx) => {
-    // Save current progress if playing
-    if (playerRef.current) {
-      saveWatchTime(playerRef.current);
-    }
-    
-    setActivePartIndex(pIdx);
-    activePartIndexRef.current = pIdx;
-    setActiveEpisodeIndex(eIdx);
-    activeEpisodeIndexRef.current = eIdx;
-    
-    const ep = movieDetail.parts[pIdx].episodes[eIdx];
-    activeEpisodeRef.current = ep;
+    try {
+      // Save current progress if playing
+      if (playerRef.current) {
+        saveWatchTime(playerRef.current);
+      }
+      
+      setActivePartIndex(pIdx);
+      activePartIndexRef.current = pIdx;
+      setActiveEpisodeIndex(eIdx);
+      activeEpisodeIndexRef.current = eIdx;
+      
+      const ep = movieDetail.parts[pIdx].episodes[eIdx];
+      activeEpisodeRef.current = ep;
 
-    // Find if has resume position
-    const log = movieDetail.watchLogs.find(l => l.partIndex === pIdx && l.episodeIndex === eIdx);
-    const resumeSecs = log ? log.lastPositionSeconds : 0;
+      // Find if has resume position
+      const log = movieDetail.watchLogs.find(l => l.partIndex === pIdx && l.episodeIndex === eIdx);
+      const resumeSecs = log ? log.lastPositionSeconds : 0;
 
-    const videoId = extractYoutubeId(ep.url);
-    
-    if (playerRef.current && typeof playerRef.current.loadVideoById === 'function') {
-      try {
-        playerRef.current.loadVideoById({
-          videoId: videoId,
-          startSeconds: resumeSecs || 0
-        });
-        if (resumeSecs > 0) {
-          setSeekMsg(`Tiếp tục xem từ ${formatTimeLabel(resumeSecs)}`);
-          setTimeout(() => setSeekMsg(''), 3000);
+      const videoId = extractYoutubeId(ep.url);
+      if (!videoId) {
+        console.warn('Invalid YouTube URL in episode:', ep.url);
+        return;
+      }
+      
+      if (playerRef.current && typeof playerRef.current.loadVideoById === 'function') {
+        try {
+          playerRef.current.loadVideoById({
+            videoId: videoId,
+            startSeconds: resumeSecs || 0
+          });
+          if (resumeSecs > 0) {
+            setSeekMsg(`Tiếp tục xem từ ${formatTimeLabel(resumeSecs)}`);
+            setTimeout(() => setSeekMsg(''), 3000);
+          }
+        } catch (err) {
+          initPlayer(videoId, resumeSecs);
         }
-      } catch (err) {
+      } else {
         initPlayer(videoId, resumeSecs);
       }
-    } else {
-      initPlayer(videoId, resumeSecs);
+    } catch (err) {
+      console.error('Error in handleSelectEpisode:', err);
     }
   };
 
@@ -269,7 +307,11 @@ export default function MyMoviesPage() {
       const log = movieDetail.watchLogs.find(l => l.partIndex === activePartIndex && l.episodeIndex === activeEpisodeIndex);
       const resumeSecs = log ? log.lastPositionSeconds : 0;
       
-      initPlayer(videoId, resumeSecs);
+      if (videoId) {
+        initPlayer(videoId, resumeSecs);
+      } else {
+        console.warn('Could not extract YouTube videoId for episode:', ep.url);
+      }
     }
     
     return () => {
