@@ -198,16 +198,24 @@
 .detailGrid {
   display: grid;
   grid-template-columns: 1fr;
+  grid-template-areas:
+    "player"
+    "sidebar"
+    "meta";
   gap: 24px;
 }
 
 @media (min-width: 900px) {
   .detailGrid {
     grid-template-columns: 2.5fr 1fr;
+    grid-template-areas:
+      "player sidebar"
+      "meta sidebar";
   }
 }
 
 .playerSection {
+  grid-area: player;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -295,6 +303,7 @@
 
 /* Movie Details Metadata */
 .movieMetaDetails {
+  grid-area: meta;
   background: #1e293b;
   border: 1px solid #334155;
   border-radius: 12px;
@@ -317,6 +326,7 @@
 
 /* Playlist / Episodes Sidebar */
 .sidebarSection {
+  grid-area: sidebar;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -562,9 +572,25 @@
 }
 
 .watchedGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  display: flex;
   gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: thin;
+}
+.watchedGrid::-webkit-scrollbar {
+  height: 6px;
+}
+.watchedGrid::-webkit-scrollbar-track {
+  background: #0f172a;
+  border-radius: 3px;
+}
+.watchedGrid::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 3px;
+}
+.watchedGrid::-webkit-scrollbar-thumb:hover {
+  background: #10b981;
 }
 
 .watchedCard {
@@ -576,6 +602,8 @@
   transition: all 0.2s ease;
   display: flex;
   flex-direction: column;
+  width: 200px;
+  flex-shrink: 0;
 }
 .watchedCard:hover {
   transform: translateY(-2px);
@@ -632,4 +660,186 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Mobile Responsive Optimizations */
+@media (max-width: 600px) {
+  .page {
+    padding: 12px 10px;
+  }
+  
+  .title {
+    font-size: 1.5rem;
+  }
+  
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  
+  .filterSection {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  
+  .searchBox {
+    grid-column: span 2;
+    width: 100%;
+    min-width: 100%;
+  }
+  
+  .selectBox {
+    grid-column: span 1;
+    width: 100%;
+    font-size: 0.85rem;
+    padding: 8px 12px;
+  }
+  
+  .selectBox:nth-of-type(3) {
+    grid-column: span 2;
+  }
+  
+  /* 2 columns layout for watched movies grid */
+  .watchedSection {
+    padding: 12px;
+    margin-bottom: 20px;
+  }
+  
+  .watchedSectionTitle {
+    font-size: 1rem;
+    margin-bottom: 12px;
+  }
+  
+  .watchedGrid {
+    gap: 10px;
+    padding-bottom: 8px;
+  }
+  
+  .watchedCard {
+    width: 130px;
+  }
+  
+  .watchedInfo {
+    padding: 8px;
+  }
+  
+  .watchedTitle {
+    font-size: 0.85rem;
+  }
+  
+  .watchedSub {
+    font-size: 0.7rem;
+  }
+  
+  .watchedProgressOverlay {
+    font-size: 0.7rem;
+    padding: 2px 4px;
+  }
+
+  /* 2 columns layout for main catalog grid */
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px;
+  }
+  
+  .movieTitle {
+    font-size: 0.85rem;
+  }
+  
+  .movieInfo {
+    padding: 10px 8px;
+    gap: 4px;
+  }
+  
+  .movieMeta {
+    gap: 4px;
+    font-size: 0.7rem;
+  }
+  
+  .badge {
+    padding: 1px 4px;
+  }
+  
+  .tagsContainer {
+    display: none; /* Hide tags in catalog grid on mobile to keep layout clean */
+  }
+  
+  /* Detail view updates */
+  .detailGrid {
+    gap: 16px;
+  }
+  
+  .movieMetaDetails {
+    padding: 16px;
+  }
+  
+  .movieTitleLarge {
+    font-size: 1.3rem;
+  }
+  
+  .descriptionText {
+    font-size: 0.85rem;
+    margin-top: 12px;
+    line-height: 1.5;
+  }
+  
+  .partsContainer {
+    padding: 12px;
+  }
+  
+  .sidebarTitle {
+    font-size: 1rem;
+  }
+  
+  .episodeItem {
+    padding: 8px 10px;
+  }
+  
+  .epTitle {
+    font-size: 0.8rem;
+  }
+  
+  .epProgress {
+    font-size: 0.68rem;
+  }
+  
+  .playerControls {
+    display: none; /* Hide theater mode toggle button on mobile */
+  }
+  
+  /* Redirect blocker adjustments for mobile viewports */
+  .topRedirectBlocker {
+    height: 38px;
+    width: 70%;
+  }
+  
+  .logoRedirectBlocker {
+    width: 65px;
+    height: 28px;
+    bottom: 38px;
+    right: 8px;
+  }
+  
+  /* Cute PIP floating player for mobile screens */
+  .playerWrapperFloating {
+    width: 180px;
+    height: 101px;
+    bottom: 16px;
+    right: 16px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+    border-width: 1.5px;
+  }
+  
+  .floatingControls {
+    gap: 6px;
+  }
+  
+  .floatingBtn {
+    padding: 4px 8px;
+    font-size: 0.68rem;
+    border-radius: 4px;
+  }
 }

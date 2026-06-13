@@ -688,20 +688,6 @@ export default function MyMoviesPage() {
                       {theaterMode ? '📺 Chế độ thường' : '🖥️ Chế độ rạp chiếu'}
                     </button>
                   </div>
-
-                  <div className={styles.movieMetaDetails}>
-                    <h1 className={styles.movieTitleLarge}>{movieDetail.title}</h1>
-                    <div className={styles.movieMeta}>
-                      {movieDetail.genre && <span className={styles.badge}>{movieDetail.genre}</span>}
-                      {movieDetail.country && <span className={styles.badge}>{movieDetail.country}</span>}
-                      {movieDetail.tags && movieDetail.tags.split(',').map(t => t.trim()).filter(Boolean).map((t, idx) => (
-                        <span key={idx} className={styles.tag} style={{ fontSize: '0.8rem' }}>#{t}</span>
-                      ))}
-                    </div>
-                    {movieDetail.description && (
-                      <p className={styles.descriptionText}>{movieDetail.description}</p>
-                    )}
-                  </div>
                 </div>
 
                 {/* Sidebar Episodes Column */}
@@ -750,6 +736,21 @@ export default function MyMoviesPage() {
                       })}
                     </div>
                   </div>
+                </div>
+
+                {/* Movie Details Metadata */}
+                <div className={styles.movieMetaDetails}>
+                  <h1 className={styles.movieTitleLarge}>{movieDetail.title}</h1>
+                  <div className={styles.movieMeta}>
+                    {movieDetail.genre && <span className={styles.badge}>{movieDetail.genre}</span>}
+                    {movieDetail.country && <span className={styles.badge}>{movieDetail.country}</span>}
+                    {movieDetail.tags && movieDetail.tags.split(',').map(t => t.trim()).filter(Boolean).map((t, idx) => (
+                      <span key={idx} className={styles.tag} style={{ fontSize: '0.8rem' }}>#{t}</span>
+                    ))}
+                  </div>
+                  {movieDetail.description && (
+                    <p className={styles.descriptionText}>{movieDetail.description}</p>
+                  )}
                 </div>
 
               </div>
