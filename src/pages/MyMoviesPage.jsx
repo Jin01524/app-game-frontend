@@ -102,6 +102,14 @@ export default function MyMoviesPage() {
     return match ? match[1] : '';
   };
 
+  // Helper to extract Google Drive file ID
+  const extractDriveId = (url) => {
+    if (!url) return '';
+    const reg = /\/file\/d\/([a-zA-Z0-9_-]{25,})|open\?id=([a-zA-Z0-9_-]{25,})/i;
+    const match = url.match(reg);
+    return match ? (match[1] || match[2]) : '';
+  };
+
   // Save watch duration
   const saveWatchTime = useCallback((playerInstance) => {
     try {
@@ -143,10 +151,10 @@ export default function MyMoviesPage() {
     }
   }, []);
 
-  // Initialize YT Player API
-  const initPlayer = useCallback((videoId, resumeSecs) => {
-    if (!videoId) {
-      console.warn('initPlayer called without videoId');
+  // Initialize YT Player or Google Drive Iframe
+  const initPlayer = useCallback((url, resumeSecs) => {
+    if (!url) {
+      console.warn('initPlayer called without URL');
       return;
     }
 
@@ -157,75 +165,99 @@ export default function MyMoviesPage() {
       playerRef.current = null;
     }
     
-    const createPlayer = () => {
-      try {
-        if (!ytPlayerContainerRef.current) return;
-        ytPlayerContainerRef.current.innerHTML = '';
-        const playerDiv = document.createElement('div');
-        ytPlayerContainerRef.current.appendChild(playerDiv);
+    if (!ytPlayerContainerRef.current) return;
+    ytPlayerContainerRef.current.innerHTML = '';
 
-        playerRef.current = new window.YT.Player(playerDiv, {
-          height: '100%',
-          width: '100%',
-          videoId: videoId,
-          playerVars: {
-            autoplay: 1,
-            modestbranding: 1,
-            rel: 0,
-            start: resumeSecs || 0
-          },
-          events: {
-            onReady: (event) => {
-              if (resumeSecs > 0) {
-                setSeekMsg(`Tiếp tục xem từ ${formatTimeLabel(resumeSecs)}`);
-                // Clear message after 3s
-                setTimeout(() => setSeekMsg(''), 3000);
-              }
+    const videoId = extractYoutubeId(url);
+    const driveId = extractDriveId(url);
+
+    if (videoId) {
+      const createPlayer = () => {
+        try {
+          if (!ytPlayerContainerRef.current) return;
+          ytPlayerContainerRef.current.innerHTML = '';
+          const playerDiv = document.createElement('div');
+          ytPlayerContainerRef.current.appendChild(playerDiv);
+
+          playerRef.current = new window.YT.Player(playerDiv, {
+            height: '100%',
+            width: '100%',
+            videoId: videoId,
+            playerVars: {
+              autoplay: 1,
+              modestbranding: 1,
+              rel: 0,
+              start: resumeSecs || 0
             },
-            onStateChange: (event) => {
-              // PLAYING
-              if (event.data === window.YT.PlayerState.PLAYING) {
-                startTimeRef.current = Date.now();
-              } 
-              // PAUSED or ENDED
-              else if (
-                event.data === window.YT.PlayerState.PAUSED ||
-                event.data === window.YT.PlayerState.ENDED
-              ) {
-                saveWatchTime(event.target);
+            events: {
+              onReady: (event) => {
+                if (resumeSecs > 0) {
+                  setSeekMsg(`Tiếp tục xem từ ${formatTimeLabel(resumeSecs)}`);
+                  // Clear message after 3s
+                  setTimeout(() => setSeekMsg(''), 3000);
+                }
+              },
+              onStateChange: (event) => {
+                // PLAYING
+                if (event.data === window.YT.PlayerState.PLAYING) {
+                  startTimeRef.current = Date.now();
+                } 
+                // PAUSED or ENDED
+                else if (
+                  event.data === window.YT.PlayerState.PAUSED ||
+                  event.data === window.YT.PlayerState.ENDED
+                ) {
+                  saveWatchTime(event.target);
+                }
               }
             }
-          }
-        });
-      } catch (err) {
-        console.error('Error in createPlayer inside initPlayer:', err);
-      }
-    };
-
-    if (window.YT && window.YT.Player) {
-      createPlayer();
-    } else {
-      // Set up global callback (chaining to avoid overwriting existing callbacks)
-      const previousCallback = window.onYouTubeIframeAPIReady;
-      window.onYouTubeIframeAPIReady = () => {
-        if (typeof previousCallback === 'function') {
-          try {
-            previousCallback();
-          } catch (e) {
-            console.error('Error in previous onYouTubeIframeAPIReady callback:', e);
-          }
+          });
+        } catch (err) {
+          console.error('Error in createPlayer inside initPlayer:', err);
         }
-        createPlayer();
       };
-      
-      // Load script if not already loaded
-      if (!document.getElementById('yt-iframe-api-script')) {
-        const tag = document.createElement('script');
-        tag.id = 'yt-iframe-api-script';
-        tag.src = 'https://www.youtube.com/iframe_api';
-        const firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+      if (window.YT && window.YT.Player) {
+        createPlayer();
+      } else {
+        // Set up global callback (chaining to avoid overwriting existing callbacks)
+        const previousCallback = window.onYouTubeIframeAPIReady;
+        window.onYouTubeIframeAPIReady = () => {
+          if (typeof previousCallback === 'function') {
+            try {
+              previousCallback();
+            } catch (e) {
+              console.error('Error in previous onYouTubeIframeAPIReady callback:', e);
+            }
+          }
+          createPlayer();
+        };
+        
+        // Load script if not already loaded
+        if (!document.getElementById('yt-iframe-api-script')) {
+          const tag = document.createElement('script');
+          tag.id = 'yt-iframe-api-script';
+          tag.src = 'https://www.youtube.com/iframe_api';
+          const firstScriptTag = document.getElementsByTagName('script')[0];
+          firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        }
       }
+    } else if (driveId) {
+      // Create and append Google Drive preview iframe
+      const iframe = document.createElement('iframe');
+      iframe.src = `https://drive.google.com/file/d/${driveId}/preview`;
+      iframe.style.width = '100%';
+      iframe.style.height = '100%';
+      iframe.style.border = '0';
+      iframe.setAttribute('allow', 'autoplay');
+      iframe.setAttribute('allowfullscreen', 'true');
+      
+      // Google Drive iframe doesn't support state triggers, so track page visit time
+      startTimeRef.current = Date.now();
+      
+      ytPlayerContainerRef.current.appendChild(iframe);
+    } else {
+      console.warn('Unknown video URL type:', url);
     }
   }, [saveWatchTime]);
 
@@ -234,11 +266,17 @@ export default function MyMoviesPage() {
     const handleUnload = () => {
       if (playerRef.current) {
         saveWatchTime(playerRef.current);
+      } else if (startTimeRef.current) {
+        saveWatchTime(null);
       }
     };
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden' && playerRef.current) {
-        saveWatchTime(playerRef.current);
+      if (document.visibilityState === 'hidden') {
+        if (playerRef.current) {
+          saveWatchTime(playerRef.current);
+        } else if (startTimeRef.current) {
+          saveWatchTime(null);
+        }
       }
     };
     window.addEventListener('beforeunload', handleUnload);
@@ -258,9 +296,11 @@ export default function MyMoviesPage() {
   // Handle episode change
   const handleSelectEpisode = (pIdx, eIdx) => {
     try {
-      // Save current progress if playing
+      // Save current progress if playing/watching
       if (playerRef.current) {
         saveWatchTime(playerRef.current);
+      } else if (startTimeRef.current) {
+        saveWatchTime(null);
       }
       
       setActivePartIndex(pIdx);
@@ -276,12 +316,15 @@ export default function MyMoviesPage() {
       const resumeSecs = log ? log.lastPositionSeconds : 0;
 
       const videoId = extractYoutubeId(ep.url);
-      if (!videoId) {
-        console.warn('Invalid YouTube URL in episode:', ep.url);
+      const driveId = extractDriveId(ep.url);
+      
+      if (!videoId && !driveId) {
+        console.warn('Invalid URL in episode:', ep.url);
         return;
       }
       
-      if (playerRef.current && typeof playerRef.current.loadVideoById === 'function') {
+      // If the current video is YouTube and the new video is also YouTube, we can try to reuse the player
+      if (videoId && playerRef.current && typeof playerRef.current.loadVideoById === 'function') {
         try {
           playerRef.current.loadVideoById({
             videoId: videoId,
@@ -292,10 +335,10 @@ export default function MyMoviesPage() {
             setTimeout(() => setSeekMsg(''), 3000);
           }
         } catch (err) {
-          initPlayer(videoId, resumeSecs);
+          initPlayer(ep.url, resumeSecs);
         }
       } else {
-        initPlayer(videoId, resumeSecs);
+        initPlayer(ep.url, resumeSecs);
       }
     } catch (err) {
       console.error('Error in handleSelectEpisode:', err);
@@ -307,14 +350,15 @@ export default function MyMoviesPage() {
     if (movieDetail && movieDetail.parts && movieDetail.parts[activePartIndex] && movieDetail.parts[activePartIndex].episodes && movieDetail.parts[activePartIndex].episodes[activeEpisodeIndex]) {
       const ep = movieDetail.parts[activePartIndex].episodes[activeEpisodeIndex];
       const videoId = extractYoutubeId(ep.url);
+      const driveId = extractDriveId(ep.url);
       
       const log = movieDetail.watchLogs.find(l => l.partIndex === activePartIndex && l.episodeIndex === activeEpisodeIndex);
       const resumeSecs = log ? log.lastPositionSeconds : 0;
       
-      if (videoId) {
-        initPlayer(videoId, resumeSecs);
+      if (videoId || driveId) {
+        initPlayer(ep.url, resumeSecs);
       } else {
-        console.warn('Could not extract YouTube videoId for episode:', ep.url);
+        console.warn('Could not extract video source for episode:', ep.url);
       }
     }
     

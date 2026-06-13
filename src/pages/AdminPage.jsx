@@ -967,9 +967,12 @@ function MovieModal({ movie, onClose, onSave, authFetch }) {
     }
   };
 
-  const validateYoutubeUrl = (url) => {
-    const reg = /^(https?:\/\/)?(www\.|m\.)?(youtube\.com|youtu\.be)\/(watch\?v=|embed\/|v\/|shorts\/)?([a-zA-Z0-9_-]{11})/;
-    return reg.test(url.trim());
+  const validateVideoUrl = (url) => {
+    if (!url) return false;
+    const trimmed = url.trim();
+    const ytReg = /^(https?:\/\/)?(www\.|m\.)?(youtube\.com|youtu\.be)\/(watch\?v=|embed\/|v\/|shorts\/)?([a-zA-Z0-9_-]{11})/i;
+    const driveReg = /^(https?:\/\/)?(drive\.google\.com)\/(file\/d\/([a-zA-Z0-9_-]{25,})|open\?id=([a-zA-Z0-9_-]{25,}))/i;
+    return ytReg.test(trimmed) || driveReg.test(trimmed);
   };
 
   const handleSave = async () => {
@@ -986,9 +989,9 @@ function MovieModal({ movie, onClose, onSave, authFetch }) {
       for (let epIdx = 0; epIdx < part.episodes.length; epIdx++) {
         const ep = part.episodes[epIdx];
         if (!ep.title.trim()) { setErr(`Vui lòng nhập tiêu đề tập ${epIdx + 1} thuộc "${part.title}"`); return; }
-        if (!ep.url.trim()) { setErr(`Vui lòng nhập link YouTube tập ${epIdx + 1} thuộc "${part.title}"`); return; }
-        if (!validateYoutubeUrl(ep.url)) {
-          setErr(`Link YouTube không hợp lệ ở tập ${epIdx + 1} thuộc "${part.title}"`);
+        if (!ep.url.trim()) { setErr(`Vui lòng nhập link video tập ${epIdx + 1} thuộc "${part.title}"`); return; }
+        if (!validateVideoUrl(ep.url)) {
+          setErr(`Link video (YouTube hoặc Google Drive) không hợp lệ ở tập ${epIdx + 1} thuộc "${part.title}"`);
           return;
         }
       }
@@ -1192,7 +1195,7 @@ function MovieModal({ movie, onClose, onSave, authFetch }) {
                     {/* Episodes list */}
                     <div style={{ paddingLeft: '12px', borderLeft: '2px dashed var(--px-border)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       {part.episodes && part.episodes.map((ep, epIdx) => {
-                        const isUrlValid = ep.url ? validateYoutubeUrl(ep.url) : true;
+                        const isUrlValid = ep.url ? validateVideoUrl(ep.url) : true;
                         return (
                           <div key={epIdx} style={{ background: '#f8fafc', padding: '8px', border: '1.5px solid var(--px-border)', borderRadius: '2px' }}>
                             <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '6px' }}>
@@ -1219,11 +1222,11 @@ function MovieModal({ movie, onClose, onSave, authFetch }) {
                                 style={{ paddingLeft: 8, fontSize: '0.8rem', borderColor: !isUrlValid ? 'var(--px-red)' : 'var(--px-border)' }}
                                 value={ep.url}
                                 onChange={e => updateEpisode(pIdx, epIdx, 'url', e.target.value)}
-                                placeholder="Link YouTube (vd: https://www.youtube.com/watch?v=...)"
+                                placeholder="Link YouTube hoặc Google Drive (vd: https://drive.google.com/...)"
                               />
                               {!isUrlValid && (
                                 <div style={{ fontSize: '0.7rem', color: 'var(--px-red)', marginTop: '2px' }}>
-                                  ⚠️ Link YouTube không đúng định dạng
+                                  ⚠️ Link video không đúng định dạng (Hỗ trợ YouTube / Google Drive)
                                 </div>
                               )}
                             </div>
