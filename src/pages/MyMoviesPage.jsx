@@ -481,12 +481,16 @@ export default function MyMoviesPage() {
               <div className={styles.detailGrid}>
                 {/* Main Player Column */}
                 <div className={styles.playerSection}>
-                  <div ref={playerAnchorRef} className={styles.playerAnchor}></div>
                   <div
-                    className={`${styles.playerWrapper} ${theaterMode ? styles.playerWrapperWide : ''} ${isFloating ? styles.playerWrapperFloating : ''}`}
+                    ref={playerAnchorRef}
+                    className={`${styles.playerPlaceholder} ${theaterMode ? styles.playerPlaceholderWide : ''}`}
                   >
-                    {seekMsg && <div className={styles.seekNotification}>{seekMsg}</div>}
-                    <div id="yt-player" className={styles.playerIframe}></div>
+                    <div
+                      className={`${styles.playerWrapper} ${theaterMode ? styles.playerWrapperWide : ''} ${isFloating ? styles.playerWrapperFloating : ''}`}
+                    >
+                      {seekMsg && <div className={styles.seekNotification}>{seekMsg}</div>}
+                      <div id="yt-player" className={styles.playerIframe}></div>
+                    </div>
                   </div>
 
                   <div className={styles.playerControls}>
