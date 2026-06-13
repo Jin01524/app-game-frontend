@@ -450,7 +450,7 @@ export default function MyMoviesPage() {
                         <div className={styles.watchedCoverContainer}>
                           {movie.coverUrl ? (
                             <img
-                              src={`${import.meta.env.VITE_API_URL || ''}${movie.coverUrl}`}
+                              src={movie.coverUrl && movie.coverUrl.startsWith('data:') ? movie.coverUrl : `${import.meta.env.VITE_API_URL || ''}${movie.coverUrl}`}
                               alt={movie.title}
                               className={styles.watchedCoverImg}
                             />
@@ -538,7 +538,7 @@ export default function MyMoviesPage() {
                     <div className={styles.coverContainer}>
                       {movie.coverUrl ? (
                         <img
-                          src={`${import.meta.env.VITE_API_URL || ''}${movie.coverUrl}`}
+                          src={movie.coverUrl && movie.coverUrl.startsWith('data:') ? movie.coverUrl : `${import.meta.env.VITE_API_URL || ''}${movie.coverUrl}`}
                           alt={movie.title}
                           className={styles.coverImg}
                         />
