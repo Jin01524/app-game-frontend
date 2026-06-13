@@ -307,6 +307,31 @@
   color: #f8fafc;
 }
 
+.driveOpenBtn {
+  background: #10b981; /* Emerald 500 */
+  border: 1px solid #059669;
+  color: #ffffff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+.driveOpenBtn:hover {
+  background: #059669;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+.driveOpenBtn:active {
+  transform: translateY(0);
+}
+
 /* Movie Details Metadata */
 .movieMetaDetails {
   grid-area: meta;
@@ -818,7 +843,21 @@
   }
   
   .playerControls {
-    display: none; /* Hide theater mode toggle button on mobile */
+    display: flex;
+    justify-content: center;
+    margin-top: 8px;
+    width: 100%;
+  }
+  
+  .theaterBtn {
+    display: none; /* Hide theater mode button on mobile */
+  }
+  
+  .driveOpenBtn {
+    width: 100%;
+    justify-content: center;
+    padding: 10px 16px;
+    font-size: 0.9rem;
   }
   
   /* Redirect blocker adjustments for mobile viewports */

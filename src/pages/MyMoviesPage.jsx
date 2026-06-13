@@ -251,6 +251,7 @@ export default function MyMoviesPage() {
       iframe.style.border = '0';
       iframe.setAttribute('allow', 'autoplay');
       iframe.setAttribute('allowfullscreen', 'true');
+      iframe.setAttribute('scrolling', 'no');
       
       // Google Drive iframe doesn't support state triggers, so track page visit time
       startTimeRef.current = Date.now();
@@ -463,6 +464,11 @@ export default function MyMoviesPage() {
     if (!movieDetail || !movieDetail.watchLogs) return null;
     return movieDetail.watchLogs.find(l => l.partIndex === pIdx && l.episodeIndex === eIdx);
   };
+
+  const activePart = movieDetail?.parts?.[activePartIndex];
+  const activeEpisode = activePart?.episodes?.[activeEpisodeIndex];
+  const activeUrl = activeEpisode?.url || '';
+  const isDriveVideo = !!extractDriveId(activeUrl);
 
   return (
     <div className={styles.page}>
@@ -687,6 +693,16 @@ export default function MyMoviesPage() {
                     >
                       {theaterMode ? '📺 Chế độ thường' : '🖥️ Chế độ rạp chiếu'}
                     </button>
+                    {isDriveVideo && (
+                      <a
+                        href={activeUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.driveOpenBtn}
+                      >
+                        🚀 Mở bằng ứng dụng Google Drive (Xem mượt hơn)
+                      </a>
+                    )}
                   </div>
                 </div>
 
