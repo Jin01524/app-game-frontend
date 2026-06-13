@@ -32,6 +32,7 @@ export default function MyMoviesPage() {
   const activeEpisodeIndexRef = useRef(0);
   const movieRef = useRef(null);
   const playerAnchorRef = useRef(null);
+  const ytPlayerContainerRef = useRef(null);
 
   // Load list of movies
   useEffect(() => {
@@ -137,7 +138,12 @@ export default function MyMoviesPage() {
     }
     
     const createPlayer = () => {
-      playerRef.current = new window.YT.Player('yt-player', {
+      if (!ytPlayerContainerRef.current) return;
+      ytPlayerContainerRef.current.innerHTML = '';
+      const playerDiv = document.createElement('div');
+      ytPlayerContainerRef.current.appendChild(playerDiv);
+
+      playerRef.current = new window.YT.Player(playerDiv, {
         height: '100%',
         width: '100%',
         videoId: videoId,
@@ -489,7 +495,7 @@ export default function MyMoviesPage() {
                       className={`${styles.playerWrapper} ${theaterMode ? styles.playerWrapperWide : ''} ${isFloating ? styles.playerWrapperFloating : ''}`}
                     >
                       {seekMsg && <div className={styles.seekNotification}>{seekMsg}</div>}
-                      <div id="yt-player" className={styles.playerIframe}></div>
+                      <div ref={ytPlayerContainerRef} className={styles.playerIframe}></div>
                     </div>
                   </div>
 
