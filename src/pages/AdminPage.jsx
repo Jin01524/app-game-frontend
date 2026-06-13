@@ -198,7 +198,7 @@ export default function AdminPage() {
   const { authFetch, user: me } = useAuth();
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState('users'); // 'users' | 'config' | 'logs'
+  const [activeTab, setActiveTab] = useState('users'); // 'users' | 'config' | 'logs' | 'movies'
   const [users, setUsers]       = useState([]);
   const [loading, setLoading]   = useState(true);
   const [search, setSearch]     = useState('');
@@ -221,6 +221,14 @@ export default function AdminPage() {
   const [logsLoading, setLogsLoading] = useState(false);
   const [logsSearch, setLogsSearch] = useState('');
   const [logsFilter, setLogsFilter] = useState('all');
+
+  // Movie states
+  const [movies, setMovies] = useState([]);
+  const [moviesLoading, setMoviesLoading] = useState(false);
+  const [movieModal, setMovieModal] = useState(null); // null | 'add' | { edit: movie }
+  const [movieWatchersModal, setMovieWatchersModal] = useState(null); // null | { movie: movie }
+  const [movieSearch, setMovieSearch] = useState('');
+  const [delMovieTarget, setDelMovieTarget] = useState(null);
 
   const showToast = (msg, type = 'success') => setToast({ msg, type });
 
@@ -253,6 +261,22 @@ export default function AdminPage() {
     finally { setLogsLoading(false); }
   }, [authFetch]);
 
+  const loadMovies = useCallback(async () => {
+    setMoviesLoading(true);
+    try {
+      const res = await authFetch('/api/movies');
+      if (res.ok) {
+        setMovies(await res.json());
+      } else {
+        showToast('Không tải được danh sách phim', 'error');
+      }
+    } catch {
+      showToast('Không tải được danh sách phim', 'error');
+    } finally {
+      setMoviesLoading(false);
+    }
+  }, [authFetch]);
+
   useEffect(() => {
     if (activeTab === 'users') {
       loadUsers();
@@ -260,8 +284,10 @@ export default function AdminPage() {
       loadSettings();
     } else if (activeTab === 'logs') {
       loadLogs();
+    } else if (activeTab === 'movies') {
+      loadMovies();
     }
-  }, [activeTab, loadUsers, loadSettings, loadLogs]);
+  }, [activeTab, loadUsers, loadSettings, loadLogs, loadMovies]);
 
   const handleSaveSettings = async () => {
     setSavingSettings(true);
@@ -296,6 +322,12 @@ export default function AdminPage() {
   const filtered = users.filter(u =>
     u.username.includes(search.toLowerCase()) ||
     (u.displayName || '').toLowerCase().includes(search.toLowerCase())
+  );
+
+  const filteredMovies = movies.filter(m =>
+    m.title.toLowerCase().includes(movieSearch.toLowerCase()) ||
+    (m.tags || '').toLowerCase().includes(movieSearch.toLowerCase()) ||
+    (m.genre || '').toLowerCase().includes(movieSearch.toLowerCase())
   );
 
   const FILTER_OPTIONS = [
@@ -361,6 +393,36 @@ export default function AdminPage() {
     loadUsers();
   };
 
+  const handleCreateMovie = async (movieForm) => {
+    const res = await authFetch('/api/admin/movies', {
+      method: 'POST',
+      body: JSON.stringify(movieForm),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Lỗi khi tạo phim mới');
+    showToast(`Đã thêm phim: ${movieForm.title}`);
+    loadMovies();
+  };
+
+  const handleEditMovie = async (movie, movieForm) => {
+    const res = await authFetch(`/api/admin/movies/${movie.id}`, {
+      method: 'PUT',
+      body: JSON.stringify(movieForm),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Lỗi khi cập nhật phim');
+    showToast(`Đã cập nhật phim: ${movieForm.title}`);
+    loadMovies();
+  };
+
+  const handleDeleteMovie = async (movie) => {
+    const res = await authFetch(`/api/admin/movies/${movie.id}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Lỗi khi xóa phim');
+    showToast(data.message);
+    loadMovies();
+  };
+
   const adminCount = users.filter(u => u.role === 'admin').length;
 
   return (
@@ -381,11 +443,12 @@ export default function AdminPage() {
               if (activeTab === 'users') loadUsers();
               else if (activeTab === 'config') loadSettings();
               else if (activeTab === 'logs') loadLogs();
+              else if (activeTab === 'movies') loadMovies();
             }}
             aria-label="Làm mới"
-            disabled={loading || logsLoading}
+            disabled={loading || logsLoading || moviesLoading}
           >
-            <span className={(loading || logsLoading) ? styles.spinning : ''}><Refresh /></span>
+            <span className={(loading || logsLoading || moviesLoading) ? styles.spinning : ''}><Refresh /></span>
           </button>
         </header>
 
@@ -426,6 +489,12 @@ export default function AdminPage() {
             onClick={() => setActiveTab('logs')}
           >
             📜 NHẬT KÝ
+          </button>
+          <button
+            className={`${styles.tabBtn} ${activeTab === 'movies' ? styles.tabBtnActive : ''}`}
+            onClick={() => setActiveTab('movies')}
+          >
+            🎬 PHIM
           </button>
         </div>
 
@@ -688,6 +757,118 @@ export default function AdminPage() {
           </div>
         )}
 
+        {/* --- MOVIES TAB --- */}
+        {activeTab === 'movies' && (
+          <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {/* Search + Add */}
+            <div className={styles.toolbar}>
+              <div className={styles.searchWrap}>
+                <span className={styles.searchIcon}>&gt;</span>
+                <input
+                  className={styles.searchInput}
+                  placeholder="tìm tên phim hoặc nhãn..."
+                  value={movieSearch}
+                  onChange={e => setMovieSearch(e.target.value)}
+                />
+              </div>
+              <button
+                className={`btn btn-primary ${styles.addBtn}`}
+                onClick={() => setMovieModal('add')}
+              >
+                [ + ] THÊM PHIM
+              </button>
+            </div>
+
+            {/* Movie list */}
+            <div className={styles.listWrap}>
+              {moviesLoading ? (
+                <div className={styles.loadingWrap}>
+                  <div className="spinner" style={{ width: 32, height: 32, borderWidth: 3 }} />
+                </div>
+              ) : filteredMovies.length === 0 ? (
+                <div className={styles.empty}>Không tìm thấy phim nào</div>
+              ) : (
+                filteredMovies.map((m, i) => {
+                  return (
+                    <div
+                      key={m.id}
+                      className={`${styles.userRow} rpg-box`}
+                      style={{ animationDelay: `${i * 0.04}s`, alignItems: 'flex-start' }}
+                    >
+                      {/* Movie cover preview */}
+                      <div 
+                        style={{ 
+                          width: '60px', 
+                          height: '80px', 
+                          border: '2px solid var(--px-border)', 
+                          backgroundColor: '#f1f5f9',
+                          flexShrink: 0,
+                          backgroundImage: m.coverUrl ? `url(${import.meta.env.VITE_API_URL || ''}${m.coverUrl})` : 'none',
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                      >
+                        {!m.coverUrl && <span style={{ fontSize: '20px' }}>🎬</span>}
+                      </div>
+
+                      <div className={styles.userInfo} style={{ alignSelf: 'stretch', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                        <div>
+                          <div className={styles.userNameRow}>
+                            <span className={styles.userName}>{m.title}</span>
+                          </div>
+                          <div className={styles.userMeta} style={{ gap: '4px' }}>
+                            {m.genre && <span style={{ fontSize: '0.75rem', padding: '1px 4px', border: '1px solid var(--px-border)', borderRadius: '2px' }}>{m.genre}</span>}
+                            {m.country && <span style={{ fontSize: '0.75rem', padding: '1px 4px', border: '1px solid var(--px-border)', borderRadius: '2px' }}>{m.country}</span>}
+                            <span style={{ fontSize: '0.75rem', color: 'var(--px-text-dim)' }}>
+                              ({m.partsCount} Phần, {m.episodesCount} Tập)
+                            </span>
+                          </div>
+                          {m.tags && (
+                            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '4px' }}>
+                              {m.tags.split(',').map(t => t.trim()).filter(Boolean).map((t, idx) => (
+                                <span key={idx} style={{ fontSize: '0.7rem', color: 'var(--px-cyan)', border: '1px solid var(--px-cyan)', padding: '0px 4px', borderRadius: '2px' }}>
+                                  #{t}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className={styles.userActions} style={{ alignSelf: 'center' }}>
+                        <button
+                          className={styles.actionBtn}
+                          title="Thống kê người xem"
+                          onClick={() => setMovieWatchersModal({ movie: m })}
+                        >
+                          <Eye />
+                        </button>
+                        <button
+                          className={styles.actionBtn}
+                          title="Sửa"
+                          onClick={() => setMovieModal({ edit: m })}
+                        >
+                          <Edit />
+                        </button>
+                        <button
+                          className={`${styles.actionBtn} ${styles.actionBtnDanger}`}
+                          title="Xóa"
+                          onClick={() => setDelMovieTarget(m)}
+                        >
+                          <Trash />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        )}
+
       </div>
 
       {/* Modals */}
@@ -709,7 +890,530 @@ export default function AdminPage() {
         />
       )}
 
+      {movieModal === 'add' && (
+        <MovieModal onClose={() => setMovieModal(null)} onSave={handleCreateMovie} authFetch={authFetch} />
+      )}
+      {movieModal?.edit && (
+        <MovieModal
+          movie={movieModal.edit}
+          onClose={() => setMovieModal(null)}
+          onSave={(form) => handleEditMovie(movieModal.edit, form)}
+          authFetch={authFetch}
+        />
+      )}
+      {delMovieTarget && (
+        <ConfirmDeleteMovie
+          movie={delMovieTarget}
+          onClose={() => setDelMovieTarget(null)}
+          onConfirm={() => handleDeleteMovie(delMovieTarget)}
+        />
+      )}
+      {movieWatchersModal?.movie && (
+        <MovieWatchersModal
+          movie={movieWatchersModal.movie}
+          onClose={() => setMovieWatchersModal(null)}
+          authFetch={authFetch}
+        />
+      )}
+
       {toast && <Toast msg={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
+    </div>
+  );
+}
+
+// ── Modal: Add / Edit Movie ──────────────────────────────────────────────────
+function MovieModal({ movie, onClose, onSave, authFetch }) {
+  const isEdit = !!movie;
+  const [form, setForm] = useState({
+    title:       movie?.title       || '',
+    description: movie?.description || '',
+    coverUrl:    movie?.coverUrl    || '',
+    tags:        movie?.tags        || '',
+    country:     movie?.country     || '',
+    genre:       movie?.genre       || '',
+    parts:       movie?.parts       || [],
+  });
+  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState('');
+
+  const set = (k, v) => { setForm(p => ({ ...p, [k]: v })); setErr(''); };
+
+  const handleUploadCover = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    setErr('');
+    try {
+      const formData = new FormData();
+      formData.append('cover', file);
+
+      const token = localStorage.getItem('tl42_token');
+      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/admin/movies/upload`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Lỗi tải ảnh lên');
+      set('coverUrl', data.path);
+    } catch (err) {
+      setErr(err.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const validateYoutubeUrl = (url) => {
+    const reg = /^(https?:\/\/)?(www\.|m\.)?(youtube\.com|youtu\.be)\/(watch\?v=|embed\/|v\/|shorts\/)?([a-zA-Z0-9_-]{11})/;
+    return reg.test(url.trim());
+  };
+
+  const handleSave = async () => {
+    if (!form.title.trim()) { setErr('Vui lòng nhập tên phim'); return; }
+
+    // Validate parts and episodes
+    for (let pIdx = 0; pIdx < form.parts.length; pIdx++) {
+      const part = form.parts[pIdx];
+      if (!part.title.trim()) { setErr(`Vui lòng nhập tiêu đề cho Phần ${pIdx + 1}`); return; }
+      if (!part.episodes || part.episodes.length === 0) {
+        setErr(`Phần "${part.title}" cần có ít nhất 1 tập phim`);
+        return;
+      }
+      for (let epIdx = 0; epIdx < part.episodes.length; epIdx++) {
+        const ep = part.episodes[epIdx];
+        if (!ep.title.trim()) { setErr(`Vui lòng nhập tiêu đề tập ${epIdx + 1} thuộc "${part.title}"`); return; }
+        if (!ep.url.trim()) { setErr(`Vui lòng nhập link YouTube tập ${epIdx + 1} thuộc "${part.title}"`); return; }
+        if (!validateYoutubeUrl(ep.url)) {
+          setErr(`Link YouTube không hợp lệ ở tập ${epIdx + 1} thuộc "${part.title}"`);
+          return;
+        }
+      }
+    }
+
+    setSaving(true);
+    try {
+      await onSave(form);
+      onClose();
+    } catch (e) {
+      setErr(e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const addPart = () => {
+    set('parts', [...form.parts, { title: `Phần ${form.parts.length + 1}`, episodes: [] }]);
+  };
+
+  const removePart = (pIdx) => {
+    set('parts', form.parts.filter((_, idx) => idx !== pIdx));
+  };
+
+  const updatePartTitle = (pIdx, title) => {
+    const newParts = [...form.parts];
+    newParts[pIdx].title = title;
+    set('parts', newParts);
+  };
+
+  const addEpisode = (pIdx) => {
+    const newParts = [...form.parts];
+    newParts[pIdx].episodes = [...newParts[pIdx].episodes, { title: `Tập ${newParts[pIdx].episodes.length + 1}`, url: '' }];
+    set('parts', newParts);
+  };
+
+  const removeEpisode = (pIdx, epIdx) => {
+    const newParts = [...form.parts];
+    newParts[pIdx].episodes = newParts[pIdx].episodes.filter((_, idx) => idx !== epIdx);
+    set('parts', newParts);
+  };
+
+  const updateEpisode = (pIdx, epIdx, field, val) => {
+    const newParts = [...form.parts];
+    newParts[pIdx].episodes[epIdx] = { ...newParts[pIdx].episodes[epIdx], [field]: val };
+    set('parts', newParts);
+  };
+
+  return (
+    <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.modal} style={{ maxWidth: '600px' }} onClick={e => e.stopPropagation()}>
+        <div className="px-titlebar">
+          <span>{isEdit ? '◄ SỬA PHIM CỦA TÔI ►' : '◄ THÊM PHIM MỚI ►'}</span>
+          <button className={styles.closeBtn} onClick={onClose}><Close /></button>
+        </div>
+
+        <div className={styles.modalBody} style={{ maxHeight: '70vh' }}>
+          {err && <div className={styles.modalErr}>⚠️ {err}</div>}
+
+          {/* Title */}
+          <div className="input-group">
+            <label className="input-label">Tên phim *</label>
+            <input
+              className="input-field"
+              style={{ paddingLeft: 14 }}
+              value={form.title}
+              onChange={e => set('title', e.target.value)}
+              placeholder="Nhập tên phim..."
+            />
+          </div>
+
+          {/* Cover Image Upload */}
+          <div className="input-group">
+            <label className="input-label">Ảnh bìa phim (Tải lên tệp ảnh trực tiếp)</label>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              <div
+                style={{
+                  width: '60px',
+                  height: '80px',
+                  border: '2px solid var(--px-border)',
+                  backgroundColor: '#f1f5f9',
+                  backgroundImage: form.coverUrl ? `url(${import.meta.env.VITE_API_URL || ''}${form.coverUrl})` : 'none',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}
+              >
+                {!form.coverUrl && <span style={{ fontSize: '20px' }}>🎬</span>}
+              </div>
+              <div style={{ flex: 1 }}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleUploadCover}
+                  disabled={uploading}
+                  style={{ display: 'none' }}
+                  id="cover-file-input"
+                />
+                <label
+                  htmlFor="cover-file-input"
+                  className="btn btn-outline"
+                  style={{ display: 'inline-block', cursor: 'crosshair', fontSize: '0.8rem', padding: '6px 12px' }}
+                >
+                  {uploading ? 'Đang tải lên...' : '[ Chọn ảnh bìa ]'}
+                </label>
+                {form.coverUrl && (
+                  <div style={{ fontSize: '0.75rem', color: 'var(--px-green)', marginTop: '4px', wordBreak: 'break-all' }}>
+                    Đường dẫn: {form.coverUrl}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Genre & Country */}
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <div className="input-group" style={{ flex: 1 }}>
+              <label className="input-label">Thể loại</label>
+              <input
+                className="input-field"
+                style={{ paddingLeft: 14 }}
+                value={form.genre}
+                onChange={e => set('genre', e.target.value)}
+                placeholder="Ví dụ: Vlog, Hài hước..."
+              />
+            </div>
+            <div className="input-group" style={{ flex: 1 }}>
+              <label className="input-label">Quốc gia</label>
+              <input
+                className="input-field"
+                style={{ paddingLeft: 14 }}
+                value={form.country}
+                onChange={e => set('country', e.target.value)}
+                placeholder="Ví dụ: Việt Nam, Nhật..."
+              />
+            </div>
+          </div>
+
+          {/* Description */}
+          <div className="input-group">
+            <label className="input-label">Mô tả phim</label>
+            <textarea
+              className="input-field"
+              style={{ padding: '8px 14px', height: '80px', resize: 'vertical' }}
+              value={form.description}
+              onChange={e => set('description', e.target.value)}
+              placeholder="Nhập mô tả chi tiết phim..."
+            />
+          </div>
+
+          {/* Tags */}
+          <div className="input-group">
+            <label className="input-label">Nhãn (ngăn cách bởi dấu phẩy)</label>
+            <input
+              className="input-field"
+              style={{ paddingLeft: 14 }}
+              value={form.tags}
+              onChange={e => set('tags', e.target.value)}
+              placeholder="Ví dụ: vlog, phimngan, dangoai"
+            />
+          </div>
+
+          {/* Parts & Episodes builder */}
+          <div style={{ borderTop: '2px solid var(--px-border)', paddingTop: '12px', marginTop: '4px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <span className="input-label" style={{ margin: 0, fontWeight: 'bold' }}>DANH SÁCH PHẦN & TẬP PHIM ({form.parts.length} Phần)</span>
+              <button type="button" className="btn btn-outline" style={{ padding: '4px 8px', fontSize: '0.75rem' }} onClick={addPart}>
+                + Thêm Phần
+              </button>
+            </div>
+
+            {form.parts.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '16px', background: '#f8fafc', border: '1px dashed var(--px-border)', fontSize: '0.8rem', color: 'var(--px-text-dim)' }}>
+                Chưa có phần phim nào. Bấm "Thêm Phần" để bắt đầu.
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {form.parts.map((part, pIdx) => (
+                  <div key={pIdx} style={{ border: '2px solid var(--px-border)', padding: '12px', borderRadius: '4px', position: 'relative' }}>
+                    <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
+                      <input
+                        className="input-field"
+                        style={{ paddingLeft: 10, fontSize: '0.85rem', flex: 1 }}
+                        value={part.title}
+                        onChange={e => updatePartTitle(pIdx, e.target.value)}
+                        placeholder={`Tiêu đề phần (vd: Phần ${pIdx + 1})`}
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-danger"
+                        style={{ padding: '6px 10px', fontSize: '0.75rem' }}
+                        onClick={() => removePart(pIdx)}
+                      >
+                        Xóa Phần
+                      </button>
+                    </div>
+
+                    {/* Episodes list */}
+                    <div style={{ paddingLeft: '12px', borderLeft: '2px dashed var(--px-border)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {part.episodes && part.episodes.map((ep, epIdx) => {
+                        const isUrlValid = ep.url ? validateYoutubeUrl(ep.url) : true;
+                        return (
+                          <div key={epIdx} style={{ background: '#f8fafc', padding: '8px', border: '1.5px solid var(--px-border)', borderRadius: '2px' }}>
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '6px' }}>
+                              <span style={{ fontSize: '0.75rem', fontWeight: 'bold', width: '45px' }}>Tập {epIdx + 1}:</span>
+                              <input
+                                className="input-field"
+                                style={{ paddingLeft: 8, fontSize: '0.8rem', flex: 1 }}
+                                value={ep.title}
+                                onChange={e => updateEpisode(pIdx, epIdx, 'title', e.target.value)}
+                                placeholder="Tiêu đề tập (vd: Tập 1: Đi cắm trại)"
+                              />
+                              <button
+                                type="button"
+                                className="btn btn-danger"
+                                style={{ padding: '4px 8px', fontSize: '0.7rem' }}
+                                onClick={() => removeEpisode(pIdx, epIdx)}
+                              >
+                                Xóa
+                              </button>
+                            </div>
+                            <div>
+                              <input
+                                className="input-field"
+                                style={{ paddingLeft: 8, fontSize: '0.8rem', borderColor: !isUrlValid ? 'var(--px-red)' : 'var(--px-border)' }}
+                                value={ep.url}
+                                onChange={e => updateEpisode(pIdx, epIdx, 'url', e.target.value)}
+                                placeholder="Link YouTube (vd: https://www.youtube.com/watch?v=...)"
+                              />
+                              {!isUrlValid && (
+                                <div style={{ fontSize: '0.7rem', color: 'var(--px-red)', marginTop: '2px' }}>
+                                  ⚠️ Link YouTube không đúng định dạng
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                      <button
+                        type="button"
+                        className="btn btn-outline"
+                        style={{ padding: '4px 8px', fontSize: '0.75rem', alignSelf: 'flex-start', marginTop: '4px' }}
+                        onClick={() => addEpisode(pIdx)}
+                      >
+                        + Thêm Tập
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className={styles.modalFooter}>
+          <button className="btn btn-outline" onClick={onClose} disabled={saving} style={{ flex: 1 }}>[ HỦY ]</button>
+          <button
+            className="btn btn-primary"
+            onClick={handleSave}
+            disabled={saving || uploading}
+            style={{ flex: 2 }}
+          >
+            {saving ? <><div className="spinner" /> ĐANG LƯU...</> : isEdit ? '[ LƯU THAY ĐỔI ]' : '[ ĐĂNG PHIM ]'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Confirm Delete Movie Modal ────────────────────────────────────────────────
+function ConfirmDeleteMovie({ movie, onClose, onConfirm }) {
+  const [deleting, setDeleting] = useState(false);
+  return (
+    <div className={styles.overlay} onClick={onClose}>
+      <div className={`${styles.modal} ${styles.modalSm}`} onClick={e => e.stopPropagation()}>
+        <div className="px-titlebar">
+          <span>◄ CẢNH BÁO ►</span>
+          <button className={styles.closeBtn} onClick={onClose}><Close /></button>
+        </div>
+        <div className={styles.modalBody}>
+          <div className={styles.modalDesc}>
+            XÓA PHIM: <strong style={{color:'var(--px-red)'}}>{movie.title}</strong><br/>
+            Dữ liệu phim và lịch sử xem của người dùng sẽ bị xóa hoàn toàn. Tiếp tục?
+          </div>
+          <div className={styles.modalFooter} style={{padding:0, borderTop:'none'}}>
+            <button className="btn btn-outline" onClick={onClose} disabled={deleting} style={{ flex: 1 }}>[ HỦY ]</button>
+            <button
+              className="btn btn-danger"
+              onClick={async () => { setDeleting(true); try { await onConfirm(); onClose(); } catch { setDeleting(false); } }}
+              disabled={deleting}
+              style={{ flex: 1 }}
+            >
+              {deleting ? <div className="spinner" /> : '[ XÓA PHIM ]'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Modal: Movie Watchers Statistics ─────────────────────────────────────────
+function MovieWatchersModal({ movie, onClose, authFetch }) {
+  const [watchers, setWatchers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    const loadWatchers = async () => {
+      try {
+        const res = await authFetch(`/api/admin/movies/${movie.id}/watchers`);
+        if (res.ok && active) {
+          setWatchers(await res.json());
+        }
+      } catch (e) {
+        console.error('Failed to load watchers:', e);
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    loadWatchers();
+    return () => { active = false; };
+  }, [movie.id, authFetch]);
+
+  const formatTime = (secs) => {
+    if (isNaN(secs) || secs < 0) return '0 giây';
+    const h = Math.floor(secs / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = secs % 60;
+    
+    const parts = [];
+    if (h > 0) parts.push(`${h}h`);
+    if (m > 0) parts.push(`${m}m`);
+    if (s > 0 || parts.length === 0) parts.push(`${s}s`);
+    
+    return parts.join(' ');
+  };
+
+  // Group by user
+  const groupedWatchers = {};
+  watchers.forEach(w => {
+    const key = w.username;
+    if (!groupedWatchers[key]) {
+      groupedWatchers[key] = {
+        username: w.username,
+        displayName: w.displayName,
+        parts: {},
+        totalSeconds: 0,
+        lastWatchedAt: w.lastWatchedAt
+      };
+    }
+    groupedWatchers[key].parts[w.partIndex] = (groupedWatchers[key].parts[w.partIndex] || 0) + w.watchedSeconds;
+    groupedWatchers[key].totalSeconds += w.watchedSeconds;
+    if (new Date(w.lastWatchedAt) > new Date(groupedWatchers[key].lastWatchedAt)) {
+      groupedWatchers[key].lastWatchedAt = w.lastWatchedAt;
+    }
+  });
+
+  const watchersList = Object.values(groupedWatchers).sort((a, b) => b.totalSeconds - a.totalSeconds);
+
+  return (
+    <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.modal} style={{ maxWidth: '520px' }} onClick={e => e.stopPropagation()}>
+        <div className="px-titlebar">
+          <span>◄ THỐNG KÊ NGƯỜI XEM ►</span>
+          <button className={styles.closeBtn} onClick={onClose}><Close /></button>
+        </div>
+
+        <div className={styles.modalBody} style={{ maxHeight: '65vh' }}>
+          <div style={{ fontSize: '0.9rem', fontWeight: 'bold', marginBottom: '8px' }}>
+            Phim: <span style={{ color: 'var(--px-green)' }}>{movie.title}</span>
+          </div>
+
+          {loading ? (
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '20px' }}>
+              <div className="spinner" />
+            </div>
+          ) : watchersList.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '20px', color: 'var(--px-text-dim)', fontSize: '0.85rem' }}>
+              Chưa có người dùng nào xem phim này.
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {watchersList.map((watcher, idx) => (
+                <div key={idx} style={{ border: '2.5px solid var(--px-border)', padding: '10px', borderRadius: '4px', background: '#f8fafc' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <span style={{ fontWeight: 'bold', fontSize: '0.85rem' }}>
+                      {watcher.displayName || watcher.username} (@{watcher.username})
+                    </span>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--px-amber)', fontWeight: 'bold' }}>
+                      Tổng: {formatTime(watcher.totalSeconds)}
+                    </span>
+                  </div>
+
+                  {/* Parts break down */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', paddingLeft: '8px', borderLeft: '2px solid var(--px-border)', fontSize: '0.75rem', color: 'var(--px-text-mid)' }}>
+                    {Object.keys(watcher.parts).map((pIdxStr) => {
+                      const pIdx = parseInt(pIdxStr, 10);
+                      const partTitle = movie.parts && movie.parts[pIdx]?.title ? movie.parts[pIdx].title : `Phần ${pIdx + 1}`;
+                      return (
+                        <div key={pIdx} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <span>{partTitle}:</span>
+                          <span style={{ fontWeight: '600' }}>{formatTime(watcher.parts[pIdx])}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div style={{ fontSize: '0.7rem', color: 'var(--px-text-dim)', textAlign: 'right', marginTop: '6px' }}>
+                    Xem lần cuối: {new Date(watcher.lastWatchedAt).toLocaleString('vi-VN')}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className={styles.modalFooter}>
+          <button className="btn btn-outline" onClick={onClose} style={{ flex: 1 }}>[ ĐÓNG ]</button>
+        </div>
+      </div>
     </div>
   );
 }

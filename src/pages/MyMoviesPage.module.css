@@ -1,0 +1,450 @@
+/* MyMoviesPage.module.css */
+.page {
+  background: #0f172a; /* Slate 900 */
+  color: #f8fafc; /* Slate 50 */
+  min-height: 100dvh;
+  padding: 24px 16px;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px solid #334155;
+  color: #94a3b8;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+.backBtn:hover {
+  background: #1e293b;
+  color: #f8fafc;
+  border-color: #475569;
+}
+
+.title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin: 0;
+  background: linear-gradient(135deg, #10b981, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Catalog Filter Bar */
+.filterSection {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+  align-items: center;
+}
+
+.searchBox {
+  flex: 1;
+  min-width: 250px;
+  position: relative;
+}
+.searchInput {
+  width: 100%;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 10px 16px;
+  color: #f8fafc;
+  outline: none;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+.searchInput:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+.selectBox {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 10px 16px;
+  color: #f8fafc;
+  outline: none;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.selectBox:focus {
+  border-color: #10b981;
+}
+
+/* Grid Layout */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.movieCard {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+}
+.movieCard:hover {
+  transform: translateY(-4px);
+  border-color: #10b981;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+}
+
+.coverContainer {
+  position: relative;
+  width: 100%;
+  padding-top: 133%; /* 3:4 aspect ratio */
+  background: #0f172a;
+}
+.coverImg {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+.movieCard:hover .coverImg {
+  transform: scale(1.05);
+}
+
+.placeholderCover {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #475569;
+  font-size: 2.5rem;
+}
+
+.movieInfo {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.movieTitle {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0;
+  color: #f8fafc;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.movieMeta {
+  display: flex;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  flex-wrap: wrap;
+}
+
+.badge {
+  background: #0f172a;
+  border: 1px solid #334155;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.tagsContainer {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: auto;
+}
+.tag {
+  font-size: 0.7rem;
+  color: #06b6d4;
+  background: rgba(6, 182, 212, 0.1);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+/* Detail View Layout */
+.detailGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 900px) {
+  .detailGrid {
+    grid-template-columns: 2.5fr 1fr;
+  }
+}
+
+.playerSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.playerWrapper {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%; /* 16:9 Aspect Ratio */
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #334155;
+  transition: all 0.3s ease;
+}
+
+.playerWrapperWide {
+  padding-top: 40%; /* Wider theater mode aspect ratio */
+}
+
+/* Intersection observer anchor */
+.playerAnchor {
+  height: 0;
+  width: 100%;
+  pointer-events: none;
+}
+
+/* Floating PIP Player Styles */
+.playerWrapperFloating {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 320px;
+  height: 180px;
+  padding-top: 0;
+  z-index: 999;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+  border: 2px solid #10b981;
+  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideIn {
+  from { transform: translateY(100px) scale(0.9); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.playerIframe {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  border: 0;
+}
+
+.playerControls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.theaterBtn {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #94a3b8;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+.theaterBtn:hover {
+  background: #334155;
+  color: #f8fafc;
+}
+
+/* Movie Details Metadata */
+.movieMetaDetails {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.movieTitleLarge {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin: 0 0 12px 0;
+  color: #f8fafc;
+}
+
+.descriptionText {
+  color: #cbd5e1;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 16px 0 0 0;
+}
+
+/* Playlist / Episodes Sidebar */
+.sidebarSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.partsContainer {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sidebarTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+  color: #f8fafc;
+}
+
+.partSelector {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+
+.partTab {
+  flex-shrink: 0;
+  background: #0f172a;
+  border: 1px solid #334155;
+  color: #94a3b8;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.partTabActive {
+  background: #10b981;
+  color: #ffffff;
+  border-color: #10b981;
+}
+
+.episodesList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 350px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.episodeItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.episodeItem:hover {
+  border-color: #10b981;
+  background: #1e293b;
+}
+.episodeItemActive {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.epTitle {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.epProgress {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.progressBarOuter {
+  width: 100%;
+  height: 4px;
+  background: #334155;
+  border-radius: 2px;
+  margin-top: 4px;
+  overflow: hidden;
+}
+.progressBarInner {
+  height: 100%;
+  background: #10b981;
+}
+
+.loadingCenter {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+.emptyState {
+  text-align: center;
+  color: #94a3b8;
+  padding: 40px 20px;
+  border: 1px dashed #334155;
+  border-radius: 12px;
+}
+
+/* Mini Notification for seekTo */
+.seekNotification {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1.5px solid #10b981;
+  color: #10b981;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  z-index: 10;
+  pointer-events: none;
+  animation: fadeOut 3s forwards;
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}

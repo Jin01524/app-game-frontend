@@ -21,6 +21,7 @@ import MessagingPage from './pages/MessagingPage';
 import WerewolfPage from './pages/WerewolfPage';
 import AccommodationPage from './pages/AccommodationPage';
 import ChangeCharacterPage from './pages/ChangeCharacterPage';
+import MyMoviesPage from './pages/MyMoviesPage';
 
 
 // Guard: only admin can access, others redirect to /
@@ -82,6 +83,9 @@ export default function App() {
           />
           <Route path="/utilities/change-character"
             element={<ProtectedRoute><ChangeCharacterPage /></ProtectedRoute>}
+          />
+          <Route path="/utilities/my-movies"
+            element={<ProtectedRoute><MyMoviesPage /></ProtectedRoute>}
           />
 
           <Route path="/lobby"

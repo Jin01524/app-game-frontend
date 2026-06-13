@@ -21,6 +21,7 @@ const UTILITIES = [
   { key: 'werewolf',   name: 'Ma Sói',    icon: wolfIcon, color: '#7c3aed' },
   { key: 'accommodation', name: 'Tìm Trọ',   icon: '🏠', color: '#ef4444' },
   { key: 'change-character', name: 'Đổi nhân vật', icon: '🎭', color: '#ec4899' },
+  { key: 'my-movies', name: 'Phim của tôi', icon: '🎬', color: '#f43f5e' },
 ];
 
 export default function UtilitiesPage() {
@@ -95,6 +96,8 @@ export default function UtilitiesPage() {
                       navigate('/utilities/accommodation');
                     } else if (u.key === 'change-character') {
                       navigate('/utilities/change-character');
+                    } else if (u.key === 'my-movies') {
+                      navigate('/utilities/my-movies');
                     }
                   }}
                 >
