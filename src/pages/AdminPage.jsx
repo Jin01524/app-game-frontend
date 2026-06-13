@@ -1158,7 +1158,7 @@ function MovieModal({ movie, onClose, onSave, authFetch }) {
           <div style={{ borderTop: '2px solid var(--px-border)', paddingTop: '12px', marginTop: '4px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
               <span className="input-label" style={{ margin: 0, fontWeight: 'bold' }}>DANH SÁCH PHẦN & TẬP PHIM ({form.parts.length} Phần)</span>
-              <button type="button" className="btn btn-outline" style={{ padding: '4px 8px', fontSize: '0.75rem' }} onClick={addPart}>
+              <button type="button" className="btn btn-outline" style={{ padding: '4px 8px', fontSize: '0.75rem', width: 'auto' }} onClick={addPart}>
                 + Thêm Phần
               </button>
             </div>
@@ -1182,7 +1182,7 @@ function MovieModal({ movie, onClose, onSave, authFetch }) {
                       <button
                         type="button"
                         className="btn btn-danger"
-                        style={{ padding: '6px 10px', fontSize: '0.75rem' }}
+                        style={{ padding: '6px 10px', fontSize: '0.75rem', width: 'auto' }}
                         onClick={() => removePart(pIdx)}
                       >
                         Xóa Phần
@@ -1207,7 +1207,7 @@ function MovieModal({ movie, onClose, onSave, authFetch }) {
                               <button
                                 type="button"
                                 className="btn btn-danger"
-                                style={{ padding: '4px 8px', fontSize: '0.7rem' }}
+                                style={{ padding: '4px 8px', fontSize: '0.7rem', width: 'auto' }}
                                 onClick={() => removeEpisode(pIdx, epIdx)}
                               >
                                 Xóa
@@ -1233,7 +1233,7 @@ function MovieModal({ movie, onClose, onSave, authFetch }) {
                       <button
                         type="button"
                         className="btn btn-outline"
-                        style={{ padding: '4px 8px', fontSize: '0.75rem', alignSelf: 'flex-start', marginTop: '4px' }}
+                        style={{ padding: '4px 8px', fontSize: '0.75rem', alignSelf: 'flex-start', marginTop: '4px', width: 'auto' }}
                         onClick={() => addEpisode(pIdx)}
                       >
                         + Thêm Tập
