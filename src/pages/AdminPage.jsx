@@ -1098,8 +1098,8 @@ function MovieModal({ movie, onClose, onSave, authFetch }) {
                   {uploading ? 'Đang tải lên...' : '[ Chọn ảnh bìa ]'}
                 </label>
                 {form.coverUrl && (
-                  <div style={{ fontSize: '0.75rem', color: 'var(--px-green)', marginTop: '4px', wordBreak: 'break-all' }}>
-                    Đường dẫn: {form.coverUrl}
+                  <div style={{ fontSize: '0.75rem', color: 'var(--px-green)', marginTop: '4px' }}>
+                    ✅ Đã tải ảnh bìa: {form.coverUrl.startsWith('data:') ? 'Ảnh Base64 vĩnh viễn' : form.coverUrl.substring(form.coverUrl.lastIndexOf('/') + 1)}
                   </div>
                 )}
               </div>
