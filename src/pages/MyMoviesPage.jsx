@@ -35,21 +35,25 @@ export default function MyMoviesPage() {
   const ytPlayerContainerRef = useRef(null);
 
   // Load list of movies
-  useEffect(() => {
-    const fetchMovies = async () => {
-      try {
-        const res = await authFetch('/api/movies');
-        if (res.ok) {
-          setMovies(await res.json());
-        }
-      } catch (err) {
-        console.error('Failed to load movies:', err);
-      } finally {
-        setLoading(false);
+  const fetchMovies = useCallback(async () => {
+    try {
+      const res = await authFetch('/api/movies');
+      if (res.ok) {
+        setMovies(await res.json());
       }
-    };
-    fetchMovies();
+    } catch (err) {
+      console.error('Failed to load movies:', err);
+    }
   }, [authFetch]);
+
+  useEffect(() => {
+    const initFetch = async () => {
+      setLoading(true);
+      await fetchMovies();
+      setLoading(false);
+    };
+    initFetch();
+  }, [fetchMovies]);
 
   // Load detail movie including user watchLogs
   const loadMovieDetail = async (movieId) => {
@@ -372,6 +376,9 @@ export default function MyMoviesPage() {
     setMovieDetail(null);
     setIsFloating(false);
     setTheaterMode(false);
+    
+    // Refresh catalog list to update watch progress
+    fetchMovies();
   };
 
   // Filter & Sort Logic
@@ -396,6 +403,10 @@ export default function MyMoviesPage() {
       }
       return 0;
     });
+
+  const watchedMovies = movies
+    .filter(m => m.watchProgress)
+    .sort((a, b) => new Date(b.watchProgress.lastWatchedAt) - new Date(a.watchProgress.lastWatchedAt));
 
   const formatTimeLabel = (totalSecs) => {
     if (!totalSecs) return '00:00';
@@ -422,6 +433,46 @@ export default function MyMoviesPage() {
               </button>
               <h1 className={styles.title}>🎬 PHIM CỦA TÔI</h1>
             </header>
+
+            {/* Watched Movies / Continue Watching */}
+            {watchedMovies.length > 0 && (
+              <section className={styles.watchedSection}>
+                <h2 className={styles.watchedSectionTitle}>⏱️ PHIM ĐÃ XEM / ĐANG XEM DỞ</h2>
+                <div className={styles.watchedGrid}>
+                  {watchedMovies.map(movie => {
+                    const progress = movie.watchProgress;
+                    return (
+                      <div
+                        key={movie.id}
+                        className={styles.watchedCard}
+                        onClick={() => handleSelectMovie(movie)}
+                      >
+                        <div className={styles.watchedCoverContainer}>
+                          {movie.coverUrl ? (
+                            <img
+                              src={`${import.meta.env.VITE_API_URL || ''}${movie.coverUrl}`}
+                              alt={movie.title}
+                              className={styles.watchedCoverImg}
+                            />
+                          ) : (
+                            <div className={styles.placeholderCover}>🎬</div>
+                          )}
+                          <div className={styles.watchedProgressOverlay}>
+                            <span>Đã xem: {formatTimeLabel(progress.totalWatchedSeconds)}</span>
+                          </div>
+                        </div>
+                        <div className={styles.watchedInfo}>
+                          <h4 className={styles.watchedTitle}>{movie.title}</h4>
+                          <span className={styles.watchedSub}>
+                            {progress.lastWatchedEpisodeTitle ? `Đang xem: ${progress.lastWatchedEpisodeTitle}` : `Đang xem: Tập ${progress.lastWatchedEpisodeIndex + 1}`}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
 
             {/* Catalog Filters */}
             <div className={styles.filterSection}>
