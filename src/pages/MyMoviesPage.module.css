@@ -456,3 +456,90 @@
   80% { opacity: 1; }
   100% { opacity: 0; }
 }
+
+/* Blocker overlays to prevent YouTube external redirects */
+.topRedirectBlocker {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 75%;
+  height: 60px;
+  background: transparent;
+  z-index: 5;
+  pointer-events: auto;
+}
+
+.logoRedirectBlocker {
+  position: absolute;
+  bottom: 48px;
+  right: 12px;
+  width: 90px;
+  height: 40px;
+  background: transparent;
+  z-index: 5;
+  pointer-events: auto;
+}
+
+/* Floating overlay to capture clicks and prevent mobile YouTube redirect */
+.floatingOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(1px);
+  z-index: 10;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background-color 0.2s ease;
+  pointer-events: auto;
+}
+.floatingOverlay:hover {
+  background: rgba(15, 23, 42, 0.7);
+}
+
+.floatingControls {
+  display: flex;
+  gap: 12px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.floatingOverlay:hover .floatingControls {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* On mobile devices, always show controls on floating overlay since hover is not possible */
+@media (max-width: 768px) {
+  .floatingOverlay {
+    background: rgba(15, 23, 42, 0.6);
+  }
+  .floatingControls {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.floatingBtn {
+  background: #10b981; /* Emerald 500 */
+  border: 1px solid #059669;
+  color: #ffffff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+.floatingBtn:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+.floatingBtn:active {
+  transform: translateY(0);
+}

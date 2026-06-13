@@ -347,6 +347,13 @@ export default function MyMoviesPage() {
     };
   }, [selectedMovie, movieDetail]);
 
+  const handleRestorePlayer = () => {
+    if (playerAnchorRef.current) {
+      playerAnchorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    setIsFloating(false);
+  };
+
   const handleBackToCatalog = () => {
     // Save watch time if playing
     if (playerRef.current) {
@@ -538,6 +545,43 @@ export default function MyMoviesPage() {
                     >
                       {seekMsg && <div className={styles.seekNotification}>{seekMsg}</div>}
                       <div ref={ytPlayerContainerRef} className={styles.playerIframe}></div>
+                      
+                      {/* Transparent overlays to block accidental redirects to YouTube on mobile */}
+                      {!isFloating && (
+                        <>
+                          <div className={styles.topRedirectBlocker}></div>
+                          <div className={styles.logoRedirectBlocker}></div>
+                        </>
+                      )}
+
+                      {/* Full-size overlay for floating mode to capture clicks and prevent mobile redirects */}
+                      {isFloating && (
+                        <div 
+                          className={styles.floatingOverlay} 
+                          onClick={handleRestorePlayer}
+                        >
+                          <div className={styles.floatingControls}>
+                            <button 
+                              className={styles.floatingBtn} 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRestorePlayer();
+                              }}
+                            >
+                              🔍 Phóng to
+                            </button>
+                            <button 
+                              className={styles.floatingBtn} 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleBackToCatalog();
+                              }}
+                            >
+                              ❌ Đóng
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
 
