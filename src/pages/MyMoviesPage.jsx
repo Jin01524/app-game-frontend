@@ -113,11 +113,11 @@ const resolvePhotosUrlClient = async (url) => {
   const timeoutId = setTimeout(() => {
     console.warn('[Client Photos] api.cors.lol resolve timed out. Aborting.');
     controller.abort();
-  }, 4500);
+  }, 3000);
 
   try {
     const proxyUrl = `https://api.cors.lol/?url=${encodeURIComponent(url)}`;
-    console.log(`[Client Photos] Resolving URL via api.cors.lol (4.5s timeout)...`);
+    console.log(`[Client Photos] Resolving URL via api.cors.lol (3s timeout)...`);
     const res = await fetch(proxyUrl, { signal: controller.signal });
     clearTimeout(timeoutId);
     
