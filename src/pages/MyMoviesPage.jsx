@@ -257,6 +257,9 @@ export default function MyMoviesPage() {
       startTimeRef.current = Date.now();
       
       ytPlayerContainerRef.current.appendChild(iframe);
+    } else if (url && /photos\.app\.goo\.gl|photos\.google\.com/i.test(url)) {
+      // Google Photos: start watch duration timer, because it's played using custom placeholder card
+      startTimeRef.current = Date.now();
     } else {
       console.warn('Unknown video URL type:', url);
     }
@@ -318,8 +321,9 @@ export default function MyMoviesPage() {
 
       const videoId = extractYoutubeId(ep.url);
       const driveId = extractDriveId(ep.url);
+      const isPhotos = ep.url && /photos\.app\.goo\.gl|photos\.google\.com/i.test(ep.url);
       
-      if (!videoId && !driveId) {
+      if (!videoId && !driveId && !isPhotos) {
         console.warn('Invalid URL in episode:', ep.url);
         return;
       }
@@ -352,11 +356,12 @@ export default function MyMoviesPage() {
       const ep = movieDetail.parts[activePartIndex].episodes[activeEpisodeIndex];
       const videoId = extractYoutubeId(ep.url);
       const driveId = extractDriveId(ep.url);
+      const isPhotos = ep.url && /photos\.app\.goo\.gl|photos\.google\.com/i.test(ep.url);
       
       const log = movieDetail.watchLogs.find(l => l.partIndex === activePartIndex && l.episodeIndex === activeEpisodeIndex);
       const resumeSecs = log ? log.lastPositionSeconds : 0;
       
-      if (videoId || driveId) {
+      if (videoId || driveId || isPhotos) {
         initPlayer(ep.url, resumeSecs);
       } else {
         console.warn('Could not extract video source for episode:', ep.url);
