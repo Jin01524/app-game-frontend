@@ -168,8 +168,10 @@ export default function MyMoviesPage() {
   const [seekMsg, setSeekMsg] = useState('');
   const [photosStreamUrl, setPhotosStreamUrl] = useState('');
   const [photosLoading, setPhotosLoading] = useState(false);
-  const [photosError, setPhotosError] = useState('');  // error message for display
-  const photosSourceUrlRef = useRef(''); // original photos URL of currently playing stream
+  const [photosError, setPhotosError] = useState('');
+  const [useProxyFallback, setUseProxyFallback] = useState(false);
+  const photosSourceUrlRef = useRef('');        // original photos URL of current stream
+  const proxyResolvedAttemptRef = useRef(false); // guard: prevent infinite re-resolve loop
 
   // Refs for tracking play duration on server
   const playerRef = useRef(null);
@@ -421,7 +423,9 @@ export default function MyMoviesPage() {
       setPhotosLoading(true);
       setPhotosStreamUrl('');
       setPhotosError('');
+      setUseProxyFallback(false);
       photosSourceUrlRef.current = url;
+      proxyResolvedAttemptRef.current = false; // reset guard for new episode
       resumeSecsRef.current = resumeSecs || 0;
       
       const resolveAndPlay = async (forceBackend = false) => {
@@ -467,18 +471,30 @@ export default function MyMoviesPage() {
     }
   }, [saveWatchTime, authFetch]);
 
-  // When stream errors, invalidate cache and re-resolve fresh URL (never proxy bytes through backend)
+  // When direct stream fails:
+  // 1. If haven't tried re-resolve yet: invalidate cache, get fresh URL, switch to backend proxy
+  // 2. If already tried: show error (prevents infinite loop)
+  // NOTE: lh3.googleusercontent.com requires Referer header - browser cannot set it,
+  //       so direct streaming always fails. The proxy adds proper headers.
   const handlePhotosStreamError = useCallback(() => {
     const sourceUrl = photosSourceUrlRef.current;
     if (!sourceUrl || !photosStreamUrl) return;
     
-    console.warn('[Photos Player] Direct stream failed — invalidating cache and re-resolving...');
+    // Guard: if we've already attempted a re-resolve+proxy, stop here to prevent infinite loop
+    if (proxyResolvedAttemptRef.current) {
+      console.warn('[Photos Player] Proxy also failed, giving up.');
+      setPhotosError('⚠️ Không thể phát video này. Vui lòng kiểm tra quyền chia sẻ công khai của link Google Photos.');
+      setPhotosStreamUrl('');
+      return;
+    }
+    
+    proxyResolvedAttemptRef.current = true;
+    console.warn('[Photos Player] Direct stream failed — re-resolving fresh URL and switching to backend proxy...');
     invalidateCachedPhotosUrl(sourceUrl);
     setPhotosLoading(true);
     setPhotosStreamUrl('');
-    setPhotosError('');
     
-    // Force backend re-resolution (skip stale client cache)
+    // Get a fresh URL from backend, then serve it via proxy (which adds correct Referer headers)
     authFetch(`/api/movies/photos-url?url=${encodeURIComponent(sourceUrl)}`)
       .then(res => {
         if (!res.ok) throw new Error('Backend resolver failed');
@@ -487,7 +503,8 @@ export default function MyMoviesPage() {
       .then(data => {
         setCachedPhotosUrl(sourceUrl, data.videoUrl);
         setPhotosStreamUrl(data.videoUrl);
-        console.log('[Photos Player] Re-resolved fresh stream URL — retrying direct playback.');
+        setUseProxyFallback(true); // switch to proxy mode - DO NOT retry direct stream
+        console.log('[Photos Player] Fresh URL obtained, streaming via backend proxy.');
       })
       .catch(err => {
         console.error('[Photos Player] Re-resolution failed:', err);
@@ -936,9 +953,11 @@ export default function MyMoviesPage() {
                                   };
                                 }
                               }}
-                              src={photosStreamUrl}
+                              src={useProxyFallback
+                                ? `${import.meta.env.VITE_API_URL || ''}/api/proxy-video?url=${encodeURIComponent(photosStreamUrl)}`
+                                : photosStreamUrl}
                               referrerPolicy="no-referrer"
-                              onError={handlePhotosStreamError}
+                              onError={useProxyFallback ? undefined : handlePhotosStreamError}
                               controls
                               autoPlay
                               playsInline
