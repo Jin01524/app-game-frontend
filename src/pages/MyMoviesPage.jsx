@@ -71,7 +71,9 @@ const extractVideosFromHtmlClient = (html) => {
   return videos;
 };
 
-// Frontend cache helpers for resolved Google Photos URLs (expires in 4 hours)
+// Frontend cache helpers for resolved Google Photos URLs
+const PHOTOS_CACHE_TTL = 60 * 60 * 1000; // 1 hour — Google CDN URLs typically expire in ~1-2h
+
 const getCachedPhotosUrl = (url) => {
   try {
     const cached = localStorage.getItem(`gphotos_cache_${url}`);
@@ -91,11 +93,17 @@ const getCachedPhotosUrl = (url) => {
 
 const setCachedPhotosUrl = (url, streamUrl) => {
   try {
-    const expiresAt = Date.now() + 4 * 60 * 60 * 1000; // 4 hours
-    localStorage.setItem(`gphotos_cache_${url}`, JSON.stringify({ streamUrl, expiresAt }));
+    localStorage.setItem(`gphotos_cache_${url}`, JSON.stringify({ streamUrl, expiresAt: Date.now() + PHOTOS_CACHE_TTL }));
   } catch (e) {
     console.warn('[Cache] Failed to write to localStorage:', e);
   }
+};
+
+const invalidateCachedPhotosUrl = (url) => {
+  try {
+    localStorage.removeItem(`gphotos_cache_${url}`);
+    console.log('[Cache] Invalidated stale URL cache for:', url);
+  } catch (e) {}
 };
 
 // Client-side Google Photos short-link resolver using free CORS proxies
@@ -160,7 +168,8 @@ export default function MyMoviesPage() {
   const [seekMsg, setSeekMsg] = useState('');
   const [photosStreamUrl, setPhotosStreamUrl] = useState('');
   const [photosLoading, setPhotosLoading] = useState(false);
-  const [useProxyFallback, setUseProxyFallback] = useState(false);
+  const [photosError, setPhotosError] = useState('');  // error message for display
+  const photosSourceUrlRef = useRef(''); // original photos URL of currently playing stream
 
   // Refs for tracking play duration on server
   const playerRef = useRef(null);
@@ -411,11 +420,32 @@ export default function MyMoviesPage() {
     } else if (isPhotos) {
       setPhotosLoading(true);
       setPhotosStreamUrl('');
+      setPhotosError('');
+      photosSourceUrlRef.current = url;
       resumeSecsRef.current = resumeSecs || 0;
       
-      // Try resolving client-side first (uses client IP to avoid Render datacenter blocks & rate limits)
-      resolvePhotosUrlClient(url)
-        .then(streamUrl => {
+      const resolveAndPlay = async (forceBackend = false) => {
+        try {
+          let streamUrl;
+          if (!forceBackend) {
+            // Try resolving client-side first (uses client IP)
+            try {
+              streamUrl = await resolvePhotosUrlClient(url);
+            } catch (clientErr) {
+              console.warn('[Photos] Client-side resolution failed, falling back to backend:', clientErr.message);
+              forceBackend = true;
+            }
+          }
+          
+          if (forceBackend) {
+            const res = await authFetch(`/api/movies/photos-url?url=${encodeURIComponent(url)}`);
+            if (!res.ok) throw new Error('Backend resolver failed');
+            const data = await res.json();
+            streamUrl = data.videoUrl;
+            // Cache the freshly resolved URL
+            setCachedPhotosUrl(url, streamUrl);
+          }
+          
           setPhotosStreamUrl(streamUrl);
           startTimeRef.current = Date.now();
           
@@ -423,41 +453,48 @@ export default function MyMoviesPage() {
             setSeekMsg(`Tiếp tục xem từ ${formatTimeLabel(resumeSecs)}`);
             setTimeout(() => setSeekMsg(''), 3000);
           }
-        })
-        .catch(clientErr => {
-          console.warn('[Photos] Client-side resolution failed, falling back to backend resolver:', clientErr.message);
-          
-          // Fallback: Fetch resolved stream URL from backend
-          authFetch(`/api/movies/photos-url?url=${encodeURIComponent(url)}`)
-            .then(res => {
-              if (!res.ok) throw new Error('Failed to resolve Google Photos link via backend');
-              return res.json();
-            })
-            .then(data => {
-              setPhotosStreamUrl(data.videoUrl);
-              startTimeRef.current = Date.now();
-              
-              if (resumeSecs > 0) {
-                setSeekMsg(`Tiếp tục xem từ ${formatTimeLabel(resumeSecs)}`);
-                setTimeout(() => setSeekMsg(''), 3000);
-              }
-            })
-            .catch(backendErr => {
-              console.error('Failed to load Google Photos stream (all strategies failed):', backendErr);
-            });
-        })
-        .finally(() => {
+        } catch (err) {
+          console.error('[Photos] All resolution strategies failed:', err);
+          setPhotosError('⚠️ Không thể tải video từ Google Photos. Vui lòng đảm bảo quyền chia sẻ liên kết là công khai.');
+        } finally {
           setPhotosLoading(false);
-        });
+        }
+      };
+      
+      resolveAndPlay();
     } else {
       console.warn('Unknown video URL type:', url);
     }
-  }, [saveWatchTime, authFetch, useProxyFallback]);
+  }, [saveWatchTime, authFetch]);
 
-  // Reset proxy fallback when active stream changes
-  useEffect(() => {
-    setUseProxyFallback(false);
-  }, [photosStreamUrl]);
+  // When stream errors, invalidate cache and re-resolve fresh URL (never proxy bytes through backend)
+  const handlePhotosStreamError = useCallback(() => {
+    const sourceUrl = photosSourceUrlRef.current;
+    if (!sourceUrl || !photosStreamUrl) return;
+    
+    console.warn('[Photos Player] Direct stream failed — invalidating cache and re-resolving...');
+    invalidateCachedPhotosUrl(sourceUrl);
+    setPhotosLoading(true);
+    setPhotosStreamUrl('');
+    setPhotosError('');
+    
+    // Force backend re-resolution (skip stale client cache)
+    authFetch(`/api/movies/photos-url?url=${encodeURIComponent(sourceUrl)}`)
+      .then(res => {
+        if (!res.ok) throw new Error('Backend resolver failed');
+        return res.json();
+      })
+      .then(data => {
+        setCachedPhotosUrl(sourceUrl, data.videoUrl);
+        setPhotosStreamUrl(data.videoUrl);
+        console.log('[Photos Player] Re-resolved fresh stream URL — retrying direct playback.');
+      })
+      .catch(err => {
+        console.error('[Photos Player] Re-resolution failed:', err);
+        setPhotosError('⚠️ Không thể tải video từ Google Photos. Vui lòng đảm bảo quyền chia sẻ liên kết là công khai.');
+      })
+      .finally(() => setPhotosLoading(false));
+  }, [authFetch, photosStreamUrl]);
 
   // Handle unload events
   useEffect(() => {
@@ -882,6 +919,10 @@ export default function MyMoviesPage() {
                         >
                           {photosLoading ? (
                             <div className="spinner" style={{ width: 48, height: 48, borderWidth: 4 }} />
+                          ) : photosError ? (
+                            <div style={{ color: '#ef4444', textAlign: 'center', padding: '20px' }}>
+                              {photosError}
+                            </div>
                           ) : photosStreamUrl ? (
                             <video
                               ref={el => {
@@ -895,14 +936,9 @@ export default function MyMoviesPage() {
                                   };
                                 }
                               }}
-                              src={useProxyFallback ? `${import.meta.env.VITE_API_URL || ''}/api/proxy-video?url=${encodeURIComponent(photosStreamUrl)}` : photosStreamUrl}
+                              src={photosStreamUrl}
                               referrerPolicy="no-referrer"
-                              onError={() => {
-                                if (!useProxyFallback) {
-                                  console.warn('[Photos Player] Direct streaming failed. Falling back to backend server proxy.');
-                                  setUseProxyFallback(true);
-                                }
-                              }}
+                              onError={handlePhotosStreamError}
                               controls
                               autoPlay
                               playsInline
@@ -910,9 +946,7 @@ export default function MyMoviesPage() {
                               style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#000', borderRadius: '12px' }}
                             />
                           ) : (
-                            <div style={{ color: '#ef4444', textAlign: 'center', padding: '20px' }}>
-                              ⚠️ Không thể tải video từ Google Photos. Vui lòng đảm bảo quyền chia sẻ liên kết là công khai.
-                            </div>
+                            <div className="spinner" style={{ width: 48, height: 48, borderWidth: 4 }} />
                           )}
                         </div>
                       )}
