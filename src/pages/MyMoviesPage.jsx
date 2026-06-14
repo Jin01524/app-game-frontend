@@ -3,6 +3,108 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import styles from './MyMoviesPage.module.css';
 
+// Client-side Google Photos HTML parser to extract streamable video URLs
+const extractVideosFromHtmlClient = (html) => {
+  let videos = [];
+  
+  // Method 1: JSON Parsing of ds:1 callback
+  try {
+    const startKeyword = "AF_initDataCallback({key: 'ds:1'";
+    const startIdx = html.indexOf(startKeyword);
+    if (startIdx !== -1) {
+      const dataKeyword = "data:";
+      const dataIdx = html.indexOf(dataKeyword, startIdx);
+      if (dataIdx !== -1) {
+        const sideChannelKeyword = ", sideChannel:";
+        let endIdx = html.indexOf(sideChannelKeyword, dataIdx);
+        if (endIdx === -1) {
+          endIdx = html.indexOf("});", dataIdx);
+        }
+        if (endIdx !== -1) {
+          const dataStr = html.substring(dataIdx + dataKeyword.length, endIdx).trim();
+          const data = JSON.parse(dataStr);
+          const items = data[1] || [];
+          
+          for (const item of items) {
+            const id = item[0];
+            const itemInfo = item[1];
+            const metadata = item[9];
+            if (metadata && metadata['76647426']) {
+              const baseUrl = itemInfo[0];
+              const durationMs = metadata['76647426'][0];
+              videos.push({
+                id,
+                baseUrl,
+                videoUrl: `${baseUrl}=m22`,
+                durationMs
+              });
+            }
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('[Client Parser] JSON parsing failed:', err);
+  }
+  
+  // Method 2: Regex fallback (matches Google User Content links directly)
+  if (videos.length === 0) {
+    try {
+      const guRegex = /(https:\/\/lh3\.googleusercontent\.com\/pw\/[a-zA-Z0-9_-]+)/g;
+      const matches = html.match(guRegex);
+      if (matches && matches.length > 0) {
+        const uniqueUrls = [...new Set(matches)];
+        uniqueUrls.forEach((url, idx) => {
+          videos.push({
+            id: `regex_${idx}`,
+            baseUrl: url,
+            videoUrl: `${url}=m22`,
+            durationMs: 0
+          });
+        });
+      }
+    } catch (err) {
+      console.error('[Client Parser] Regex extraction failed:', err);
+    }
+  }
+  
+  return videos;
+};
+
+// Client-side Google Photos short-link resolver using free CORS proxies
+const resolvePhotosUrlClient = async (url) => {
+  const proxies = [
+    {
+      name: 'api.cors.lol',
+      url: (target) => `https://api.cors.lol/?url=${encodeURIComponent(target)}`
+    },
+    {
+      name: 'api.allorigins.win raw',
+      url: (target) => `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`
+    }
+  ];
+
+  let lastError = null;
+  for (const proxy of proxies) {
+    try {
+      const proxyUrl = proxy.url(url);
+      console.log(`[Client Photos] Resolving URL via ${proxy.name}...`);
+      const res = await fetch(proxyUrl);
+      if (!res.ok) throw new Error(`HTTP status ${res.status}`);
+      const text = await res.text();
+      const videos = extractVideosFromHtmlClient(text);
+      if (videos && videos.length > 0) {
+        console.log(`[Client Photos] Successfully resolved via ${proxy.name}. Found video.`);
+        return videos[0].videoUrl;
+      }
+    } catch (err) {
+      console.warn(`[Client Photos] ${proxy.name} failed:`, err.message);
+      lastError = err;
+    }
+  }
+  throw lastError || new Error('All client-side resolution strategies failed');
+};
+
 export default function MyMoviesPage() {
   const { authFetch } = useAuth();
   const navigate = useNavigate();
@@ -276,13 +378,10 @@ export default function MyMoviesPage() {
       setPhotosStreamUrl('');
       resumeSecsRef.current = resumeSecs || 0;
       
-      authFetch(`/api/movies/photos-url?url=${encodeURIComponent(url)}`)
-        .then(res => {
-          if (!res.ok) throw new Error('Failed to resolve Google Photos link');
-          return res.json();
-        })
-        .then(data => {
-          setPhotosStreamUrl(data.videoUrl);
+      // Try resolving client-side first (uses client IP to avoid Render datacenter blocks & rate limits)
+      resolvePhotosUrlClient(url)
+        .then(streamUrl => {
+          setPhotosStreamUrl(streamUrl);
           startTimeRef.current = Date.now();
           
           if (resumeSecs > 0) {
@@ -290,8 +389,27 @@ export default function MyMoviesPage() {
             setTimeout(() => setSeekMsg(''), 3000);
           }
         })
-        .catch(err => {
-          console.error('Failed to load Google Photos stream:', err);
+        .catch(clientErr => {
+          console.warn('[Photos] Client-side resolution failed, falling back to backend resolver:', clientErr.message);
+          
+          // Fallback: Fetch resolved stream URL from backend
+          authFetch(`/api/movies/photos-url?url=${encodeURIComponent(url)}`)
+            .then(res => {
+              if (!res.ok) throw new Error('Failed to resolve Google Photos link via backend');
+              return res.json();
+            })
+            .then(data => {
+              setPhotosStreamUrl(data.videoUrl);
+              startTimeRef.current = Date.now();
+              
+              if (resumeSecs > 0) {
+                setSeekMsg(`Tiếp tục xem từ ${formatTimeLabel(resumeSecs)}`);
+                setTimeout(() => setSeekMsg(''), 3000);
+              }
+            })
+            .catch(backendErr => {
+              console.error('Failed to load Google Photos stream (all strategies failed):', backendErr);
+            });
         })
         .finally(() => {
           setPhotosLoading(false);
