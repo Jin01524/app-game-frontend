@@ -842,14 +842,32 @@ export default function AdminPage() {
                         <button
                           className={styles.actionBtn}
                           title="Thống kê người xem"
-                          onClick={() => setMovieWatchersModal({ movie: m })}
+                          onClick={async () => {
+                            try {
+                              const res = await authFetch(`/api/movies/${m.id}`);
+                              if (!res.ok) throw new Error('Không thể tải thông tin chi tiết phim');
+                              const fullMovie = await res.json();
+                              setMovieWatchersModal({ movie: fullMovie });
+                            } catch (err) {
+                              showToast(err.message || 'Lỗi khi tải chi tiết phim', 'error');
+                            }
+                          }}
                         >
                           <Eye />
                         </button>
                         <button
                           className={styles.actionBtn}
                           title="Sửa"
-                          onClick={() => setMovieModal({ edit: m })}
+                          onClick={async () => {
+                            try {
+                              const res = await authFetch(`/api/movies/${m.id}`);
+                              if (!res.ok) throw new Error('Không thể tải thông tin chi tiết phim');
+                              const fullMovie = await res.json();
+                              setMovieModal({ edit: fullMovie });
+                            } catch (err) {
+                              showToast(err.message || 'Lỗi khi tải chi tiết phim', 'error');
+                            }
+                          }}
                         >
                           <Edit />
                         </button>
