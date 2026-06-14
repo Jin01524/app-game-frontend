@@ -23,9 +23,13 @@ export default function MyMoviesPage() {
   const [theaterMode, setTheaterMode] = useState(false);
   const [isFloating, setIsFloating] = useState(false);
   const [seekMsg, setSeekMsg] = useState('');
+  const [photosStreamUrl, setPhotosStreamUrl] = useState('');
+  const [photosLoading, setPhotosLoading] = useState(false);
 
   // Refs for tracking play duration on server
   const playerRef = useRef(null);
+  const nativePlayerRef = useRef(null);
+  const resumeSecsRef = useRef(0);
   const startTimeRef = useRef(null);
   const activeEpisodeRef = useRef(null);
   const activePartIndexRef = useRef(0);
@@ -120,11 +124,15 @@ export default function MyMoviesPage() {
       if (duration <= 0) return;
       
       let lastPosition = 0;
-      if (playerInstance && typeof playerInstance.getCurrentTime === 'function') {
-        try {
-          lastPosition = Math.round(playerInstance.getCurrentTime());
-        } catch (e) {
-          console.error('Error getting current time from player:', e);
+      if (playerInstance) {
+        if (typeof playerInstance.getCurrentTime === 'function') {
+          try {
+            lastPosition = Math.round(playerInstance.getCurrentTime());
+          } catch (e) {
+            console.error('Error getting current time from player:', e);
+          }
+        } else if (playerInstance.currentTime !== undefined) {
+          lastPosition = Math.round(playerInstance.currentTime);
         }
       }
       
@@ -164,12 +172,18 @@ export default function MyMoviesPage() {
       } catch (e) {}
       playerRef.current = null;
     }
+
+    if (nativePlayerRef.current) {
+      saveWatchTime(nativePlayerRef.current);
+      nativePlayerRef.current = null;
+    }
     
     if (!ytPlayerContainerRef.current) return;
     ytPlayerContainerRef.current.innerHTML = '';
 
     const videoId = extractYoutubeId(url);
     const driveId = extractDriveId(url);
+    const isPhotos = url && /photos\.app\.goo\.gl|photos\.google\.com/i.test(url);
 
     if (videoId) {
       const createPlayer = () => {
@@ -257,19 +271,43 @@ export default function MyMoviesPage() {
       startTimeRef.current = Date.now();
       
       ytPlayerContainerRef.current.appendChild(iframe);
-    } else if (url && /photos\.app\.goo\.gl|photos\.google\.com/i.test(url)) {
-      // Google Photos: start watch duration timer, because it's played using custom placeholder card
-      startTimeRef.current = Date.now();
+    } else if (isPhotos) {
+      setPhotosLoading(true);
+      setPhotosStreamUrl('');
+      resumeSecsRef.current = resumeSecs || 0;
+      
+      authFetch(`/api/movies/photos-url?url=${encodeURIComponent(url)}`)
+        .then(res => {
+          if (!res.ok) throw new Error('Failed to resolve Google Photos link');
+          return res.json();
+        })
+        .then(data => {
+          setPhotosStreamUrl(data.videoUrl);
+          startTimeRef.current = Date.now();
+          
+          if (resumeSecs > 0) {
+            setSeekMsg(`Tiếp tục xem từ ${formatTimeLabel(resumeSecs)}`);
+            setTimeout(() => setSeekMsg(''), 3000);
+          }
+        })
+        .catch(err => {
+          console.error('Failed to load Google Photos stream:', err);
+        })
+        .finally(() => {
+          setPhotosLoading(false);
+        });
     } else {
       console.warn('Unknown video URL type:', url);
     }
-  }, [saveWatchTime]);
+  }, [saveWatchTime, authFetch]);
 
   // Handle unload events
   useEffect(() => {
     const handleUnload = () => {
       if (playerRef.current) {
         saveWatchTime(playerRef.current);
+      } else if (nativePlayerRef.current) {
+        saveWatchTime(nativePlayerRef.current);
       } else if (startTimeRef.current) {
         saveWatchTime(null);
       }
@@ -278,6 +316,8 @@ export default function MyMoviesPage() {
       if (document.visibilityState === 'hidden') {
         if (playerRef.current) {
           saveWatchTime(playerRef.current);
+        } else if (nativePlayerRef.current) {
+          saveWatchTime(nativePlayerRef.current);
         } else if (startTimeRef.current) {
           saveWatchTime(null);
         }
@@ -303,6 +343,9 @@ export default function MyMoviesPage() {
       // Save current progress if playing/watching
       if (playerRef.current) {
         saveWatchTime(playerRef.current);
+      } else if (nativePlayerRef.current) {
+        saveWatchTime(nativePlayerRef.current);
+        nativePlayerRef.current = null;
       } else if (startTimeRef.current) {
         saveWatchTime(null);
       }
@@ -412,6 +455,9 @@ export default function MyMoviesPage() {
     // Save watch time if playing
     if (playerRef.current) {
       saveWatchTime(playerRef.current);
+    } else if (nativePlayerRef.current) {
+      saveWatchTime(nativePlayerRef.current);
+      nativePlayerRef.current = null;
     }
     
     // Reset player
@@ -426,6 +472,7 @@ export default function MyMoviesPage() {
     setMovieDetail(null);
     setIsFloating(false);
     setTheaterMode(false);
+    setPhotosStreamUrl('');
     
     // Refresh catalog list to update watch progress
     fetchMovies();
@@ -659,18 +706,37 @@ export default function MyMoviesPage() {
                       ></div>
                       
                       {isPhotosVideo && (
-                        <div className={styles.photosPlaceholder}>
-                          <div className={styles.photosIcon}>📸</div>
-                          <h3 className={styles.photosTitle}>Google Photos</h3>
-                          <p className={styles.photosText}>Google Photos không hỗ trợ phát trực tiếp trong khung nhúng do chính sách bảo mật.</p>
-                          <a
-                            href={activeUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={styles.photosBtn}
-                          >
-                            🚀 Mở xem trên Google Photos
-                          </a>
+                        <div 
+                          className={styles.photosPlaceholder}
+                          style={{ background: '#000', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+                        >
+                          {photosLoading ? (
+                            <div className="spinner" style={{ width: 48, height: 48, borderWidth: 4 }} />
+                          ) : photosStreamUrl ? (
+                            <video
+                              ref={el => {
+                                nativePlayerRef.current = el;
+                                if (el && resumeSecsRef.current > 0) {
+                                  el.onloadedmetadata = () => {
+                                    if (resumeSecsRef.current > 0) {
+                                      el.currentTime = resumeSecsRef.current;
+                                      resumeSecsRef.current = 0;
+                                    }
+                                  };
+                                }
+                              }}
+                              src={`${import.meta.env.VITE_API_URL || ''}/api/proxy-video?url=${encodeURIComponent(photosStreamUrl)}`}
+                              controls
+                              autoPlay
+                              playsInline
+                              className={styles.nativeVideoPlayer}
+                              style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#000', borderRadius: '12px' }}
+                            />
+                          ) : (
+                            <div style={{ color: '#ef4444', textAlign: 'center', padding: '20px' }}>
+                              ⚠️ Không thể tải video từ Google Photos. Vui lòng đảm bảo quyền chia sẻ liên kết là công khai.
+                            </div>
+                          )}
                         </div>
                       )}
                       
@@ -720,14 +786,14 @@ export default function MyMoviesPage() {
                     >
                       {theaterMode ? '📺 Chế độ thường' : '🖥️ Chế độ rạp chiếu'}
                     </button>
-                    {(isDriveVideo || isPhotosVideo) && (
+                    {isDriveVideo && (
                       <a
                         href={activeUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={styles.driveOpenBtn}
                       >
-                        🚀 Mở bằng {isDriveVideo ? 'Google Drive' : 'Google Photos'} (Xem mượt hơn)
+                        🚀 Mở bằng Google Drive (Xem mượt hơn)
                       </a>
                     )}
                   </div>
