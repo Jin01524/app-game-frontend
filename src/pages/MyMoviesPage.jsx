@@ -469,6 +469,7 @@ export default function MyMoviesPage() {
   const activeEpisode = activePart?.episodes?.[activeEpisodeIndex];
   const activeUrl = activeEpisode?.url || '';
   const isDriveVideo = !!extractDriveId(activeUrl);
+  const isPhotosVideo = activeUrl && /photos\.app\.goo\.gl|photos\.google\.com/i.test(activeUrl);
 
   return (
     <div className={styles.page}>
@@ -645,10 +646,31 @@ export default function MyMoviesPage() {
                       className={`${styles.playerWrapper} ${theaterMode ? styles.playerWrapperWide : ''} ${isFloating ? styles.playerWrapperFloating : ''}`}
                     >
                       {seekMsg && <div className={styles.seekNotification}>{seekMsg}</div>}
-                      <div ref={ytPlayerContainerRef} className={styles.playerIframe}></div>
+                      
+                      <div 
+                        ref={ytPlayerContainerRef} 
+                        className={styles.playerIframe}
+                        style={{ display: isPhotosVideo ? 'none' : 'block' }}
+                      ></div>
+                      
+                      {isPhotosVideo && (
+                        <div className={styles.photosPlaceholder}>
+                          <div className={styles.photosIcon}>📸</div>
+                          <h3 className={styles.photosTitle}>Google Photos</h3>
+                          <p className={styles.photosText}>Google Photos không hỗ trợ phát trực tiếp trong khung nhúng do chính sách bảo mật.</p>
+                          <a
+                            href={activeUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={styles.photosBtn}
+                          >
+                            🚀 Mở xem trên Google Photos
+                          </a>
+                        </div>
+                      )}
                       
                       {/* Transparent overlays to block accidental redirects to YouTube on mobile */}
-                      {!isFloating && (
+                      {!isFloating && !isPhotosVideo && (
                         <>
                           <div className={styles.topRedirectBlocker}></div>
                           <div className={styles.logoRedirectBlocker}></div>
@@ -693,14 +715,14 @@ export default function MyMoviesPage() {
                     >
                       {theaterMode ? '📺 Chế độ thường' : '🖥️ Chế độ rạp chiếu'}
                     </button>
-                    {isDriveVideo && (
+                    {(isDriveVideo || isPhotosVideo) && (
                       <a
                         href={activeUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={styles.driveOpenBtn}
                       >
-                        🚀 Mở bằng ứng dụng Google Drive (Xem mượt hơn)
+                        🚀 Mở bằng {isDriveVideo ? 'Google Drive' : 'Google Photos'} (Xem mượt hơn)
                       </a>
                     )}
                   </div>

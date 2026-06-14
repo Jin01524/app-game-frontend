@@ -972,7 +972,8 @@ function MovieModal({ movie, onClose, onSave, authFetch }) {
     const trimmed = url.trim();
     const ytReg = /^(https?:\/\/)?(www\.|m\.)?(youtube\.com|youtu\.be)\/(watch\?v=|embed\/|v\/|shorts\/)?([a-zA-Z0-9_-]{11})/i;
     const driveReg = /^(https?:\/\/)?(drive\.google\.com)\/(file\/d\/([a-zA-Z0-9_-]{25,})|open\?id=([a-zA-Z0-9_-]{25,}))/i;
-    return ytReg.test(trimmed) || driveReg.test(trimmed);
+    const photosReg = /^(https?:\/\/)?(photos\.app\.goo\.gl|photos\.google\.com)\/.+/i;
+    return ytReg.test(trimmed) || driveReg.test(trimmed) || photosReg.test(trimmed);
   };
 
   const handleSave = async () => {
@@ -991,7 +992,7 @@ function MovieModal({ movie, onClose, onSave, authFetch }) {
         if (!ep.title.trim()) { setErr(`Vui lòng nhập tiêu đề tập ${epIdx + 1} thuộc "${part.title}"`); return; }
         if (!ep.url.trim()) { setErr(`Vui lòng nhập link video tập ${epIdx + 1} thuộc "${part.title}"`); return; }
         if (!validateVideoUrl(ep.url)) {
-          setErr(`Link video (YouTube hoặc Google Drive) không hợp lệ ở tập ${epIdx + 1} thuộc "${part.title}"`);
+          setErr(`Link video (YouTube, Google Drive hoặc Google Photos) không hợp lệ ở tập ${epIdx + 1} thuộc "${part.title}"`);
           return;
         }
       }
@@ -1222,11 +1223,11 @@ function MovieModal({ movie, onClose, onSave, authFetch }) {
                                 style={{ paddingLeft: 8, fontSize: '0.8rem', borderColor: !isUrlValid ? 'var(--px-red)' : 'var(--px-border)' }}
                                 value={ep.url}
                                 onChange={e => updateEpisode(pIdx, epIdx, 'url', e.target.value)}
-                                placeholder="Link YouTube hoặc Google Drive (vd: https://drive.google.com/...)"
+                                placeholder="Link YouTube, Google Drive hoặc Google Photos (vd: https://photos.app.goo.gl/...)"
                               />
                               {!isUrlValid && (
                                 <div style={{ fontSize: '0.7rem', color: 'var(--px-red)', marginTop: '2px' }}>
-                                  ⚠️ Link video không đúng định dạng (Hỗ trợ YouTube / Google Drive)
+                                  ⚠️ Link video không đúng định dạng (Hỗ trợ YouTube / Google Drive / Google Photos)
                                 </div>
                               )}
                             </div>
