@@ -107,38 +107,35 @@ const resolvePhotosUrlClient = async (url) => {
     return cachedUrl;
   }
 
-  const proxies = [
-    {
-      name: 'api.cors.lol',
-      url: (target) => `https://api.cors.lol/?url=${encodeURIComponent(target)}`
-    },
-    {
-      name: 'api.allorigins.win raw',
-      url: (target) => `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`
-    }
-  ];
+  // We only try api.cors.lol on the client side with a strict 4.5s timeout.
+  // If it fails or times out, we throw immediately to fall back to the backend.
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => {
+    console.warn('[Client Photos] api.cors.lol resolve timed out. Aborting.');
+    controller.abort();
+  }, 4500);
 
-  let lastError = null;
-  for (const proxy of proxies) {
-    try {
-      const proxyUrl = proxy.url(url);
-      console.log(`[Client Photos] Resolving URL via ${proxy.name}...`);
-      const res = await fetch(proxyUrl);
-      if (!res.ok) throw new Error(`HTTP status ${res.status}`);
-      const text = await res.text();
-      const videos = extractVideosFromHtmlClient(text);
-      if (videos && videos.length > 0) {
-        const streamUrl = videos[0].videoUrl;
-        console.log(`[Client Photos] Successfully resolved via ${proxy.name}. Found video.`);
-        setCachedPhotosUrl(url, streamUrl);
-        return streamUrl;
-      }
-    } catch (err) {
-      console.warn(`[Client Photos] ${proxy.name} failed:`, err.message);
-      lastError = err;
+  try {
+    const proxyUrl = `https://api.cors.lol/?url=${encodeURIComponent(url)}`;
+    console.log(`[Client Photos] Resolving URL via api.cors.lol (4.5s timeout)...`);
+    const res = await fetch(proxyUrl, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    
+    if (!res.ok) throw new Error(`HTTP status ${res.status}`);
+    const text = await res.text();
+    const videos = extractVideosFromHtmlClient(text);
+    if (videos && videos.length > 0) {
+      const streamUrl = videos[0].videoUrl;
+      console.log(`[Client Photos] Successfully resolved via api.cors.lol.`);
+      setCachedPhotosUrl(url, streamUrl);
+      return streamUrl;
     }
+    throw new Error('No streamable videos found in HTML');
+  } catch (err) {
+    clearTimeout(timeoutId);
+    console.warn(`[Client Photos] api.cors.lol failed:`, err.name === 'AbortError' ? 'Timeout' : err.message);
+    throw err;
   }
-  throw lastError || new Error('All client-side resolution strategies failed');
 };
 
 export default function MyMoviesPage() {
@@ -176,6 +173,7 @@ export default function MyMoviesPage() {
   const movieRef = useRef(null);
   const playerAnchorRef = useRef(null);
   const ytPlayerContainerRef = useRef(null);
+  const initializedUrlRef = useRef('');
 
   // Load list of movies
   const fetchMovies = useCallback(async () => {
@@ -534,6 +532,7 @@ export default function MyMoviesPage() {
       // If the current video is YouTube and the new video is also YouTube, we can try to reuse the player
       if (videoId && playerRef.current && typeof playerRef.current.loadVideoById === 'function') {
         try {
+          initializedUrlRef.current = ep.url; // Update ref to new URL since we reuse player
           playerRef.current.loadVideoById({
             videoId: videoId,
             startSeconds: resumeSecs || 0
@@ -543,20 +542,28 @@ export default function MyMoviesPage() {
             setTimeout(() => setSeekMsg(''), 3000);
           }
         } catch (err) {
-          initPlayer(ep.url, resumeSecs);
+          // If reuse failed, let useEffect initialize it (we clear initializedUrlRef first)
+          initializedUrlRef.current = '';
         }
       } else {
-        initPlayer(ep.url, resumeSecs);
+        // Clear initializedUrlRef to let useEffect initialize it
+        initializedUrlRef.current = '';
       }
     } catch (err) {
       console.error('Error in handleSelectEpisode:', err);
     }
   };
 
-  // Initialize player when details finish loading
+  // Initialize player when details finish loading (with duplicate initialization guard)
   useEffect(() => {
     if (movieDetail && movieDetail.parts && movieDetail.parts[activePartIndex] && movieDetail.parts[activePartIndex].episodes && movieDetail.parts[activePartIndex].episodes[activeEpisodeIndex]) {
       const ep = movieDetail.parts[activePartIndex].episodes[activeEpisodeIndex];
+      
+      // Guard: Skip if this specific URL is already the active initialized player target
+      if (initializedUrlRef.current === ep.url) {
+        return;
+      }
+      
       const videoId = extractYoutubeId(ep.url);
       const driveId = extractDriveId(ep.url);
       const isPhotos = ep.url && /photos\.app\.goo\.gl|photos\.google\.com/i.test(ep.url);
@@ -565,6 +572,8 @@ export default function MyMoviesPage() {
       const resumeSecs = log ? log.lastPositionSeconds : 0;
       
       if (videoId || driveId || isPhotos) {
+        console.log('[Player Init] Initializing player for URL:', ep.url.substring(0, 60) + '...');
+        initializedUrlRef.current = ep.url;
         initPlayer(ep.url, resumeSecs);
       } else {
         console.warn('Could not extract video source for episode:', ep.url);
@@ -580,7 +589,7 @@ export default function MyMoviesPage() {
         playerRef.current = null;
       }
     };
-  }, [movieDetail, initPlayer]);
+  }, [movieDetail, initPlayer, activePartIndex, activeEpisodeIndex]);
 
   // Picture in picture / floating player on scroll down
   useEffect(() => {
@@ -633,6 +642,7 @@ export default function MyMoviesPage() {
     setIsFloating(false);
     setTheaterMode(false);
     setPhotosStreamUrl('');
+    initializedUrlRef.current = ''; // Clear player initialized state
     
     // Refresh catalog list to update watch progress
     fetchMovies();
