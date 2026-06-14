@@ -71,8 +71,42 @@ const extractVideosFromHtmlClient = (html) => {
   return videos;
 };
 
+// Frontend cache helpers for resolved Google Photos URLs (expires in 4 hours)
+const getCachedPhotosUrl = (url) => {
+  try {
+    const cached = localStorage.getItem(`gphotos_cache_${url}`);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (parsed.expiresAt > Date.now()) {
+        return parsed.streamUrl;
+      } else {
+        localStorage.removeItem(`gphotos_cache_${url}`);
+      }
+    }
+  } catch (e) {
+    console.warn('[Cache] Failed to read from localStorage:', e);
+  }
+  return null;
+};
+
+const setCachedPhotosUrl = (url, streamUrl) => {
+  try {
+    const expiresAt = Date.now() + 4 * 60 * 60 * 1000; // 4 hours
+    localStorage.setItem(`gphotos_cache_${url}`, JSON.stringify({ streamUrl, expiresAt }));
+  } catch (e) {
+    console.warn('[Cache] Failed to write to localStorage:', e);
+  }
+};
+
 // Client-side Google Photos short-link resolver using free CORS proxies
 const resolvePhotosUrlClient = async (url) => {
+  // Check local cache first
+  const cachedUrl = getCachedPhotosUrl(url);
+  if (cachedUrl) {
+    console.log('[Client Photos] Loaded resolved stream URL from localStorage cache.');
+    return cachedUrl;
+  }
+
   const proxies = [
     {
       name: 'api.cors.lol',
@@ -94,8 +128,10 @@ const resolvePhotosUrlClient = async (url) => {
       const text = await res.text();
       const videos = extractVideosFromHtmlClient(text);
       if (videos && videos.length > 0) {
+        const streamUrl = videos[0].videoUrl;
         console.log(`[Client Photos] Successfully resolved via ${proxy.name}. Found video.`);
-        return videos[0].videoUrl;
+        setCachedPhotosUrl(url, streamUrl);
+        return streamUrl;
       }
     } catch (err) {
       console.warn(`[Client Photos] ${proxy.name} failed:`, err.message);
@@ -127,6 +163,7 @@ export default function MyMoviesPage() {
   const [seekMsg, setSeekMsg] = useState('');
   const [photosStreamUrl, setPhotosStreamUrl] = useState('');
   const [photosLoading, setPhotosLoading] = useState(false);
+  const [useProxyFallback, setUseProxyFallback] = useState(false);
 
   // Refs for tracking play duration on server
   const playerRef = useRef(null);
@@ -417,7 +454,12 @@ export default function MyMoviesPage() {
     } else {
       console.warn('Unknown video URL type:', url);
     }
-  }, [saveWatchTime, authFetch]);
+  }, [saveWatchTime, authFetch, useProxyFallback]);
+
+  // Reset proxy fallback when active stream changes
+  useEffect(() => {
+    setUseProxyFallback(false);
+  }, [photosStreamUrl]);
 
   // Handle unload events
   useEffect(() => {
@@ -843,7 +885,14 @@ export default function MyMoviesPage() {
                                   };
                                 }
                               }}
-                              src={`${import.meta.env.VITE_API_URL || ''}/api/proxy-video?url=${encodeURIComponent(photosStreamUrl)}`}
+                              src={useProxyFallback ? `${import.meta.env.VITE_API_URL || ''}/api/proxy-video?url=${encodeURIComponent(photosStreamUrl)}` : photosStreamUrl}
+                              referrerPolicy="no-referrer"
+                              onError={() => {
+                                if (!useProxyFallback) {
+                                  console.warn('[Photos Player] Direct streaming failed. Falling back to backend server proxy.');
+                                  setUseProxyFallback(true);
+                                }
+                              }}
                               controls
                               autoPlay
                               playsInline
