@@ -999,11 +999,8 @@ export default function MyMoviesPage() {
                                   };
                                 }
                               }}
-                              src={useProxyFallback
-                                ? `${import.meta.env.VITE_API_URL || ''}/api/proxy-video?url=${encodeURIComponent(photosStreamUrl)}`
-                                : photosStreamUrl}
-                              referrerPolicy="no-referrer"
-                              onError={useProxyFallback ? undefined : handlePhotosStreamError}
+                              src={`https://app-video-proxy.ngocbinhdt1999.workers.dev/?url=${encodeURIComponent(photosStreamUrl)}`}
+                              onError={() => setPhotosError('⚠️ Không thể phát video này qua Proxy Cloudflare. Vui lòng kiểm tra lại liên kết.')}
                               controls
                               autoPlay
                               playsInline
