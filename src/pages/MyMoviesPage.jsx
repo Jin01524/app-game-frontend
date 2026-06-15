@@ -74,15 +74,15 @@ const extractVideosFromHtmlClient = (html) => {
 // Frontend cache helpers for resolved Google Photos URLs
 const PHOTOS_CACHE_TTL = 60 * 60 * 1000; // 1 hour — Google CDN URLs typically expire in ~1-2h
 
-const getCachedPhotosUrl = (url) => {
+const getCachedPhotosData = (url) => {
   try {
-    const cached = localStorage.getItem(`gphotos_cache_${url}`);
+    const cached = localStorage.getItem(`gphotos_cache_v2_${url}`);
     if (cached) {
       const parsed = JSON.parse(cached);
       if (parsed.expiresAt > Date.now()) {
-        return parsed.streamUrl;
+        return parsed.data;
       } else {
-        localStorage.removeItem(`gphotos_cache_${url}`);
+        localStorage.removeItem(`gphotos_cache_v2_${url}`);
       }
     }
   } catch (e) {
@@ -91,16 +91,17 @@ const getCachedPhotosUrl = (url) => {
   return null;
 };
 
-const setCachedPhotosUrl = (url, streamUrl) => {
+const setCachedPhotosData = (url, data) => {
   try {
-    localStorage.setItem(`gphotos_cache_${url}`, JSON.stringify({ streamUrl, expiresAt: Date.now() + PHOTOS_CACHE_TTL }));
+    localStorage.setItem(`gphotos_cache_v2_${url}`, JSON.stringify({ data, expiresAt: Date.now() + PHOTOS_CACHE_TTL }));
   } catch (e) {
     console.warn('[Cache] Failed to write to localStorage:', e);
   }
 };
 
-const invalidateCachedPhotosUrl = (url) => {
+const invalidateCachedPhotosData = (url) => {
   try {
+    localStorage.removeItem(`gphotos_cache_v2_${url}`);
     localStorage.removeItem(`gphotos_cache_${url}`);
     console.log('[Cache] Invalidated stale URL cache for:', url);
   } catch (e) {}
@@ -165,8 +166,9 @@ export default function MyMoviesPage() {
   
   const [theaterMode, setTheaterMode] = useState(false);
   const [isFloating, setIsFloating] = useState(false);
-  const [seekMsg, setSeekMsg] = useState('');
   const [photosStreamUrl, setPhotosStreamUrl] = useState('');
+  const [photosQualities, setPhotosQualities] = useState(null);
+  const [selectedQuality, setSelectedQuality] = useState('720p');
   const [photosLoading, setPhotosLoading] = useState(false);
   const [photosError, setPhotosError] = useState('');
   const [useProxyFallback, setUseProxyFallback] = useState(false);
@@ -422,35 +424,50 @@ export default function MyMoviesPage() {
     } else if (isPhotos) {
       setPhotosLoading(true);
       setPhotosStreamUrl('');
+      setPhotosQualities(null);
+      setSelectedQuality('720p');
       setPhotosError('');
       setUseProxyFallback(false);
       photosSourceUrlRef.current = url;
       proxyResolvedAttemptRef.current = false; // reset guard for new episode
       resumeSecsRef.current = resumeSecs || 0;
       
-      const resolveAndPlay = async (forceBackend = false) => {
+      const resolveAndPlay = async () => {
         try {
+          let cached = getCachedPhotosData(url);
           let streamUrl;
-          if (!forceBackend) {
-            // Try resolving client-side first (uses client IP)
-            try {
-              streamUrl = await resolvePhotosUrlClient(url);
-            } catch (clientErr) {
-              console.warn('[Photos] Client-side resolution failed, falling back to backend:', clientErr.message);
-              forceBackend = true;
-            }
-          }
+          let qualities = null;
           
-          if (forceBackend) {
+          if (cached) {
+            console.log('[Client Photos] Loaded resolved stream URL from cache.');
+            streamUrl = cached.streamUrl;
+            qualities = cached.qualities;
+          } else {
+            // Chúng ta luôn phân giải qua backend để kiểm tra chất lượng (HEAD requests)
             const res = await authFetch(`/api/movies/photos-url?url=${encodeURIComponent(url)}`);
             if (!res.ok) throw new Error('Backend resolver failed');
             const data = await res.json();
             streamUrl = data.videoUrl;
-            // Cache the freshly resolved URL
-            setCachedPhotosUrl(url, streamUrl);
+            qualities = data.qualities;
+            
+            // Lưu cache dữ liệu phân giải đầy đủ
+            setCachedPhotosData(url, { streamUrl, qualities });
           }
           
           setPhotosStreamUrl(streamUrl);
+          setPhotosQualities(qualities);
+          
+          // Khởi tạo chất lượng hiển thị tương ứng
+          if (streamUrl.includes('=m37')) {
+            setSelectedQuality('1080p');
+          } else if (streamUrl.includes('=m22')) {
+            setSelectedQuality('720p');
+          } else if (streamUrl.includes('=m18')) {
+            setSelectedQuality('360p');
+          } else {
+            setSelectedQuality('720p');
+          }
+          
           startTimeRef.current = Date.now();
           
           if (resumeSecs > 0) {
@@ -458,7 +475,7 @@ export default function MyMoviesPage() {
             setTimeout(() => setSeekMsg(''), 3000);
           }
         } catch (err) {
-          console.error('[Photos] All resolution strategies failed:', err);
+          console.error('[Photos] Resolution failed:', err);
           setPhotosError('⚠️ Không thể tải video từ Google Photos. Vui lòng đảm bảo quyền chia sẻ liên kết là công khai.');
         } finally {
           setPhotosLoading(false);
@@ -490,7 +507,7 @@ export default function MyMoviesPage() {
     
     proxyResolvedAttemptRef.current = true;
     console.warn('[Photos Player] Direct stream failed — re-resolving fresh URL and switching to backend proxy...');
-    invalidateCachedPhotosUrl(sourceUrl);
+    invalidateCachedPhotosData(sourceUrl);
     setPhotosLoading(true);
     setPhotosStreamUrl('');
     
@@ -501,8 +518,19 @@ export default function MyMoviesPage() {
         return res.json();
       })
       .then(data => {
-        setCachedPhotosUrl(sourceUrl, data.videoUrl);
+        setCachedPhotosData(sourceUrl, { streamUrl: data.videoUrl, qualities: data.qualities });
         setPhotosStreamUrl(data.videoUrl);
+        setPhotosQualities(data.qualities);
+        // Khởi tạo chất lượng hiển thị tương ứng
+        if (data.videoUrl.includes('=m37')) {
+          setSelectedQuality('1080p');
+        } else if (data.videoUrl.includes('=m22')) {
+          setSelectedQuality('720p');
+        } else if (data.videoUrl.includes('=m18')) {
+          setSelectedQuality('360p');
+        } else {
+          setSelectedQuality('720p');
+        }
         setUseProxyFallback(true); // switch to proxy mode - DO NOT retry direct stream
         console.log('[Photos Player] Fresh URL obtained, streaming via backend proxy.');
       })
@@ -512,6 +540,20 @@ export default function MyMoviesPage() {
       })
       .finally(() => setPhotosLoading(false));
   }, [authFetch, photosStreamUrl]);
+
+  // Thay đổi chất lượng phát trực tiếp
+  const handleQualityChange = (qualityName) => {
+    if (!photosQualities || !photosQualities[qualityName]) return;
+    const spec = photosQualities[qualityName];
+    if (!spec.available) return;
+
+    // Lưu lại thời gian phát hiện tại để tiếp tục phát sau khi chuyển chất lượng
+    const currentTime = nativePlayerRef.current ? nativePlayerRef.current.currentTime : 0;
+    resumeSecsRef.current = currentTime;
+
+    setSelectedQuality(qualityName);
+    setPhotosStreamUrl(spec.url);
+  };
 
   // Handle unload events
   useEffect(() => {
@@ -696,6 +738,8 @@ export default function MyMoviesPage() {
     setIsFloating(false);
     setTheaterMode(false);
     setPhotosStreamUrl('');
+    setPhotosQualities(null);
+    setSelectedQuality('720p');
     initializedUrlRef.current = ''; // Clear player initialized state
     
     // Refresh catalog list to update watch progress
@@ -942,6 +986,7 @@ export default function MyMoviesPage() {
                             </div>
                           ) : photosStreamUrl ? (
                             <video
+                              key={photosStreamUrl} // Buộc load lại element để seek thời gian chính xác khi chuyển chất lượng
                               ref={el => {
                                 nativePlayerRef.current = el;
                                 if (el && resumeSecsRef.current > 0) {
@@ -1016,6 +1061,27 @@ export default function MyMoviesPage() {
                     >
                       {theaterMode ? '📺 Chế độ thường' : '🖥️ Chế độ rạp chiếu'}
                     </button>
+                    {isPhotosVideo && photosQualities && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: '500' }}>Chất lượng:</span>
+                        <select
+                          value={selectedQuality}
+                          onChange={(e) => handleQualityChange(e.target.value)}
+                          className={styles.selectBox}
+                          style={{ padding: '6px 12px', fontSize: '0.85rem', height: 'auto', background: '#1e293b', border: '1px solid #334155', color: '#f8fafc', borderRadius: '6px' }}
+                        >
+                          {['1080p', '720p', '360p'].map((q) => {
+                            const spec = photosQualities[q];
+                            const available = spec && spec.available;
+                            return (
+                              <option key={q} value={q} disabled={!available}>
+                                {q} {!available ? ' (Chưa cập nhật)' : ''}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </div>
+                    )}
                     {isDriveVideo && (
                       <a
                         href={activeUrl}
