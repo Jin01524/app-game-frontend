@@ -166,6 +166,7 @@ export default function MyMoviesPage() {
   
   const [theaterMode, setTheaterMode] = useState(false);
   const [isFloating, setIsFloating] = useState(false);
+  const [seekMsg, setSeekMsg] = useState('');
   const [photosStreamUrl, setPhotosStreamUrl] = useState('');
   const [photosQualities, setPhotosQualities] = useState(null);
   const [selectedQuality, setSelectedQuality] = useState('720p');
