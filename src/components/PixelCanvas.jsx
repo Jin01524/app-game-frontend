@@ -34,12 +34,14 @@ export default function PixelCanvas() {
       const W = canvas.width;
       const H = canvas.height;
 
-      // 1. Base color (pastel sky blue)
-      ctx.fillStyle = '#bae6fd';
+      const isDark = document.body.classList.contains('dark-theme');
+
+      // 1. Base color (sky)
+      ctx.fillStyle = isDark ? '#0f172a' : '#bae6fd';
       ctx.fillRect(0, 0, W, H);
 
       // 2. Checkerboard tile pattern (scrolling slowly diagonally)
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+      ctx.fillStyle = isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(255, 255, 255, 0.25)';
       const tileSize = 64;
       const offsetX = (time * 0.2) % (tileSize * 2);
       const offsetY = (time * 0.2) % (tileSize * 2);
@@ -54,7 +56,7 @@ export default function PixelCanvas() {
       }
 
       // 3. Floating clouds / particles
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+      ctx.fillStyle = isDark ? 'rgba(148, 163, 184, 0.15)' : 'rgba(255, 255, 255, 0.8)';
       for (let p of particles) {
         // Draw a simple 8-bit cloud shape
         ctx.fillRect(p.x, p.y, p.size, p.size * 0.6);
@@ -68,7 +70,7 @@ export default function PixelCanvas() {
       }
 
       // 4. Subtle grid lines (like a tilemap)
-      ctx.strokeStyle = 'rgba(59, 130, 246, 0.1)';
+      ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(59, 130, 246, 0.1)';
       ctx.lineWidth = 2;
       for (let x = 0; x < W; x += tileSize) {
         ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
