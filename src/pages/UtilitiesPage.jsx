@@ -12,7 +12,6 @@ import wolfIcon from '../../assets/wolf-app.png';
 
 const UTILITIES = [
   { key: 'calculator', name: 'Máy tính', icon: '🧮', color: '#f59e0b' },
-  { key: 'photos',     name: 'Photos',   icon: '🖼️', color: '#10b981' },
   { key: 'messaging',  name: 'Nhắn tin', icon: '💬', color: '#3b82f6' },
   { key: 'weather',    name: 'Thời tiết', icon: '🌤️', color: '#06b6d4' },
   { key: 'tarot',      name: 'Xem Tarot', icon: tarotIcon, color: '#6366f1' },
@@ -78,8 +77,6 @@ export default function UtilitiesPage() {
                     logUtilityAccess(u.key, u.name);
                     if (u.key === 'calculator') {
                       navigate('/utilities/calculator');
-                    } else if (u.key === 'photos') {
-                      navigate('/utilities/photos');
                     } else if (u.key === 'messaging') {
                       navigate('/utilities/messaging');
                     } else if (u.key === 'weather') {

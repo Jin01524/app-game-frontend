@@ -12,7 +12,6 @@ import MarketPage  from './pages/MarketPage';
 import LobbyPage   from './pages/LobbyPage';
 import UtilitiesPage from './pages/UtilitiesPage';
 import CalculatorPage from './pages/CalculatorPage';
-import PhotosPage from './pages/PhotosPage';
 import WeatherPage from './pages/WeatherPage';
 import TarotPage from './pages/TarotPage';
 import SpyPage from './pages/SpyPage';
@@ -56,9 +55,6 @@ export default function App() {
           />
           <Route path="/utilities/calculator"
             element={<ProtectedRoute><CalculatorPage /></ProtectedRoute>}
-          />
-          <Route path="/utilities/photos"
-            element={<ProtectedRoute><PhotosPage /></ProtectedRoute>}
           />
           <Route path="/utilities/weather"
             element={<ProtectedRoute><WeatherPage /></ProtectedRoute>}
