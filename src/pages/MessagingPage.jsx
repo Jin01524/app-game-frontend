@@ -80,10 +80,7 @@ export default function MessagingPage() {
       fetchUsers();
       fetchHistory();
       
-      // Request notification permissions
-      if ('Notification' in window && Notification.permission === 'default') {
-        Notification.requestPermission();
-      }
+
 
       const interval = setInterval(fetchUsers, 20000); // refresh user states every 20s
       return () => clearInterval(interval);
@@ -138,13 +135,7 @@ export default function MessagingPage() {
           }).catch(err => console.error('Error marking as read:', err));
         }
 
-        // If window is blurred (not in focus), also show a system notification!
-        if (document.hidden && Notification.permission === 'granted' && sender !== user.username) {
-          new Notification(`@${sender} đã nhắn tin`, {
-            body: msg.content,
-            icon: msg.sender_avatar || '/favicon.ico'
-          });
-        }
+
       } else {
         // Increment unread badge for the sender
         if (sender !== user.username) {
@@ -153,13 +144,7 @@ export default function MessagingPage() {
             [sender]: (prev[sender] || 0) + 1
           }));
 
-          // Send push notification for unread background message
-          if (Notification.permission === 'granted') {
-            new Notification(`Tin nhắn từ @${sender}`, {
-              body: msg.content,
-              icon: msg.sender_avatar || '/favicon.ico'
-            });
-          }
+
         }
       }
     });
