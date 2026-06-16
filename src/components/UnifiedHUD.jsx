@@ -137,10 +137,10 @@ export default function UnifiedHUD({
       )}
 
       {/* Main Interaction Button or Eat/Drink Button */}
-      {((selectedItem && canConsume) || (!selectedItem && showInteraction)) && (
+      {((selectedItem && canConsume) || showInteraction) && (
         <button 
-          onClick={selectedItem ? onConsume : onInteract}
-          disabled={selectedItem ? actionLoading || eatCooldown : false}
+          onClick={(selectedItem && canConsume) ? onConsume : onInteract}
+          disabled={(selectedItem && canConsume) ? actionLoading || eatCooldown : false}
           className="pixel-btn"
           style={{ 
             position: 'absolute',
@@ -152,20 +152,20 @@ export default function UnifiedHUD({
             display: 'flex', 
             alignItems: 'center', 
             justifyContent: 'center',
-            background: selectedItem ? '#16a34a' : 'rgb(59, 130, 246)', 
-            border: selectedItem ? '4px solid #15803d' : '4px solid #1e3a8a', 
+            background: (selectedItem && canConsume) ? '#16a34a' : 'rgb(59, 130, 246)', 
+            border: (selectedItem && canConsume) ? '4px solid #15803d' : '4px solid #1e3a8a', 
             padding: '0',
             boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
             touchAction: 'none',
             userSelect: 'none',
             WebkitUserSelect: 'none',
             WebkitTouchCallout: 'none',
-            animation: (!selectedItem && interactionActive) ? 'pulse 1s infinite' : 'none',
-            cursor: (selectedItem && (actionLoading || eatCooldown)) ? 'default' : 'pointer',
+            animation: (!(selectedItem && canConsume) && interactionActive) ? 'pulse 1s infinite' : 'none',
+            cursor: ((selectedItem && canConsume) && (actionLoading || eatCooldown)) ? 'default' : 'pointer',
             overflow: 'hidden',
             zIndex: 20
           }}>
-          {selectedItem ? (
+          {(selectedItem && canConsume) ? (
             <>
               <img src={isDrinkable ? drinkIcon : eatIcon} alt={isDrinkable ? 'Uống' : 'Ăn'} style={{ width: '36px', height: '36px', imageRendering: 'pixelated' }} />
               {eatCooldown && (
