@@ -950,6 +950,8 @@ function MovieModal({ movie, onClose, onSave, authFetch }) {
     country:     movie?.country     || '',
     genre:       movie?.genre       || '',
     parts:       movie?.parts       || [],
+    publishYear: movie?.publishYear || '',
+    coverBackground: movie?.coverBackground || '',
   });
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -1128,7 +1130,19 @@ function MovieModal({ movie, onClose, onSave, authFetch }) {
             </div>
           </div>
 
-          {/* Genre & Country */}
+          {/* Cover Background */}
+          <div className="input-group">
+            <label className="input-label">Ảnh bìa cover phía sau (Link ảnh hoặc link Youtube)</label>
+            <input
+              className="input-field"
+              style={{ paddingLeft: 14 }}
+              value={form.coverBackground}
+              onChange={e => set('coverBackground', e.target.value)}
+              placeholder="Nhập link ảnh bìa lớn hoặc link YouTube..."
+            />
+          </div>
+
+          {/* Genre, Country & Year */}
           <div style={{ display: 'flex', gap: '12px' }}>
             <div className="input-group" style={{ flex: 1 }}>
               <label className="input-label">Thể loại</label>
@@ -1148,6 +1162,17 @@ function MovieModal({ movie, onClose, onSave, authFetch }) {
                 value={form.country}
                 onChange={e => set('country', e.target.value)}
                 placeholder="Ví dụ: Việt Nam, Nhật..."
+              />
+            </div>
+            <div className="input-group" style={{ flex: 1 }}>
+              <label className="input-label">Năm sản xuất</label>
+              <input
+                type="number"
+                className="input-field"
+                style={{ paddingLeft: 14 }}
+                value={form.publishYear}
+                onChange={e => set('publishYear', e.target.value)}
+                placeholder="Ví dụ: 2024..."
               />
             </div>
           </div>

@@ -156,10 +156,12 @@ export default function MyMoviesPage() {
   const [search, setSearch] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('');
-  const [sortBy, setSortBy] = useState('newest'); // 'newest' | 'az' | 'popular'
+  const [selectedYear, setSelectedYear] = useState('');
+  const [sortBy, setSortBy] = useState('newest'); // 'newest' | 'az' | 'popular' | 'year-desc' | 'year-asc'
 
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [movieDetail, setMovieDetail] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
   const [activePartIndex, setActivePartIndex] = useState(0);
   const [activeEpisodeIndex, setActiveEpisodeIndex] = useState(0);
@@ -653,6 +655,21 @@ export default function MyMoviesPage() {
 
   // Initialize player when details finish loading (with duplicate initialization guard)
   useEffect(() => {
+    if (!isPlaying) {
+      if (playerRef.current) {
+        try {
+          playerRef.current.destroy();
+        } catch (e) {}
+        playerRef.current = null;
+      }
+      if (nativePlayerRef.current) {
+        saveWatchTime(nativePlayerRef.current);
+        nativePlayerRef.current = null;
+      }
+      initializedUrlRef.current = '';
+      return;
+    }
+
     if (movieDetail && movieDetail.parts && movieDetail.parts[activePartIndex] && movieDetail.parts[activePartIndex].episodes && movieDetail.parts[activePartIndex].episodes[activeEpisodeIndex]) {
       const ep = movieDetail.parts[activePartIndex].episodes[activeEpisodeIndex];
       
@@ -686,7 +703,7 @@ export default function MyMoviesPage() {
         playerRef.current = null;
       }
     };
-  }, [movieDetail, initPlayer, activePartIndex, activeEpisodeIndex]);
+  }, [movieDetail, initPlayer, activePartIndex, activeEpisodeIndex, isPlaying]);
 
   // Picture in picture / floating player on scroll down
   useEffect(() => {
@@ -736,6 +753,7 @@ export default function MyMoviesPage() {
     
     setSelectedMovie(null);
     setMovieDetail(null);
+    setIsPlaying(false);
     setIsFloating(false);
     setTheaterMode(false);
     setPhotosStreamUrl('');
@@ -747,17 +765,59 @@ export default function MyMoviesPage() {
     fetchMovies();
   };
 
+  const handleBackToDetails = () => {
+    // Save watch time if playing
+    if (playerRef.current) {
+      saveWatchTime(playerRef.current);
+    } else if (nativePlayerRef.current) {
+      saveWatchTime(nativePlayerRef.current);
+      nativePlayerRef.current = null;
+    }
+    
+    // Reset player
+    if (playerRef.current) {
+      try {
+        playerRef.current.destroy();
+      } catch (e) {}
+      playerRef.current = null;
+    }
+    
+    setIsPlaying(false);
+    setIsFloating(false);
+    setTheaterMode(false);
+    setPhotosStreamUrl('');
+    setPhotosQualities(null);
+    setSelectedQuality('720p');
+    initializedUrlRef.current = ''; // Clear player initialized state
+  };
+
+  // Helper to check cover background
+  const getCoverBgInfo = (url) => {
+    if (!url) return { isYt: false, isImg: false, ytId: '' };
+    const trimmed = url.trim();
+    const ytId = extractYoutubeId(trimmed);
+    if (ytId) {
+      return { isYt: true, isImg: false, ytId };
+    }
+    return { isYt: false, isImg: true, ytId: '' };
+  };
+
   // Filter & Sort Logic
-  const genres = [...new Set(movies.map(m => m.genre).filter(Boolean))];
+  const genres = [...new Set(
+    movies.flatMap(m => m.genre ? m.genre.split(',').map(g => g.trim()) : [])
+  )].filter(Boolean).sort();
+  
   const countries = [...new Set(movies.map(m => m.country).filter(Boolean))];
+  const years = [...new Set(movies.map(m => m.publishYear).filter(Boolean))].sort((a, b) => b - a);
 
   const filteredMovies = movies
     .filter(m => {
       const matchSearch = m.title.toLowerCase().includes(search.toLowerCase()) || 
                           (m.tags || '').toLowerCase().includes(search.toLowerCase());
-      const matchGenre = !selectedGenre || m.genre === selectedGenre;
+      const matchGenre = !selectedGenre || (m.genre && m.genre.split(',').map(g => g.trim()).includes(selectedGenre));
       const matchCountry = !selectedCountry || m.country === selectedCountry;
-      return matchSearch && matchGenre && matchCountry;
+      const matchYear = !selectedYear || String(m.publishYear) === String(selectedYear);
+      return matchSearch && matchGenre && matchCountry && matchYear;
     })
     .sort((a, b) => {
       if (sortBy === 'newest') {
@@ -766,6 +826,14 @@ export default function MyMoviesPage() {
         return a.title.localeCompare(b.title);
       } else if (sortBy === 'popular') {
         return b.episodesCount - a.episodesCount;
+      } else if (sortBy === 'year-desc') {
+        if (!a.publishYear) return 1;
+        if (!b.publishYear) return -1;
+        return b.publishYear - a.publishYear;
+      } else if (sortBy === 'year-asc') {
+        if (!a.publishYear) return 1;
+        if (!b.publishYear) return -1;
+        return a.publishYear - b.publishYear;
       }
       return 0;
     });
@@ -791,6 +859,9 @@ export default function MyMoviesPage() {
   const activeUrl = activeEpisode?.url || '';
   const isDriveVideo = !!extractDriveId(activeUrl);
   const isPhotosVideo = activeUrl && /photos\.app\.goo\.gl|photos\.google\.com/i.test(activeUrl);
+
+  const hasWatchProgress = movieDetail?.watchLogs && movieDetail.watchLogs.length > 0 && movieDetail.watchLogs.some(log => log.watchedSeconds > 0);
+  const coverBgInfo = movieDetail ? getCoverBgInfo(movieDetail.coverBackground) : { isYt: false, isImg: false, ytId: '' };
 
   return (
     <div className={styles.page}>
@@ -881,12 +952,25 @@ export default function MyMoviesPage() {
 
               <select
                 className={styles.selectBox}
+                value={selectedYear}
+                onChange={e => setSelectedYear(e.target.value)}
+              >
+                <option value="">-- Tất cả Năm --</option>
+                {years.map((y, idx) => (
+                  <option key={idx} value={y}>{y}</option>
+                ))}
+              </select>
+
+              <select
+                className={styles.selectBox}
                 value={sortBy}
                 onChange={e => setSortBy(e.target.value)}
               >
                 <option value="newest">Mới nhất</option>
                 <option value="az">Tên A-Z</option>
                 <option value="popular">Xem nhiều nhất</option>
+                <option value="year-desc">Năm sản xuất (Mới nhất)</option>
+                <option value="year-asc">Năm sản xuất (Cũ nhất)</option>
               </select>
             </div>
 
@@ -921,7 +1005,10 @@ export default function MyMoviesPage() {
                     <div className={styles.movieInfo}>
                       <h3 className={styles.movieTitle}>{movie.title}</h3>
                       <div className={styles.movieMeta}>
-                        {movie.genre && <span className={styles.badge}>{movie.genre}</span>}
+                        {movie.publishYear && <span className={styles.badge}>{movie.publishYear}</span>}
+                        {movie.genre && movie.genre.split(',').map(g => g.trim()).filter(Boolean).map((g, idx) => (
+                          <span key={idx} className={styles.badge}>{g}</span>
+                        ))}
                         {movie.country && <span className={styles.badge}>{movie.country}</span>}
                         <span className={styles.badge}>
                           {movie.partsCount} Phần • {movie.episodesCount} Tập
@@ -942,12 +1029,15 @@ export default function MyMoviesPage() {
           </>
         )}
 
-        {/* DETAIL VIEW */}
+        {/* DETAIL & PLAYER VIEW */}
         {selectedMovie && (
           <>
             <header className={styles.header}>
-              <button className={styles.backBtn} onClick={handleBackToCatalog}>
-                ← Quay lại danh sách phim
+              <button 
+                className={styles.backBtn} 
+                onClick={isPlaying ? handleBackToDetails : handleBackToCatalog}
+              >
+                {isPlaying ? '← Quay lại thông tin phim' : '← Quay lại danh sách phim'}
               </button>
             </header>
 
@@ -955,7 +1045,8 @@ export default function MyMoviesPage() {
               <div className={styles.loadingCenter}>
                 <div className="spinner" style={{ width: 48, height: 48, borderWidth: 4 }} />
               </div>
-            ) : (
+            ) : isPlaying ? (
+              /* --- VIDEO PLAYER LAYOUT --- */
               <div className={styles.detailGrid}>
                 {/* Main Player Column */}
                 <div className={styles.playerSection}>
@@ -989,18 +1080,18 @@ export default function MyMoviesPage() {
                             <video
                               key={photosStreamUrl} // Buộc load lại element để seek thời gian chính xác khi chuyển chất lượng
                               ref={el => {
-                                nativePlayerRef.current = el;
-                                if (el && resumeSecsRef.current > 0) {
-                                  el.onloadedmetadata = () => {
-                                    if (resumeSecsRef.current > 0) {
-                                      el.currentTime = resumeSecsRef.current;
-                                      resumeSecsRef.current = 0;
-                                    }
-                                  };
-                                }
-                              }}
+                                  nativePlayerRef.current = el;
+                                  if (el && resumeSecsRef.current > 0) {
+                                    el.onloadedmetadata = () => {
+                                      if (resumeSecsRef.current > 0) {
+                                        el.currentTime = resumeSecsRef.current;
+                                        resumeSecsRef.current = 0;
+                                      }
+                                    };
+                                  }
+                                }}
                               src={`https://app-video-proxy.ngocbinhdt1999.workers.dev/?url=${encodeURIComponent(photosStreamUrl)}`}
-                              onError={() => setPhotosError('⚠️ Không thể phát video này qua Proxy Cloudflare. Vui lòng kiểm tra lại liên kết.')}
+                              onError={handlePhotosStreamError}
                               controls
                               autoPlay
                               playsInline
@@ -1145,7 +1236,10 @@ export default function MyMoviesPage() {
                 <div className={styles.movieMetaDetails}>
                   <h1 className={styles.movieTitleLarge}>{movieDetail.title}</h1>
                   <div className={styles.movieMeta}>
-                    {movieDetail.genre && <span className={styles.badge}>{movieDetail.genre}</span>}
+                    {movieDetail.publishYear && <span className={styles.badge}>{movieDetail.publishYear}</span>}
+                    {movieDetail.genre && movieDetail.genre.split(',').map(g => g.trim()).filter(Boolean).map((g, idx) => (
+                      <span key={idx} className={styles.badge}>{g}</span>
+                    ))}
                     {movieDetail.country && <span className={styles.badge}>{movieDetail.country}</span>}
                     {movieDetail.tags && movieDetail.tags.split(',').map(t => t.trim()).filter(Boolean).map((t, idx) => (
                       <span key={idx} className={styles.tag} style={{ fontSize: '0.8rem' }}>#{t}</span>
@@ -1155,7 +1249,139 @@ export default function MyMoviesPage() {
                     <p className={styles.descriptionText}>{movieDetail.description}</p>
                   )}
                 </div>
+              </div>
+            ) : (
+              /* --- INFO / DETAILS LAYOUT --- */
+              <div className={styles.detailsContainer}>
+                {/* Behind Cover Background */}
+                <div className={styles.coverBgContainer}>
+                  {coverBgInfo.isYt ? (
+                    <iframe
+                      src={`https://www.youtube.com/embed/${coverBgInfo.ytId}?autoplay=1&mute=1&loop=1&playlist=${coverBgInfo.ytId}&controls=0&showinfo=0&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1&enablejsapi=1`}
+                      className={styles.coverBgYt}
+                      frameBorder="0"
+                      allow="autoplay; encrypted-media"
+                      allowFullScreen
+                    />
+                  ) : coverBgInfo.isImg ? (
+                    <img src={movieDetail.coverBackground} className={styles.coverBgImg} alt="Cover Background" />
+                  ) : (
+                    <div className={styles.coverBgDefault} />
+                  )}
+                  <div className={styles.coverBgOverlay} />
+                </div>
 
+                {/* Details Content Card sitting on top of cover background */}
+                <div className={styles.detailsContentCard}>
+                  <div className={styles.detailsContentMain}>
+                    <div className={styles.detailsPoster}>
+                      {movieDetail.coverUrl ? (
+                        <img
+                          src={movieDetail.coverUrl.startsWith('data:') ? movieDetail.coverUrl : `${import.meta.env.VITE_API_URL || ''}${movieDetail.coverUrl}`}
+                          alt={movieDetail.title}
+                          className={styles.detailsPosterImg}
+                        />
+                      ) : (
+                        <div className={styles.detailsPosterPlaceholder}>🎬</div>
+                      )}
+                    </div>
+
+                    <div className={styles.detailsInfo}>
+                      <div className={styles.detailsHeader}>
+                        <h1 className={styles.detailsTitle}>{movieDetail.title}</h1>
+                        {movieDetail.publishYear && (
+                          <span className={styles.detailsYear}>({movieDetail.publishYear})</span>
+                        )}
+                      </div>
+
+                      <div className={styles.detailsMeta}>
+                        {movieDetail.genre && movieDetail.genre.split(',').map(g => g.trim()).filter(Boolean).map((g, idx) => (
+                          <span key={idx} className={styles.detailsGenreBadge}>{g}</span>
+                        ))}
+                        {movieDetail.country && <span className={styles.detailsCountryBadge}>{movieDetail.country}</span>}
+                      </div>
+
+                      <div className={styles.detailsTags}>
+                        {movieDetail.tags && movieDetail.tags.split(',').map(t => t.trim()).filter(Boolean).map((t, idx) => (
+                          <span key={idx} className={styles.detailsTag}>#{t}</span>
+                        ))}
+                      </div>
+
+                      <div className={styles.detailsPlayAction}>
+                        <button 
+                          className={styles.playButtonMain}
+                          onClick={() => setIsPlaying(true)}
+                        >
+                          {hasWatchProgress ? '▶ XEM TIẾP' : '▶ XEM PHIM'}
+                        </button>
+                        
+                        {hasWatchProgress && (
+                          <div className={styles.detailsProgressInfo}>
+                            <span>Lịch sử xem dở: <strong>{movieDetail.watchLogs[0] ? (movieDetail.parts[movieDetail.watchLogs[0].partIndex]?.episodes[movieDetail.watchLogs[0].episodeIndex]?.title || `Tập ${movieDetail.watchLogs[0].episodeIndex + 1}`) : ''}</strong></span>
+                            <span>Dừng ở: {formatTimeLabel(movieDetail.watchLogs[0]?.lastPositionSeconds || 0)}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {movieDetail.description && (
+                    <div className={styles.detailsDescriptionSection}>
+                      <h3>Mô tả phim</h3>
+                      <p>{movieDetail.description}</p>
+                    </div>
+                  )}
+
+                  {/* Episodes Browser */}
+                  <div className={styles.detailsEpisodesSection}>
+                    <h3>Danh sách tập phim</h3>
+                    
+                    {movieDetail.parts && movieDetail.parts.length > 1 && (
+                      <div className={styles.detailsPartSelector}>
+                        {movieDetail.parts.map((part, pIdx) => (
+                          <button
+                            key={pIdx}
+                            className={`${styles.detailsPartTab} ${activePartIndex === pIdx ? styles.detailsPartTabActive : ''}`}
+                            onClick={() => setActivePartIndex(pIdx)}
+                          >
+                            {part.title || `Phần ${pIdx + 1}`}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className={styles.detailsEpisodesGrid}>
+                      {movieDetail.parts && movieDetail.parts[activePartIndex] && movieDetail.parts[activePartIndex].episodes.map((ep, eIdx) => {
+                        const watchLog = getWatchLog(activePartIndex, eIdx);
+                        const isLastWatched = movieDetail.watchLogs?.[0] && movieDetail.watchLogs[0].partIndex === activePartIndex && movieDetail.watchLogs[0].episodeIndex === eIdx;
+                        
+                        return (
+                          <div
+                            key={eIdx}
+                            className={`${styles.detailsEpisodeCard} ${isLastWatched ? styles.detailsEpisodeCardLast : ''}`}
+                            onClick={() => {
+                              handleSelectEpisode(activePartIndex, eIdx);
+                              setIsPlaying(true);
+                            }}
+                          >
+                            <div className={styles.detailsEpHeader}>
+                              <span className={styles.detailsEpTitle}>{ep.title}</span>
+                              {isLastWatched && <span className={styles.lastWatchedBadge}>Đang xem dở</span>}
+                            </div>
+                            {watchLog && watchLog.watchedSeconds > 0 && (
+                              <div className={styles.detailsEpProgress}>
+                                <span>Đã xem: {formatTimeLabel(watchLog.watchedSeconds)}</span>
+                                {watchLog.lastPositionSeconds > 0 && (
+                                  <span>Dừng ở: {formatTimeLabel(watchLog.lastPositionSeconds)}</span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </>
