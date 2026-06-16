@@ -2,6 +2,9 @@ import React from 'react';
 import { EnergyBar, BackpackHotbar, SelectedItemActions } from './GameHud';
 import coinIcon from '../../assets/coin-tl4.2.png';
 
+import eatIcon from '../../assets/eat-icon.png';
+import drinkIcon from '../../assets/drink.png';
+
 export default function UnifiedHUD({
   pageTitle,
   pageSubtitle,
@@ -139,9 +142,7 @@ export default function UnifiedHUD({
               }}>
               {selectedItem ? (
                 <>
-                  <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'white', fontFamily: 'var(--font-pixel)' }}>
-                    {isDrinkable ? 'UỐNG' : 'ĂN'}
-                  </span>
+                  <img src={isDrinkable ? drinkIcon : eatIcon} alt={isDrinkable ? 'Uống' : 'Ăn'} style={{ width: '36px', height: '36px', imageRendering: 'pixelated' }} />
                   {eatCooldown && (
                     <div
                       style={{

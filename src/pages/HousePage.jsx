@@ -45,6 +45,7 @@ import StorageModal from '../components/StorageModal';
 import TradeModal from '../components/TradeModal';
 import LandscapeEnforcer from '../components/LandscapeEnforcer';
 import { useGameWindowSize } from '../hooks/useGameWindowSize';
+import UnifiedHUD from '../components/UnifiedHUD';
 
 import cheeseImg from '../../assets/food/cheese.png';
 import botMiImg from '../../assets/food/bot-mi.png';
@@ -1245,7 +1246,13 @@ export default function HousePage() {
       if (!res.ok) {
         toast.error(data.error || 'Lỗi');
       } else {
-        if (data.backpack) updateBackpack(data.backpack);
+        if (data.backpack) {
+          updateBackpack(data.backpack);
+          const currentItem = data.backpack[selectedBackpackSlotIdx];
+          if (!currentItem || currentItem.quantity <= 0) {
+            setSelectedBackpackSlotIdx(null);
+          }
+        }
         if (data.energy !== undefined) {
           updateEnergy(data.energy);
         }
@@ -1500,266 +1507,65 @@ export default function HousePage() {
       <PixelCanvas />
       <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%', position: 'relative', zIndex: 1 }} />
 
-      <button onClick={() => navigate('/')} className="pixel-btn" style={{ position: 'absolute', top: '20px', right: '20px', padding: '10px 16px', background: '#dc2626', color: 'white', zIndex: 10 }}>[ THOÁT ]</button>
-      {/* Coin Display */}
-      <div style={{ position: 'absolute', top: '20px', right: '250px', padding: '6px 16px', background: 'white', border: '4px solid #f59e0b', borderRadius: '0', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10, fontFamily: 'var(--font-pixel)', boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}>
-        <img src={coinIcon} alt="Xu" style={{ width: '28px', height: '28px', imageRendering: 'pixelated' }} />
-        <span style={{ fontSize: '1.2rem', color: '#d97706', fontWeight: 'bold', textShadow: '1px 1px 0 #fff' }}>{user?.xu?.toLocaleString() || 0}</span>
-      </div>
-
-      {/* Energy Bar */}
-      <div style={{ 
-        position: 'absolute', 
-        top: '20px', 
-        right: '460px', 
-        padding: '6px 12px', 
-        background: 'white', 
-        border: '4px solid #3b82f6', 
-        borderRadius: '0', 
-        display: 'flex', 
-        alignItems: 'center', 
-        gap: '10px', 
-        zIndex: 10, 
-        fontFamily: 'var(--font-pixel)', 
-        boxShadow: '0 4px 6px rgba(0,0,0,0.3)' 
-      }}>
-        <span style={{ color: '#eab308', fontSize: '16px', fontWeight: 'bold' }}>⚡</span>
-        <div style={{ display: 'flex', gap: '3px', background: '#334155', padding: '3px', border: '2px solid #1e293b' }}>
-          {Array.from({ length: 6 }).map((_, idx) => {
-            const isFilled = (user?.energy ?? 6) > idx;
-            return (
-              <div 
-                key={idx} 
-                style={{ 
-                  width: '12px', 
-                  height: '16px', 
-                  background: isFilled ? '#22c55e' : '#475569',
-                  transition: 'background 0.2s' 
-                }} 
-              />
-            );
-          })}
-        </div>
-        <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#1e293b' }}>{user?.energy ?? 6}/6</span>
-      </div>
-
-      {/* Top Info */}
-      <div style={{ position: 'absolute', top: '20px', left: '20px', fontFamily: 'var(--font-pixel)', color: 'white', textShadow: '2px 2px 0 #000', pointerEvents: 'none' }}>
-        <h2 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--px-amber)' }}>{isVisiting ? `Nông Trại ${targetUsername}` : 'Thế Giới Của Bạn'}</h2>
-        <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem' }}>Dùng [◄] [►] để di chuyển</p>
-      </div>
-
-      {/* Touch Controls */}
-      <div style={{ position: 'absolute', bottom: '20px', left: '20px', display: 'flex', gap: '16px', zIndex: 10 }}>
-        <button 
-          onPointerDown={(e) => { e.preventDefault(); keys.current.left = true; }}
-          onPointerUp={(e) => { e.preventDefault(); keys.current.left = false; }}
-          onPointerLeave={() => keys.current.left = false}
-          onContextMenu={(e) => e.preventDefault()}
-          className="pixel-btn" 
-          style={{ width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', background: 'rgba(0,0,0,0.5)', border: '4px solid var(--px-border)', color: 'white', touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }}>
-          ◄
-        </button>
-        <button 
-          onPointerDown={(e) => { e.preventDefault(); keys.current.right = true; }}
-          onPointerUp={(e) => { e.preventDefault(); keys.current.right = false; }}
-          onPointerLeave={() => keys.current.right = false}
-          onContextMenu={(e) => e.preventDefault()}
-          className="pixel-btn" 
-          style={{ width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', background: 'rgba(0,0,0,0.5)', border: '4px solid var(--px-border)', color: 'white', touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }}>
-          ►
-        </button>
-      </div>
-
-      {/* Bottom Backpack Slots */}
-      <div style={{ 
-        position: 'absolute', 
-        bottom: '20px', 
-        left: '50%', 
-        transform: 'translateX(-50%)', 
-        display: 'flex', 
-        gap: '12px', 
-        zIndex: (showHouseMenu || showCageMenu) ? 10001 : 10 
-      }}>
-        {(() => {
-          let bp = user?.backpack || [null, null, null, null];
-          if (bp.length !== 4) {
-            bp = Array.from({ length: 4 }).map((_, idx) => bp[idx] || null);
+      <UnifiedHUD
+        pageTitle={isVisiting ? `Nông Trại ${targetUsername}` : 'Thế Giới Của Bạn'}
+        pageSubtitle="Dùng [◄] [►] để di chuyển"
+        onExit={() => navigate('/')}
+        xu={user?.xu || 0}
+        energy={user?.energy}
+        backpack={user?.backpack}
+        selectedSlotIdx={selectedBackpackSlotIdx}
+        onSelectSlot={setSelectedBackpackSlotIdx}
+        showMovement={true}
+        keysRef={keys}
+        selectedItem={selectedBackpackSlotIdx !== null && user?.backpack ? user.backpack[selectedBackpackSlotIdx] : null}
+        canConsume={canConsume}
+        isDrinkable={isDrinkable}
+        onConsume={handleConsumeItem}
+        onDiscard={() => {
+          if (selectedBackpackSlotIdx !== null && user?.backpack) {
+            const item = user.backpack[selectedBackpackSlotIdx];
+            if (item && item.quantity > 0) {
+              setDiscardPrompt({ itemId: item.item_id, maxQty: item.quantity });
+              setDiscardQtyInput(item.quantity.toString());
+            }
           }
-          return bp.map((slot, i) => {
-            const isSelected = selectedBackpackSlotIdx === i;
-            return (
-              <div 
-                key={i} 
-                onClick={() => {
-                  if (slot && slot.quantity > 0) {
-                    setSelectedBackpackSlotIdx(isSelected ? null : i);
-                  } else {
-                    setSelectedBackpackSlotIdx(null);
-                  }
-                }}
-                style={{ 
-                  width: '60px', 
-                  height: '60px', 
-                  background: '#e2e8f0', 
-                  border: isSelected ? '4px solid #3b82f6' : '4px solid #94a3b8', 
-                  boxShadow: isSelected ? '0 0 10px rgba(59, 130, 246, 0.8)' : 'none',
-                  display: 'flex', 
-                  flexDirection: 'column',
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
-                  position: 'relative', 
-                  cursor: (slot && slot.quantity > 0) ? 'pointer' : 'default',
-                  transition: 'all 0.1s'
-                }}
-              >
-                {slot && slot.quantity > 0 ? (
-                  <>
-                    <img 
-                      src={ITEM_ICONS[slot.item_id] || bagIcon} 
-                      alt={slot.item_id} 
-                      style={{ width: '36px', height: '36px', objectFit: 'contain', imageRendering: 'pixelated' }} 
-                    />
-                    <span style={{ 
-                      position: 'absolute', 
-                      bottom: '2px', 
-                      right: '4px', 
-                      fontSize: '10px', 
-                      fontWeight: 'bold', 
-                      color: '#1e293b',
-                      textShadow: '1px 1px 0 #fff' 
-                    }}>
-                      {slot.quantity}
-                    </span>
-                  </>
-                ) : (
-                  <span style={{ fontSize: '10px', color: '#cbd5e1', fontFamily: 'var(--font-pixel)' }}>Trống</span>
-                )}
-              </div>
-            );
-          });
-        })()}
-      </div>
-
-      <div style={{ position: 'absolute', bottom: '20px', right: '20px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '16px', zIndex: 20 }}>
-        
-        <button 
-          onPointerDown={(e) => { e.preventDefault(); keys.current.jump = true; }}
-          onPointerUp={(e) => { e.preventDefault(); keys.current.jump = false; }}
-          onPointerLeave={() => keys.current.jump = false}
-          onContextMenu={(e) => e.preventDefault()}
-          className="pixel-btn" 
-          style={{ width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', background: 'rgba(0,0,0,0.5)', border: '4px solid var(--px-border)', color: 'white', touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none', marginRight: '4px' }}>
-          ▲
-        </button>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          {!showFarmMenu && !showHouseMenu && !showCageMenu && !showCraftingMenu && !showVehicleMenu && (
-            <>
-              {selectedBackpackSlotIdx !== null && user?.backpack && user.backpack[selectedBackpackSlotIdx] && (
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  {canConsume && (
-                    <button 
-                      onClick={handleConsumeItem}
-                      disabled={eatCooldown || actionLoading}
-                      className="pixel-btn"
-                      style={{ 
-                        position: 'relative',
-                        overflow: 'hidden',
-                        padding: '10px 16px', 
-                        background: '#16a34a', 
-                        color: 'white', 
-                        border: '4px solid var(--px-border)',
-                        fontSize: '11px',
-                        fontFamily: 'var(--font-pixel)',
-                        boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
-                        cursor: (eatCooldown || actionLoading) ? 'default' : 'pointer'
-                      }}
-                    >
-                      {isDrinkable ? 'UỐNG' : 'ĂN'}
-                      {eatCooldown && (
-                        <div style={{
-                          position: 'absolute',
-                          inset: 0,
-                          background: 'rgba(0,0,0,0.4)',
-                          animation: 'cooldown-swipe 0.2s linear forwards'
-                        }} />
-                      )}
-                    </button>
-                  )}
-                  <button 
-                    onClick={() => {
-                      const item = user.backpack[selectedBackpackSlotIdx];
-                      if (item && item.quantity > 0) {
-                        setDiscardPrompt({ itemId: item.item_id, maxQty: item.quantity });
-                        setDiscardQtyInput(item.quantity.toString());
-                      }
-                    }}
-                    className="pixel-btn"
-                    style={{ 
-                      padding: '10px 16px', 
-                      background: '#dc2626', 
-                      color: 'white', 
-                      border: '4px solid var(--px-border)',
-                      fontSize: '11px',
-                      fontFamily: 'var(--font-pixel)',
-                      boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    VỨT
-                  </button>
-                </div>
-              )}
-
-              {(((canInteract || canInteractHouse || canInteractCage || canInteractCraftingTable || canInteractVehicle) && !isVisiting) || closestPlayer) && (
-                <button 
-                  onClick={() => {
-                    if (canInteract && !isVisiting) {
-                      setShowFarmMenu(true);
-                    } else if (canInteractCage && !isVisiting) {
-                      setShowCageMenu(true);
-                    } else if (canInteractHouse && !isVisiting) {
-                      setShowHouseMenu(true);
-                    } else if (canInteractCraftingTable && !isVisiting) {
-                      setShowCraftingMenu(true);
-                    } else if (canInteractVehicle && !isVisiting) {
-                      setShowVehicleMenu(true);
-                    } else if (closestPlayerRef.current) {
-                      setShowTradeMenu({ username: closestPlayerRef.current, isAccepting: false });
-                    }
-                  }}
-                  className="pixel-btn"
-                  style={{ 
-                    width: '68px', height: '68px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: 'rgb(59, 130, 246)', 
-                    border: '4px solid #1e3a8a', padding: '0',
-                    boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
-                    touchAction: 'none',
-                    userSelect: 'none',
-                    WebkitUserSelect: 'none',
-                    WebkitTouchCallout: 'none',
-                    animation: 'pulse 1s infinite'
-                  }}>
-                  {canInteract && !isVisiting ? (
-                    <img src={plantIcon} alt="Ruộng" style={{width:'32px'}}/>
-                  ) : canInteractCage && !isVisiting ? (
-                    <img src={khoIcon} alt="Chuồng" style={{width:'32px', filter: 'hue-rotate(90deg)'}}/>
-                  ) : canInteractHouse && !isVisiting ? (
-                    <img src={khoIcon} alt="Kho" style={{width:'32px'}}/>
-                  ) : canInteractCraftingTable && !isVisiting ? (
-                    <img src={banCheTaoImgSrc} alt="Chế Tạo" style={{width:'32px', height:'32px', objectFit:'contain'}}/>
-                  ) : canInteractVehicle && !isVisiting ? (
-                    <span style={{ fontSize: '24px' }}>🏍️</span>
-                  ) : closestPlayer ? (
-                    <img src={transactionIcon} alt="Giao Dịch" style={{ width: '36px', height: '36px', imageRendering: 'pixelated' }} />
-                  ) : null}
-                </button>
-              )}
-            </>
-          )}
-        </div>
-      </div>
+        }}
+        actionLoading={actionLoading}
+        eatCooldown={eatCooldown}
+        showInteraction={selectedBackpackSlotIdx === null && !showFarmMenu && !showHouseMenu && !showCageMenu && !showCraftingMenu && !showVehicleMenu && (((canInteract || canInteractHouse || canInteractCage || canInteractCraftingTable || canInteractVehicle) && !isVisiting) || closestPlayer)}
+        interactionActive={selectedBackpackSlotIdx === null && (((canInteract || canInteractHouse || canInteractCage || canInteractCraftingTable || canInteractVehicle) && !isVisiting) || closestPlayer)}
+        onInteract={() => {
+          if (canInteract && !isVisiting) {
+            setShowFarmMenu(true);
+          } else if (canInteractCage && !isVisiting) {
+            setShowCageMenu(true);
+          } else if (canInteractHouse && !isVisiting) {
+            setShowHouseMenu(true);
+          } else if (canInteractCraftingTable && !isVisiting) {
+            setShowCraftingMenu(true);
+          } else if (canInteractVehicle && !isVisiting) {
+            setShowVehicleMenu(true);
+          } else if (closestPlayerRef.current) {
+            setShowTradeMenu({ username: closestPlayerRef.current, isAccepting: false });
+          }
+        }}
+        interactionIcon={
+          canInteract && !isVisiting ? (
+            <img src={plantIcon} alt="Ruộng" style={{width:'32px'}}/>
+          ) : canInteractCage && !isVisiting ? (
+            <img src={khoIcon} alt="Chuồng" style={{width:'32px', filter: 'hue-rotate(90deg)'}}/>
+          ) : canInteractHouse && !isVisiting ? (
+            <img src={khoIcon} alt="Kho" style={{width:'32px'}}/>
+          ) : canInteractCraftingTable && !isVisiting ? (
+            <img src={banCheTaoImgSrc} alt="Chế Tạo" style={{width:'32px', height:'32px', objectFit:'contain'}}/>
+          ) : canInteractVehicle && !isVisiting ? (
+            <span style={{ fontSize: '24px' }}>🏍️</span>
+          ) : closestPlayer ? (
+            <img src={transactionIcon} alt="Giao Dịch" style={{ width: '36px', height: '36px', imageRendering: 'pixelated' }} />
+          ) : null
+        }
+      />
 
       {/* Vehicle Menu */}
       {showVehicleMenu && (
