@@ -725,27 +725,36 @@ export default function HousePage() {
             ? userRef.current.backpack[currentSlotIdx]
             : null;
 
-          if (backpackItem && backpackItem.item_id === 'rom' && inRangeCage) {
-            keys.current.interact = false;
-            handleClickSlot();
-          } else if (inRangeHouse && !showHouseMenu) {
-            keys.current.interact = false;
-            setShowHouseMenu(true);
-          } else if (inRangeCage && !showCageMenu) {
-            keys.current.interact = false;
-            setShowCageMenu(true);
-          } else if (inRange && !showFarmMenu) {
-            keys.current.interact = false;
-            setShowFarmMenu(true);
-          } else if (inRangeCraftingTable && !showCraftingMenu) {
-            keys.current.interact = false;
-            setShowCraftingMenu(true);
-          } else if (inRangeVehicle && !showVehicleMenu) {
-            keys.current.interact = false;
-            setShowVehicleMenu(true);
-          } else if (closestPlayerRef.current) {
-            keys.current.interact = false;
-            setShowTradeMenu(closestPlayerRef.current);
+          if (currentSlotIdx !== null) {
+            // Holding something: only allow if it is straw near the cage
+            if (backpackItem && backpackItem.item_id === 'rom' && inRangeCage) {
+              keys.current.interact = false;
+              handleClickSlot();
+            } else {
+              // Block other interactions when holding an item
+              keys.current.interact = false;
+            }
+          } else {
+            // Holding nothing: allow all regular interactions
+            if (inRangeHouse && !showHouseMenu) {
+              keys.current.interact = false;
+              setShowHouseMenu(true);
+            } else if (inRangeCage && !showCageMenu) {
+              keys.current.interact = false;
+              setShowCageMenu(true);
+            } else if (inRange && !showFarmMenu) {
+              keys.current.interact = false;
+              setShowFarmMenu(true);
+            } else if (inRangeCraftingTable && !showCraftingMenu) {
+              keys.current.interact = false;
+              setShowCraftingMenu(true);
+            } else if (inRangeVehicle && !showVehicleMenu) {
+              keys.current.interact = false;
+              setShowVehicleMenu(true);
+            } else if (closestPlayerRef.current) {
+              keys.current.interact = false;
+              setShowTradeMenu(closestPlayerRef.current);
+            }
           }
         }
       }
@@ -1795,39 +1804,6 @@ export default function HousePage() {
               </button>
             </div>
             
-            {/* Feed Prompt Modal Overlay */}
-            {feedPrompt && (
-              <div style={{ position: 'absolute', inset: 0, background: 'rgba(255, 251, 235, 0.95)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 60, padding: '20px' }}>
-                <div style={{ background: '#fff', border: '2px solid #3b82f6', padding: '15px', width: '100%', textAlign: 'center', borderRadius: '8px' }}>
-                  <h3 style={{ fontSize: '14px', marginBottom: '10px' }}>Nhập số lượng rơm muốn châm</h3>
-                  <input 
-                    type="number" 
-                    min="1" 
-                    max={feedPrompt.maxQty} 
-                    value={feedQtyInput} 
-                    onChange={e => setFeedQtyInput(e.target.value)}
-                    style={{ width: '100%', padding: '5px', marginBottom: '10px', textAlign: 'center' }}
-                  />
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <button 
-                      className="pixel-btn" 
-                      onClick={() => {
-                        const qty = parseInt(feedQtyInput) || 1;
-                        submitFeed(qty);
-                        setFeedPrompt(null);
-                      }}
-                      style={{ flex: 1, background: '#22c55e', color: '#fff', padding: '5px' }}
-                    >Xác nhận</button>
-                    <button 
-                      className="pixel-btn" 
-                      onClick={() => setFeedPrompt(null)}
-                      style={{ flex: 1, background: '#ef4444', color: '#fff', padding: '5px' }}
-                    >Hủy</button>
-                  </div>
-                </div>
-              </div>
-            )}
-            
             <div style={{ display: 'flex', gap: '5px', marginBottom: '15px', borderBottom: '2px solid #cbd5e1' }}>
               <button 
                 onClick={() => setCageTab('feed')} 
@@ -2228,6 +2204,47 @@ export default function HousePage() {
               <button 
                 className="pixel-btn" 
                 onClick={() => setDiscardPrompt(null)}
+                style={{ flex: 1, background: '#ef4444', color: '#fff', padding: '8px', cursor: 'pointer' }}
+              >Hủy</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {feedPrompt && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '20px' }}>
+          <div className="rpg-box fade-in" style={{ background: '#fffbeb', border: '4px solid var(--px-border)', padding: '20px', width: '300px', textAlign: 'center', color: '#000' }}>
+            <h3 style={{ fontSize: '12px', marginBottom: '12px', fontWeight: 'bold', fontFamily: 'var(--font-pixel)' }}>
+              CHÂM RƠM CHO BÒ
+            </h3>
+            <p style={{ fontSize: '11px', margin: '0 0 12px 0' }}>
+              Bạn muốn châm bao nhiêu rơm vào máng ăn? (Tối đa: {feedPrompt.maxQty})
+            </p>
+            <input 
+              type="number" 
+              min="1" 
+              max={feedPrompt.maxQty} 
+              value={feedQtyInput} 
+              onChange={e => setFeedQtyInput(e.target.value)}
+              style={{ width: '100%', padding: '6px', marginBottom: '15px', textAlign: 'center', border: '2px solid #cbd5e1', borderRadius: '4px', fontSize: '14px' }}
+            />
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button 
+                className="pixel-btn" 
+                onClick={() => {
+                  const qty = parseInt(feedQtyInput) || 1;
+                  if (qty > 0 && qty <= feedPrompt.maxQty) {
+                    submitFeed(qty);
+                    setFeedPrompt(null);
+                  } else {
+                    toast.error('Số lượng không hợp lệ');
+                  }
+                }}
+                style={{ flex: 1, background: '#22c55e', color: '#fff', padding: '8px', cursor: 'pointer' }}
+              >Xác nhận</button>
+              <button 
+                className="pixel-btn" 
+                onClick={() => setFeedPrompt(null)}
                 style={{ flex: 1, background: '#ef4444', color: '#fff', padding: '8px', cursor: 'pointer' }}
               >Hủy</button>
             </div>
