@@ -308,6 +308,8 @@ export default function HousePage() {
   const [cageTab, setCageTab] = useState('feed');
   const [feedPrompt, setFeedPrompt] = useState(null);
   const [feedQtyInput, setFeedQtyInput] = useState('');
+  const [storePrompt, setStorePrompt] = useState(null);
+  const [storeQtyInput, setStoreQtyInput] = useState('');
   const [selectedFeedItem, setSelectedFeedItem] = useState(null);
   const [saving, setSaving] = useState(false);
   const [droppedItems, setDroppedItems] = useState([]);
@@ -726,10 +728,13 @@ export default function HousePage() {
             : null;
 
           if (currentSlotIdx !== null) {
-            // Holding something: only allow if it is straw near the cage
+            // Holding something: allow straw near cage OR any item near house
             if (backpackItem && backpackItem.item_id === 'rom' && inRangeCage) {
               keys.current.interact = false;
               handleClickSlot();
+            } else if (inRangeHouse) {
+              keys.current.interact = false;
+              handleClickStore();
             } else {
               // Block other interactions when holding an item
               keys.current.interact = false;
@@ -1317,6 +1322,43 @@ export default function HousePage() {
     }
   };
 
+  const submitStore = async (itemId, amount) => {
+    setActionLoading(true);
+    try {
+      const res = await authFetch('/api/profile/transfer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ itemId, amount, direction: 'to_storage' })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || 'Lỗi');
+      } else {
+        toast.success(`Đã cất ${amount} ${getItemName(itemId)} vào kho`);
+        if (data.backpack) updateBackpack(data.backpack);
+        setSelectedBackpackSlotIdx(null);
+        loadFarm();
+      }
+    } catch (e) {
+      toast.error('Lỗi kết nối');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleClickStore = () => {
+    if (selectedBackpackItem) {
+      const itemId = selectedBackpackItem.item_id;
+      const qty = parseInt(selectedBackpackItem.quantity || '0', 10);
+      if (qty > 1) {
+        setStorePrompt({ itemId, maxQty: qty });
+        setStoreQtyInput(qty.toString());
+      } else if (qty === 1) {
+        submitStore(itemId, qty);
+      }
+    }
+  };
+
   const handleAction = async (endpoint) => {
     if (endpoint === 'plant' && (user?.energy ?? 6) <= 0) {
       toast.error('Hết năng lượng, không thể trồng lúa!');
@@ -1553,14 +1595,20 @@ export default function HousePage() {
         showInteraction={
           !showFarmMenu && !showHouseMenu && !showCageMenu && !showCraftingMenu && !showVehicleMenu && (
             (selectedBackpackSlotIdx === null && (((canInteract || canInteractHouse || canInteractCage || canInteractCraftingTable || canInteractVehicle) && !isVisiting) || closestPlayer)) ||
-            (selectedBackpackItem && selectedBackpackItem.item_id === 'rom' && canInteractCage && !isVisiting)
+            (selectedBackpackItem && selectedBackpackItem.item_id === 'rom' && canInteractCage && !isVisiting) ||
+            (selectedBackpackItem && canInteractHouse && !isVisiting)
           )
         }
         interactionActive={
           (selectedBackpackSlotIdx === null && (((canInteract || canInteractHouse || canInteractCage || canInteractCraftingTable || canInteractVehicle) && !isVisiting) || closestPlayer)) ||
-          (selectedBackpackItem && selectedBackpackItem.item_id === 'rom' && canInteractCage && !isVisiting)
+          (selectedBackpackItem && selectedBackpackItem.item_id === 'rom' && canInteractCage && !isVisiting) ||
+          (selectedBackpackItem && canInteractHouse && !isVisiting)
         }
         onInteract={() => {
+          if (selectedBackpackItem && canInteractHouse && !isVisiting) {
+            handleClickStore();
+            return;
+          }
           if (selectedBackpackItem && selectedBackpackItem.item_id === 'rom') {
             if (canInteractCage && !isVisiting) {
               handleClickSlot();
@@ -1582,7 +1630,9 @@ export default function HousePage() {
           }
         }}
         interactionIcon={
-          selectedBackpackItem && selectedBackpackItem.item_id === 'rom' ? (
+          selectedBackpackItem && canInteractHouse && !isVisiting ? (
+            <img src={khoIcon} alt="Cất vào Kho" style={{ width: '36px', height: '36px', imageRendering: 'pixelated' }} />
+          ) : selectedBackpackItem && selectedBackpackItem.item_id === 'rom' ? (
             <img src={khoIcon} alt="Cho Bò Ăn" style={{ width: '36px', height: '36px', imageRendering: 'pixelated', filter: 'hue-rotate(90deg)' }} />
           ) : canInteract && !isVisiting ? (
             <img src={plantIcon} alt="Ruộng" style={{width:'32px'}}/>
@@ -2245,6 +2295,47 @@ export default function HousePage() {
               <button 
                 className="pixel-btn" 
                 onClick={() => setFeedPrompt(null)}
+                style={{ flex: 1, background: '#ef4444', color: '#fff', padding: '8px', cursor: 'pointer' }}
+              >Hủy</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {storePrompt && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000, padding: '20px' }}>
+          <div className="rpg-box fade-in" style={{ background: '#fffbeb', border: '4px solid var(--px-border)', padding: '20px', width: '300px', textAlign: 'center', color: '#000' }}>
+            <h3 style={{ fontSize: '12px', marginBottom: '12px', fontWeight: 'bold', fontFamily: 'var(--font-pixel)' }}>
+              CẤT VẬT PHẨM VÀO KHO
+            </h3>
+            <p style={{ fontSize: '11px', margin: '0 0 12px 0' }}>
+              Bạn muốn cất bao nhiêu <strong>{getItemName(storePrompt.itemId)}</strong> vào kho? (Tối đa: {storePrompt.maxQty})
+            </p>
+            <input 
+              type="number" 
+              min="1" 
+              max={storePrompt.maxQty} 
+              value={storeQtyInput} 
+              onChange={e => setStoreQtyInput(e.target.value)}
+              style={{ width: '100%', padding: '6px', marginBottom: '15px', textAlign: 'center', border: '2px solid #cbd5e1', borderRadius: '4px', fontSize: '14px' }}
+            />
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button 
+                className="pixel-btn" 
+                onClick={() => {
+                  const qty = parseInt(storeQtyInput) || 1;
+                  if (qty > 0 && qty <= storePrompt.maxQty) {
+                    submitStore(storePrompt.itemId, qty);
+                    setStorePrompt(null);
+                  } else {
+                    toast.error('Số lượng không hợp lệ');
+                  }
+                }}
+                style={{ flex: 1, background: '#22c55e', color: '#fff', padding: '8px', cursor: 'pointer' }}
+              >Xác nhận</button>
+              <button 
+                className="pixel-btn" 
+                onClick={() => setStorePrompt(null)}
                 style={{ flex: 1, background: '#ef4444', color: '#fff', padding: '8px', cursor: 'pointer' }}
               >Hủy</button>
             </div>
