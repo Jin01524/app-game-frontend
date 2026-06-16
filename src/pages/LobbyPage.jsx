@@ -663,7 +663,6 @@ export default function LobbyPage() {
           }
         }
         if (data.energy !== undefined) updateEnergy(data.energy);
-        toast.success(data.message || 'Sử dụng vật phẩm thành công');
       }
     } catch (e) {
       toast.error('Lỗi kết nối');
