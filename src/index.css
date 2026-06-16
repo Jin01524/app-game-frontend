@@ -52,6 +52,36 @@ html { scroll-behavior: auto; }
   --px-trans-smooth: 0.15s ease;
 }
 
+body.dark-theme {
+  /* Background */
+  --px-bg:        #0f172a;
+  --px-bg2:       #1e293b;
+  --px-panel:     #1e293b;
+  --px-panel2:    #334155;
+
+  /* Primary (Blue) */
+  --px-green:     #3b82f6;
+  --px-green-mid: #60a5fa;
+  --px-green-dim: #475569;
+  --px-green-bg:  rgba(59, 130, 246, 0.2);
+
+  /* Accent colors */
+  --px-cyan:      #38bdf8;
+  --px-amber:     #fef08a;
+  --px-magenta:   #f472b6;
+  --px-red:       #f87171;
+  --px-blue:      #60a5fa;
+
+  /* Text */
+  --px-text:      #f8fafc;
+  --px-text-mid:  #cbd5e1;
+  --px-text-dim:  #94a3b8;
+
+  /* Borders */
+  --px-border:    #cbd5e1;
+  --px-border-bright: #ffffff;
+}
+
 /* ── Body ── */
 body {
   font-family: var(--font-body);
@@ -178,7 +208,7 @@ input, textarea, select { cursor: text !important; }
   border: 3px solid var(--px-border);
   box-shadow: 3px 3px 0 var(--px-border);
   border-radius: 6px;
-  background: #fff;
+  background: var(--px-panel);
   color: var(--px-text);
   cursor: crosshair !important;
   transition: transform 0.05s ease, box-shadow 0.05s ease;
@@ -239,7 +269,7 @@ input, textarea, select { cursor: text !important; }
 .input-field {
   width: 100%;
   padding: 12px 14px;
-  background: #fff;
+  background: var(--px-panel);
   border: 3px solid var(--px-border);
   border-radius: 6px;
   color: var(--px-text);
@@ -253,7 +283,7 @@ input, textarea, select { cursor: text !important; }
 .input-field::placeholder { color: var(--px-green-dim); opacity: 1; }
 .input-field:focus {
   border-color: var(--px-green);
-  background: #fff;
+  background: var(--px-panel);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
 }
 .input-field[readonly] {

@@ -14,7 +14,9 @@ const ProfileIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="
 const AdminIcon   = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.25C17.25 22.15 21 17.25 21 12V7L12 2z"/></svg>;
 const MenuIcon    = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>;
 const CloseMenuIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
-const Power = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>;
+const MoonIcon      = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>;
+const SunIcon       = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>;
+const Power         = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>;
 
 // ── Time helper ───────────────────────────────────────────────────────────────
 function useTime() {
@@ -49,7 +51,7 @@ const parseDateSafely = (dateString) => {
 };
 
 // ── Dropdown ──────────────────────────────────────────────────────────────────
-function Dropdown({ open, onClose, onProfile, onAdmin, onLogout, isAdmin }) {
+function Dropdown({ open, onClose, onProfile, onAdmin, onLogout, isAdmin, isDark, onToggleTheme }) {
   const ref = useRef(null);
   useEffect(() => {
     if (!open) return;
@@ -66,6 +68,10 @@ function Dropdown({ open, onClose, onProfile, onAdmin, onLogout, isAdmin }) {
       {isAdmin && (
         <button className={`${styles.dropdownItem} ${styles.dropdownAdmin}`} onClick={onAdmin}><AdminIcon /><span>QUẢN TRỊ</span></button>
       )}
+      <button className={styles.dropdownItem} onClick={onToggleTheme}>
+        {isDark ? <SunIcon /> : <MoonIcon />}
+        <span>{isDark ? 'CHẾ ĐỘ SÁNG' : 'CHẾ ĐỘ TỐI'}</span>
+      </button>
       <div className={styles.dropdownDivider} />
       <button className={`${styles.dropdownItem} ${styles.dropdownDanger}`} onClick={onLogout}><LogoutIcon /><span>ĐĂNG XUẤT</span></button>
     </div>
@@ -81,6 +87,21 @@ export default function WelcomePage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmLogout, setConfirmLogout] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [isDark, setIsDark] = useState(() => document.body.classList.contains('dark-theme'));
+
+  const toggleTheme = () => {
+    const nextDark = !isDark;
+    setIsDark(nextDark);
+    if (nextDark) {
+      document.body.classList.add('dark-theme');
+      localStorage.setItem('theme', 'dark');
+      toast.success('Đã chuyển sang chế độ tối!');
+    } else {
+      document.body.classList.remove('dark-theme');
+      localStorage.setItem('theme', 'light');
+      toast.success('Đã chuyển sang chế độ sáng!');
+    }
+  };
   const [usersStatus, setUsersStatus] = useState([]);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [quests, setQuests] = useState([]);
@@ -248,6 +269,8 @@ export default function WelcomePage() {
                 onAdmin={() => { setMenuOpen(false); navigate('/admin'); }}
                 onLogout={() => { setMenuOpen(false); setConfirmLogout(true); }}
                 isAdmin={user?.role === 'admin'}
+                isDark={isDark}
+                onToggleTheme={toggleTheme}
               />
             </div>
           </div>

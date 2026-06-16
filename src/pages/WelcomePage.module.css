@@ -42,7 +42,7 @@
   justify-content: center;
   flex-shrink: 0;
   overflow: hidden;
-  background: #fff;
+  background: var(--px-panel2);
 }
 
 .avatarImg { width: 100%; height: 100%; object-fit: cover; }
@@ -79,7 +79,7 @@
 .menuBtn {
   width: 36px; height: 36px;
   border: 3px solid var(--px-border);
-  background: #fff;
+  background: var(--px-panel);
   color: var(--px-text);
   cursor: crosshair !important;
   display: flex;
@@ -95,7 +95,7 @@
   top: calc(100% + 6px);
   right: 0;
   min-width: 170px;
-  background: #fff;
+  background: var(--px-panel);
   border: 3px solid var(--px-border);
   box-shadow: 4px 4px 0 var(--px-border);
   border-radius: 4px;
@@ -375,7 +375,7 @@
 .modal {
   width: 100%;
   max-width: 420px;
-  background: #fff;
+  background: var(--px-panel);
   border: 3px solid var(--px-border);
   box-shadow: 4px 4px 0 var(--px-border);
   border-radius: 6px;
