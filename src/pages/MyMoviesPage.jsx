@@ -1257,7 +1257,7 @@ export default function MyMoviesPage() {
                 <div className={styles.coverBgContainer}>
                   {coverBgInfo.isYt ? (
                     <iframe
-                      src={`https://www.youtube.com/embed/${coverBgInfo.ytId}?autoplay=1&mute=1&loop=1&playlist=${coverBgInfo.ytId}&controls=0&showinfo=0&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1&enablejsapi=1`}
+                      src={`https://www.youtube.com/embed/${coverBgInfo.ytId}?autoplay=1&mute=1&loop=1&playlist=${coverBgInfo.ytId}&controls=0&showinfo=0&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1&disablekb=1&fs=0`}
                       className={styles.coverBgYt}
                       frameBorder="0"
                       allow="autoplay; encrypted-media"
