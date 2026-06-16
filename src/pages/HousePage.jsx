@@ -1533,9 +1533,23 @@ export default function HousePage() {
         }}
         actionLoading={actionLoading}
         eatCooldown={eatCooldown}
-        showInteraction={selectedBackpackSlotIdx === null && !showFarmMenu && !showHouseMenu && !showCageMenu && !showCraftingMenu && !showVehicleMenu && (((canInteract || canInteractHouse || canInteractCage || canInteractCraftingTable || canInteractVehicle) && !isVisiting) || closestPlayer)}
-        interactionActive={selectedBackpackSlotIdx === null && (((canInteract || canInteractHouse || canInteractCage || canInteractCraftingTable || canInteractVehicle) && !isVisiting) || closestPlayer)}
+        showInteraction={
+          !showFarmMenu && !showHouseMenu && !showCageMenu && !showCraftingMenu && !showVehicleMenu && (
+            (selectedBackpackSlotIdx === null && (((canInteract || canInteractHouse || canInteractCage || canInteractCraftingTable || canInteractVehicle) && !isVisiting) || closestPlayer)) ||
+            (selectedBackpackItem && selectedBackpackItem.item_id === 'rom' && canInteractCage && !isVisiting)
+          )
+        }
+        interactionActive={
+          (selectedBackpackSlotIdx === null && (((canInteract || canInteractHouse || canInteractCage || canInteractCraftingTable || canInteractVehicle) && !isVisiting) || closestPlayer)) ||
+          (selectedBackpackItem && selectedBackpackItem.item_id === 'rom' && canInteractCage && !isVisiting)
+        }
         onInteract={() => {
+          if (selectedBackpackItem && selectedBackpackItem.item_id === 'rom') {
+            if (canInteractCage && !isVisiting) {
+              handleClickSlot();
+            }
+            return;
+          }
           if (canInteract && !isVisiting) {
             setShowFarmMenu(true);
           } else if (canInteractCage && !isVisiting) {
@@ -1551,7 +1565,9 @@ export default function HousePage() {
           }
         }}
         interactionIcon={
-          canInteract && !isVisiting ? (
+          selectedBackpackItem && selectedBackpackItem.item_id === 'rom' ? (
+            <img src={whiskIcon} alt="Cho Bò Ăn" style={{ width: '36px', height: '36px', imageRendering: 'pixelated' }} />
+          ) : canInteract && !isVisiting ? (
             <img src={plantIcon} alt="Ruộng" style={{width:'32px'}}/>
           ) : canInteractCage && !isVisiting ? (
             <img src={khoIcon} alt="Chuồng" style={{width:'32px', filter: 'hue-rotate(90deg)'}}/>
@@ -1839,7 +1855,7 @@ export default function HousePage() {
                 }}
               >
                 <div style={{ marginBottom: '15px', fontSize: '12px', color: '#334155', textAlign: 'center' }}>
-                  Bấm chọn Rơm từ Balo, sau đó bấm vào máng ăn.
+                  Cầm Rơm trên tay và đứng gần chuồng bấm nút tương tác để cho ăn.
                 </div>
                 {/* Straw Storage Slots */}
                 <div style={{ display: 'flex', gap: '5px', justifyContent: 'center', marginBottom: '15px' }}>
