@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import styles from './MyMoviesPage.module.css';
 
@@ -150,6 +150,7 @@ const resolvePhotosUrlClient = async (url) => {
 export default function MyMoviesPage() {
   const { authFetch } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -212,8 +213,63 @@ export default function MyMoviesPage() {
     initFetch();
   }, [fetchMovies]);
 
+  // Sync URL search params to React state
+  useEffect(() => {
+    const paramMovieId = searchParams.get('movie');
+    
+    if (!paramMovieId) {
+      if (selectedMovie !== null) {
+        setSelectedMovie(null);
+        setMovieDetail(null);
+        setIsPlaying(false);
+        setIsFloating(false);
+        setTheaterMode(false);
+        setPhotosStreamUrl('');
+        setPhotosQualities(null);
+        setSelectedQuality('720p');
+        initializedUrlRef.current = '';
+        fetchMovies();
+      }
+      return;
+    }
+    
+    const movieId = Number(paramMovieId);
+    const play = searchParams.get('play') === 'true';
+    const part = searchParams.get('part') !== null ? Number(searchParams.get('part')) : null;
+    const ep = searchParams.get('episode') !== null ? Number(searchParams.get('episode')) : null;
+    
+    // Check if we need to load or switch movie details
+    if (!selectedMovie || selectedMovie.id !== movieId) {
+      const movieObj = movies.find(m => m.id === movieId) || { id: movieId };
+      setSelectedMovie(movieObj);
+      loadMovieDetail(movieId, part, ep);
+      if (play) {
+        setIsPlaying(true);
+      }
+    } else {
+      // Movie is already selected. Sync play, part, and episode state if they differ from URL
+      if (play !== isPlaying) {
+        setIsPlaying(play);
+      }
+      
+      if (part !== null && part !== activePartIndex) {
+        setActivePartIndex(part);
+        activePartIndexRef.current = part;
+      }
+      if (ep !== null && ep !== activeEpisodeIndex) {
+        setActiveEpisodeIndex(ep);
+        activeEpisodeIndexRef.current = ep;
+      }
+      
+      // Update refs
+      if (movieDetail && movieDetail.parts && movieDetail.parts[part] && movieDetail.parts[part].episodes && movieDetail.parts[part].episodes[ep]) {
+        activeEpisodeRef.current = movieDetail.parts[part].episodes[ep];
+      }
+    }
+  }, [searchParams, movies, selectedMovie, activePartIndex, activeEpisodeIndex, movieDetail, fetchMovies, isPlaying, loadMovieDetail]);
+
   // Load detail movie including user watchLogs
-  const loadMovieDetail = async (movieId) => {
+  const loadMovieDetail = useCallback(async (movieId, initialPart = null, initialEpisode = null) => {
     setDetailLoading(true);
     try {
       const res = await authFetch(`/api/movies/${movieId}`);
@@ -226,9 +282,11 @@ export default function MyMoviesPage() {
         let pIdx = 0;
         let eIdx = 0;
         
-        // If has parts, try to play the last watched episode
-        if (data.watchLogs && data.watchLogs.length > 0) {
-          // Find the watch log with latest lastWatchedAt or just find one
+        if (initialPart !== null && initialEpisode !== null) {
+          pIdx = initialPart;
+          eIdx = initialEpisode;
+        } else if (data.watchLogs && data.watchLogs.length > 0) {
+          // If has parts, try to play the last watched episode
           if (data.watchLogs[0]) {
             pIdx = data.watchLogs[0].partIndex;
             eIdx = data.watchLogs[0].episodeIndex;
@@ -243,13 +301,21 @@ export default function MyMoviesPage() {
         if (data.parts && data.parts[pIdx] && data.parts[pIdx].episodes && data.parts[pIdx].episodes[eIdx]) {
           activeEpisodeRef.current = data.parts[pIdx].episodes[eIdx];
         }
+
+        // If part or episode are not yet in search parameters, set them so they persist on reload
+        setSearchParams(prev => {
+          const next = new URLSearchParams(prev);
+          if (!next.has('part')) next.set('part', pIdx);
+          if (!next.has('episode')) next.set('episode', eIdx);
+          return next;
+        });
       }
     } catch (err) {
       console.error('Failed to load movie detail:', err);
     } finally {
       setDetailLoading(false);
     }
-  };
+  }, [authFetch, setSearchParams]);
 
   // Helper to extract YouTube ID
   const extractYoutubeId = (url) => {
@@ -590,8 +656,7 @@ export default function MyMoviesPage() {
 
   // Handle movie selection
   const handleSelectMovie = (movie) => {
-    setSelectedMovie(movie);
-    loadMovieDetail(movie.id);
+    setSearchParams({ movie: movie.id });
   };
 
   // Handle episode change
@@ -627,6 +692,14 @@ export default function MyMoviesPage() {
         console.warn('Invalid URL in episode:', ep.url);
         return;
       }
+
+      // Sync URL search params
+      setSearchParams({
+        movie: movieDetail.id,
+        play: 'true',
+        part: pIdx,
+        episode: eIdx
+      });
       
       // If the current video is YouTube and the new video is also YouTube, we can try to reuse the player
       if (videoId && playerRef.current && typeof playerRef.current.loadVideoById === 'function') {
@@ -761,6 +834,9 @@ export default function MyMoviesPage() {
     setSelectedQuality('720p');
     initializedUrlRef.current = ''; // Clear player initialized state
     
+    // Clear URL search params
+    setSearchParams({});
+    
     // Refresh catalog list to update watch progress
     fetchMovies();
   };
@@ -789,6 +865,11 @@ export default function MyMoviesPage() {
     setPhotosQualities(null);
     setSelectedQuality('720p');
     initializedUrlRef.current = ''; // Clear player initialized state
+
+    // Update URL search params
+    setSearchParams({
+      movie: movieDetail.id
+    });
   };
 
   // Helper to check cover background
@@ -1310,7 +1391,15 @@ export default function MyMoviesPage() {
                       <div className={styles.detailsPlayAction}>
                         <button 
                           className={styles.playButtonMain}
-                          onClick={() => setIsPlaying(true)}
+                          onClick={() => {
+                            setIsPlaying(true);
+                            setSearchParams({
+                              movie: movieDetail.id,
+                              play: 'true',
+                              part: activePartIndex,
+                              episode: activeEpisodeIndex
+                            });
+                          }}
                         >
                           {hasWatchProgress ? '▶ XEM TIẾP' : '▶ XEM PHIM'}
                         </button>
