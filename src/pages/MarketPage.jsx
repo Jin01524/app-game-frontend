@@ -13,6 +13,7 @@ import {
   drawHeldItem,
   drawMovementDrainBar
 } from '../components/GameHud';
+import UnifiedHUD from '../components/UnifiedHUD';
 
 import tree1Img from '../../assets/tree1.png';
 import tree2Img from '../../assets/tree2.png';
@@ -849,119 +850,55 @@ export default function MarketPage() {
       <PixelCanvas />
       <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%', position: 'relative', zIndex: 1 }} />
 
-      <div style={{ position: 'absolute', top: '20px', left: '20px', fontFamily: 'var(--font-pixel)', color: 'white', textShadow: '2px 2px 0 #000', pointerEvents: 'none' }}>
-        <h2 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--px-amber)' }}>Chợ Nông Sản</h2>
-        <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem' }}>Dùng [◄] [►] để di chuyển</p>
-      </div>
-
-      <button 
-        onClick={() => navigate('/')}
-        className="pixel-btn"
-        style={{ position: 'absolute', top: '20px', right: '20px', padding: '10px 16px', fontSize: '1rem', background: '#dc2626', color: 'white', border: '4px solid var(--px-border)', zIndex: 10 }}>
-        [ THOÁT ]
-      </button>
-
-      {/* Coin Display */}
-      <div style={{ position: 'absolute', top: '20px', right: '150px', padding: '6px 16px', background: 'white', border: '4px solid #f59e0b', borderRadius: '0', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10, fontFamily: 'var(--font-pixel)', boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}>
-        <img src={coinIcon} alt="Xu" style={{ width: '28px', height: '28px', imageRendering: 'pixelated' }} />
-        <span style={{ fontSize: '1.2rem', color: '#d97706', fontWeight: 'bold', textShadow: '1px 1px 0 #fff' }}>{user?.xu?.toLocaleString() || 0}</span>
-      </div>
-
-      <EnergyBar energy={user?.energy} style={{ top: '20px', right: '360px' }} />
-
-      <div style={{ position: 'absolute', bottom: '20px', left: '20px', display: 'flex', gap: '16px', zIndex: 10 }}>
-        <button 
-          onPointerDown={(e) => { e.preventDefault(); keys.current.left = true; }}
-          onPointerUp={(e) => { e.preventDefault(); keys.current.left = false; }}
-          onPointerLeave={() => keys.current.left = false}
-          onContextMenu={(e) => e.preventDefault()}
-          className="pixel-btn" 
-          style={{ width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', background: 'rgba(0,0,0,0.5)', border: '4px solid var(--px-border)', color: 'white', touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }}>
-          ◄
-        </button>
-        <button 
-          onPointerDown={(e) => { e.preventDefault(); keys.current.right = true; }}
-          onPointerUp={(e) => { e.preventDefault(); keys.current.right = false; }}
-          onPointerLeave={() => keys.current.right = false}
-          onContextMenu={(e) => e.preventDefault()}
-          className="pixel-btn" 
-          style={{ width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', background: 'rgba(0,0,0,0.5)', border: '4px solid var(--px-border)', color: 'white', touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }}>
-          ►
-        </button>
-      </div>
-
-      <BackpackHotbar
+      <UnifiedHUD
+        pageTitle="Chợ Nông Sản"
+        pageSubtitle="Dùng [◄] [►] để di chuyển"
+        onExit={() => navigate('/')}
+        xu={user?.xu || 0}
+        energy={user?.energy}
         backpack={user?.backpack}
         selectedSlotIdx={selectedBackpackSlotIdx}
         onSelectSlot={setSelectedBackpackSlotIdx}
+        showMovement={true}
+        keysRef={keys}
+        selectedItem={selectedBackpackItem}
+        canConsume={canConsume}
+        isDrinkable={isDrinkable}
+        onConsume={handleConsumeItem}
+        onDiscard={() => {
+          if (selectedBackpackItem) {
+            setDiscardPrompt({ itemId: selectedBackpackItem.item_id, maxQty: selectedBackpackItem.quantity });
+            setDiscardQtyInput(selectedBackpackItem.quantity.toString());
+          }
+        }}
+        actionLoading={actionLoading}
+        eatCooldown={eatCooldown}
+        showInteraction={!showMarketMenu && !showAnimalMenu && !showMotorCarMenu && (canInteract || canInteractAnimal || canInteractMotorCar || closestPlayer)}
+        interactionActive={!!(canInteract || canInteractAnimal || canInteractMotorCar || closestPlayer)}
+        onInteract={() => {
+          if (canInteract) {
+            setShowMarketMenu(true);
+            setSellInput(riceQty.toString());
+          } else if (canInteractAnimal) {
+            setShowAnimalMenu(true);
+          } else if (canInteractMotorCar) {
+            setShowMotorCarMenu(true);
+          } else if (closestPlayerRef.current) {
+            setShowTradeMenu({ username: closestPlayerRef.current, isAccepting: false });
+          }
+        }}
+        interactionIcon={
+          canInteract ? (
+            <img src={marketIcon} alt="Giao Dịch" style={{ width: '40px', height: '40px', imageRendering: 'pixelated', display: 'block' }} />
+          ) : canInteractAnimal ? (
+            <img src={marketIcon} alt="Động Vật" style={{ width: '40px', height: '40px', imageRendering: 'pixelated', display: 'block', filter: 'hue-rotate(180deg)' }} />
+          ) : canInteractMotorCar ? (
+            <span style={{ fontSize: '24px' }}>🏍️</span>
+          ) : closestPlayer ? (
+            <img src={transactionIcon} alt="Giao Dịch" style={{ width: '36px', height: '36px', imageRendering: 'pixelated' }} />
+          ) : null
+        }
       />
-
-      <div style={{ position: 'absolute', bottom: '20px', right: '20px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '16px', zIndex: 20 }}>
-        <button 
-          onPointerDown={(e) => { e.preventDefault(); keys.current.jump = true; }}
-          onPointerUp={(e) => { e.preventDefault(); keys.current.jump = false; }}
-          onPointerLeave={() => keys.current.jump = false}
-          onContextMenu={(e) => e.preventDefault()}
-          className="pixel-btn" 
-          style={{ width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', background: 'rgba(0,0,0,0.5)', border: '4px solid var(--px-border)', color: 'white', touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none', marginRight: '4px' }}>
-          ▲
-        </button>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          {!showMarketMenu && !showAnimalMenu && !showMotorCarMenu && (
-            <SelectedItemActions
-              item={selectedBackpackItem}
-              canConsume={canConsume}
-              isDrinkable={isDrinkable}
-              onConsume={handleConsumeItem}
-              onDiscard={() => {
-                if (selectedBackpackItem) {
-                  setDiscardPrompt({ itemId: selectedBackpackItem.item_id, maxQty: selectedBackpackItem.quantity });
-                  setDiscardQtyInput(selectedBackpackItem.quantity.toString());
-                }
-              }}
-              disabled={actionLoading}
-              cooldown={eatCooldown}
-            />
-          )}
-          {!showMarketMenu && !showAnimalMenu && !showMotorCarMenu && (
-            <button 
-              onClick={() => {
-                if (canInteract) {
-                  setShowMarketMenu(true);
-                  setSellInput(riceQty.toString());
-                } else if (canInteractAnimal) {
-                  setShowAnimalMenu(true);
-                } else if (canInteractMotorCar) {
-                  setShowMotorCarMenu(true);
-                } else if (closestPlayerRef.current) {
-                  setShowTradeMenu({ username: closestPlayerRef.current, isAccepting: false });
-                }
-              }}
-              className="pixel-btn"
-              style={{ 
-                width: '68px', height: '68px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'rgb(59, 130, 246)', 
-                border: '4px solid #1e3a8a', padding: '0',
-                boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
-                touchAction: 'none',
-                userSelect: 'none',
-                WebkitUserSelect: 'none',
-                WebkitTouchCallout: 'none',
-                animation: (canInteract || canInteractAnimal || canInteractMotorCar || closestPlayer) ? 'pulse 1s infinite' : 'none'
-              }}>
-              {canInteract ? (
-                <img src={marketIcon} alt="Giao Dịch" style={{ width: '40px', height: '40px', imageRendering: 'pixelated', display: 'block' }} />
-              ) : canInteractAnimal ? (
-                <img src={marketIcon} alt="Động Vật" style={{ width: '40px', height: '40px', imageRendering: 'pixelated', display: 'block', filter: 'hue-rotate(180deg)' }} />
-              ) : canInteractMotorCar ? (
-                <span style={{ fontSize: '24px' }}>🏍️</span>
-              ) : closestPlayer ? (
-                <img src={transactionIcon} alt="Giao Dịch" style={{ width: '36px', height: '36px', imageRendering: 'pixelated' }} />
-              ) : null}
-            </button>
-          )}
-        </div>
-      </div>
 
       {showAnimalMenu && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>

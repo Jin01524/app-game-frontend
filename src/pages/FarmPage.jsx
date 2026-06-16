@@ -13,6 +13,7 @@ import StorageModal from '../components/StorageModal';
 import BackpackModal from '../components/BackpackModal';
 import LandscapeEnforcer from '../components/LandscapeEnforcer';
 import CharacterSprite from '../components/CharacterSprite';
+import UnifiedHUD from '../components/UnifiedHUD';
 
 export default function FarmPage() {
   const { authFetch, updateXu, user } = useAuth();
@@ -130,26 +131,23 @@ export default function FarmPage() {
   return (
     <LandscapeEnforcer>
       <div className={styles.page} style={{ backgroundImage: `url(${farmBg})`, backgroundSize: 'cover', backgroundPosition: 'center top', width: '100%', height: '100%', overflowY: 'auto' }}>
-      <main className={styles.main}>
-        <header className={`${styles.header} rpg-box fade-in`}>
-          <div>
-            <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '1.2rem' }}>🌾 NÔNG TRẠI</div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--px-amber)', marginTop: '4px' }}>XU: {xu.toLocaleString()}</div>
-          </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button className="btn btn-outline" onClick={() => setShowBackpackMenu(true)} style={{ padding: '8px 16px', background: '#eab308', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <img src={bagIcon} alt="Balo" style={{ width: '16px', height: '16px', imageRendering: 'pixelated' }} />
-              <span>BALO</span>
-            </button>
-            <button className="btn btn-outline" onClick={() => setShowInv(true)} style={{ padding: '8px 16px' }}>
-              KHO ({inventory.reduce((sum, item) => sum + item.quantity, 0)}/{invSlots * 64})
-            </button>
-          </div>
-        </header>
+      <UnifiedHUD
+        pageTitle="🌾 NÔNG TRẠI"
+        xu={xu}
+        energy={user?.energy}
+        showMovement={false}
+        showHotbar={false}
+        extraHeaderElements={
+          <button className="pixel-btn" onClick={() => setShowInv(true)} style={{ padding: '8px 16px', height: '44px', background: '#3b82f6', color: 'white', border: '4px solid var(--px-border)', fontFamily: 'var(--font-pixel)', fontSize: '0.8rem', cursor: 'pointer' }}>
+            KHO ({inventory.reduce((sum, item) => sum + item.quantity, 0)}/{invSlots * 64})
+          </button>
+        }
+      />
 
-        <div style={{ flexGrow: 1, position: 'relative' }}>
+      <main className={styles.main} style={{ paddingTop: '80px' }}>
+        <div style={{ flexGrow: 1, position: 'relative', minHeight: '180px' }}>
           {/* Left aligned character standing */}
-          <div style={{ position: 'absolute', top: '40px', left: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ position: 'absolute', top: '20px', left: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <CharacterSprite characterType={user?.characterType} action="idle" width={64} height={64} />
             <div style={{ 
               background: 'rgba(0, 0, 0, 0.65)', 
@@ -167,7 +165,7 @@ export default function FarmPage() {
           </div>
 
           {/* Right aligned farm patch */}
-          <div style={{ position: 'absolute', top: '20px', right: '0' }}>
+          <div style={{ position: 'absolute', top: '0px', right: '0' }}>
             <div className={styles.farmGrid}>
               {cells}
             </div>

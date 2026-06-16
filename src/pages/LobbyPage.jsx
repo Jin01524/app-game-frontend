@@ -15,6 +15,7 @@ import {
   drawHeldItem,
   drawMovementDrainBar
 } from '../components/GameHud';
+import UnifiedHUD from '../components/UnifiedHUD';
 import TienLenGame from '../components/games/TienLenGame';
 import ShurikenGame from '../components/games/ShurikenGame';
 import { useGameWindowSize } from '../hooks/useGameWindowSize';
@@ -612,119 +613,46 @@ export default function LobbyPage() {
       <div style={{ width: '100%', height: '100%', overflow: 'hidden', position: 'relative' }}>
       <PixelCanvas />
       
-      {/* Title */}
-      <div style={{ position: 'absolute', top: '20px', left: '20px', fontFamily: 'var(--font-pixel)', color: 'white', textShadow: '2px 2px 0 #000', pointerEvents: 'none', zIndex: 10 }}>
-        <h2 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--px-amber)' }}>Sảnh Đa Người Chơi</h2>
-        <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem' }}>Mini Game Server</p>
-      </div>
-
-      <button 
-        onClick={() => navigate('/')}
-        className="pixel-btn"
-        style={{ position: 'absolute', top: '20px', right: '20px', padding: '10px 16px', fontSize: '1rem', background: '#dc2626', color: 'white', border: '4px solid var(--px-border)', zIndex: 10 }}>
-        [ THOÁT ]
-      </button>
-
-      <button
-        onClick={() => setShowBackpackMenu(true)}
-        className="pixel-btn"
-        style={{ position: 'absolute', top: '20px', right: '150px', padding: '8px 12px', fontSize: '1rem', background: '#3b82f6', color: 'white', border: '4px solid var(--px-border)', display: 'flex', alignItems: 'center', gap: '8px', zIndex: 10 }}
-      >
-        <img src={bagIcon} alt="Balo" style={{ width: '20px', height: '20px', imageRendering: 'pixelated' }} />
-        [ BALO ]
-      </button>
-
-      <div className="pixel-btn" style={{ position: 'absolute', top: '20px', right: '280px', padding: '8px 12px', fontSize: '1rem', background: '#f59e0b', color: 'white', border: '4px solid var(--px-border)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'default', zIndex: 10 }}>
-        <img src={coinIcon} alt="Xu" style={{ width: '20px', height: '20px', imageRendering: 'pixelated' }} />
-        {(user?.xu ?? 0).toLocaleString('vi-VN')} Xu
-      </div>
-
-      <EnergyBar energy={user?.energy} style={{ top: '20px', right: '490px' }} />
-
-      {/* Mobile Controls */}
-      <div style={{ position: 'absolute', bottom: '20px', left: '20px', display: 'flex', gap: '16px', zIndex: 10 }}>
-        <button 
-          onPointerDown={(e) => { e.preventDefault(); keys.current.left = true; }}
-          onPointerUp={(e) => { e.preventDefault(); keys.current.left = false; }}
-          onPointerLeave={() => keys.current.left = false}
-          onContextMenu={(e) => e.preventDefault()}
-          className="pixel-btn" 
-          style={{ width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', background: 'rgba(0,0,0,0.5)', border: '4px solid var(--px-border)', color: 'white', touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }}>
-          ◄
-        </button>
-        <button 
-          onPointerDown={(e) => { e.preventDefault(); keys.current.right = true; }}
-          onPointerUp={(e) => { e.preventDefault(); keys.current.right = false; }}
-          onPointerLeave={() => keys.current.right = false}
-          onContextMenu={(e) => e.preventDefault()}
-          className="pixel-btn" 
-          style={{ width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', background: 'rgba(0,0,0,0.5)', border: '4px solid var(--px-border)', color: 'white', touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }}>
-          ►
-        </button>
-      </div>
-
-      <BackpackHotbar
+      <UnifiedHUD
+        pageTitle="Sảnh Đa Người Chơi"
+        pageSubtitle="Mini Game Server"
+        onExit={() => navigate('/')}
+        xu={user?.xu || 0}
+        energy={user?.energy}
         backpack={user?.backpack}
         selectedSlotIdx={selectedBackpackSlotIdx}
         onSelectSlot={setSelectedBackpackSlotIdx}
+        showMovement={true}
+        keysRef={keys}
+        selectedItem={selectedBackpackItem}
+        canConsume={canConsume}
+        isDrinkable={isDrinkable}
+        onConsume={handleConsumeItem}
+        onDiscard={() => {
+          if (selectedBackpackItem) {
+            setDiscardPrompt({ itemId: selectedBackpackItem.item_id, maxQty: selectedBackpackItem.quantity });
+            setDiscardQtyInput(selectedBackpackItem.quantity.toString());
+          }
+        }}
+        actionLoading={actionLoading}
+        eatCooldown={eatCooldown}
+        showInteraction={canInteractCasino || !!closestPlayer}
+        interactionActive={!!(canInteractCasino || closestPlayer)}
+        onInteract={() => {
+          if (canInteractCasino) {
+            setShowCasinoMenu(true);
+          } else if (closestPlayerRef.current) {
+            setShowTradeMenu({ username: closestPlayerRef.current, isAccepting: false });
+          }
+        }}
+        interactionIcon={
+          canInteractCasino ? (
+            <img src={gamingIcon} alt="Casino" style={{ width: '40px', height: '40px', imageRendering: 'pixelated' }} />
+          ) : closestPlayer ? (
+            <img src={transactionIcon} alt="Giao Dịch" style={{ width: '36px', height: '36px', imageRendering: 'pixelated' }} />
+          ) : null
+        }
       />
-
-      <div style={{ position: 'absolute', bottom: '20px', right: '20px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '16px', zIndex: 20 }}>
-        <button 
-          onPointerDown={(e) => { e.preventDefault(); keys.current.jump = true; }}
-          onPointerUp={(e) => { e.preventDefault(); keys.current.jump = false; }}
-          onPointerLeave={() => keys.current.jump = false}
-          onContextMenu={(e) => e.preventDefault()}
-          className="pixel-btn" 
-          style={{ width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', background: 'rgba(0,0,0,0.5)', border: '4px solid var(--px-border)', color: 'white', touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none', marginRight: '4px' }}>
-          ▲
-        </button>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          {!showCasinoMenu && !showTienLen && !showShuriken && !showTradeMenu && !pendingTradeRequest && (
-            <SelectedItemActions
-              item={selectedBackpackItem}
-              canConsume={canConsume}
-              isDrinkable={isDrinkable}
-              onConsume={handleConsumeItem}
-              onDiscard={() => {
-                if (selectedBackpackItem) {
-                  setDiscardPrompt({ itemId: selectedBackpackItem.item_id, maxQty: selectedBackpackItem.quantity });
-                  setDiscardQtyInput(selectedBackpackItem.quantity.toString());
-                }
-              }}
-              disabled={actionLoading}
-              cooldown={eatCooldown}
-            />
-          )}
-          <button 
-            onClick={() => {
-              if (canInteractCasino) {
-                setShowCasinoMenu(true);
-              } else if (closestPlayerRef.current) {
-                setShowTradeMenu({ username: closestPlayerRef.current, isAccepting: false });
-              }
-            }}
-            className="pixel-btn"
-            style={{ 
-              width: '68px', height: '68px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'rgb(59, 130, 246)', 
-              border: '4px solid #1e3a8a', padding: '0',
-              boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
-              touchAction: 'none',
-              userSelect: 'none',
-              WebkitUserSelect: 'none',
-              WebkitTouchCallout: 'none',
-              animation: (canInteractCasino || closestPlayer) ? 'pulse 1s infinite' : 'none',
-              visibility: (canInteractCasino || closestPlayer) ? 'visible' : 'hidden'
-            }}>
-            {canInteractCasino ? (
-              <img src={gamingIcon} alt="Casino" style={{ width: '40px', height: '40px', imageRendering: 'pixelated' }} />
-            ) : closestPlayer ? (
-              <img src={transactionIcon} alt="Giao Dịch" style={{ width: '36px', height: '36px', imageRendering: 'pixelated' }} />
-            ) : null}
-          </button>
-        </div>
-      </div>
 
       {/* Canvas */}
       <canvas
