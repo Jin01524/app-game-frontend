@@ -98,6 +98,7 @@ export default function UnifiedHUD({
           backpack={backpack}
           selectedSlotIdx={selectedSlotIdx}
           onSelectSlot={onSelectSlot}
+          onLongPressSlot={onDiscard}
         />
       )}
 
@@ -116,34 +117,43 @@ export default function UnifiedHUD({
         )}
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          {selectedItem && (
-            <SelectedItemActions
-              item={selectedItem}
-              canConsume={canConsume}
-              isDrinkable={isDrinkable}
-              onConsume={onConsume}
-              onDiscard={onDiscard}
-              disabled={actionLoading}
-              cooldown={eatCooldown}
-            />
-          )}
-
-          {showInteraction && onInteract && (
+          {/* Main Interaction Button or Eat/Drink Button */}
+          {((selectedItem && canConsume) || (!selectedItem && showInteraction)) && (
             <button 
-              onClick={onInteract}
+              onClick={selectedItem ? onConsume : onInteract}
+              disabled={selectedItem ? actionLoading || eatCooldown : false}
               className="pixel-btn"
               style={{ 
                 width: '68px', height: '68px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'rgb(59, 130, 246)', 
-                border: '4px solid #1e3a8a', padding: '0',
+                background: selectedItem ? '#16a34a' : 'rgb(59, 130, 246)', 
+                border: selectedItem ? '4px solid #15803d' : '4px solid #1e3a8a', padding: '0',
                 boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
                 touchAction: 'none',
                 userSelect: 'none',
                 WebkitUserSelect: 'none',
                 WebkitTouchCallout: 'none',
-                animation: interactionActive ? 'pulse 1s infinite' : 'none'
+                animation: (!selectedItem && interactionActive) ? 'pulse 1s infinite' : 'none',
+                cursor: (selectedItem && (actionLoading || eatCooldown)) ? 'default' : 'pointer',
+                position: 'relative',
+                overflow: 'hidden'
               }}>
-              {typeof interactionIcon === 'string' ? (
+              {selectedItem ? (
+                <>
+                  <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'white', fontFamily: 'var(--font-pixel)' }}>
+                    {isDrinkable ? 'UỐNG' : 'ĂN'}
+                  </span>
+                  {eatCooldown && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        background: 'rgba(0,0,0,0.4)',
+                        animation: 'cooldown-swipe 0.2s linear forwards'
+                      }}
+                    />
+                  )}
+                </>
+              ) : typeof interactionIcon === 'string' ? (
                 <img src={interactionIcon} alt="Tương Tác" style={{ width: '36px', height: '36px', imageRendering: 'pixelated' }} />
               ) : (
                 interactionIcon

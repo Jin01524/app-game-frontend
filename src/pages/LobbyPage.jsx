@@ -568,7 +568,13 @@ export default function LobbyPage() {
       if (!res.ok) {
         toast.error(data.error || 'Lỗi');
       } else {
-        if (data.backpack) updateBackpack(data.backpack);
+        if (data.backpack) {
+          updateBackpack(data.backpack);
+          const currentItem = data.backpack[selectedBackpackSlotIdx];
+          if (!currentItem || currentItem.quantity <= 0) {
+            setSelectedBackpackSlotIdx(null);
+          }
+        }
         if (data.energy !== undefined) updateEnergy(data.energy);
         toast.success(data.message || 'Sử dụng vật phẩm thành công');
       }
@@ -636,8 +642,8 @@ export default function LobbyPage() {
         }}
         actionLoading={actionLoading}
         eatCooldown={eatCooldown}
-        showInteraction={canInteractCasino || !!closestPlayer}
-        interactionActive={!!(canInteractCasino || closestPlayer)}
+        showInteraction={selectedBackpackSlotIdx === null && (canInteractCasino || !!closestPlayer)}
+        interactionActive={selectedBackpackSlotIdx === null && !!(canInteractCasino || closestPlayer)}
         onInteract={() => {
           if (canInteractCasino) {
             setShowCasinoMenu(true);

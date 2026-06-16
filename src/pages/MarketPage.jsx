@@ -698,7 +698,13 @@ export default function MarketPage() {
       if (!res.ok) {
         toast.error(data.error || 'Lỗi');
       } else {
-        if (data.backpack) updateBackpack(data.backpack);
+        if (data.backpack) {
+          updateBackpack(data.backpack);
+          const currentItem = data.backpack[selectedBackpackSlotIdx];
+          if (!currentItem || currentItem.quantity <= 0) {
+            setSelectedBackpackSlotIdx(null);
+          }
+        }
         if (data.energy !== undefined) updateEnergy(data.energy);
         toast.success(data.message || 'Sử dụng vật phẩm thành công');
       }
@@ -873,8 +879,8 @@ export default function MarketPage() {
         }}
         actionLoading={actionLoading}
         eatCooldown={eatCooldown}
-        showInteraction={!showMarketMenu && !showAnimalMenu && !showMotorCarMenu && (canInteract || canInteractAnimal || canInteractMotorCar || closestPlayer)}
-        interactionActive={!!(canInteract || canInteractAnimal || canInteractMotorCar || closestPlayer)}
+        showInteraction={selectedBackpackSlotIdx === null && !showMarketMenu && !showAnimalMenu && !showMotorCarMenu && (canInteract || canInteractAnimal || canInteractMotorCar || closestPlayer)}
+        interactionActive={selectedBackpackSlotIdx === null && !!(canInteract || canInteractAnimal || canInteractMotorCar || closestPlayer)}
         onInteract={() => {
           if (canInteract) {
             setShowMarketMenu(true);

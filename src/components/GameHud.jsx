@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { ITEM_ASSETS } from './BackpackModal';
 import bagIcon from '../../assets/bag.png';
 
@@ -114,75 +114,140 @@ export function EnergyBar({ energy, style }) {
   );
 }
 
-export function BackpackHotbar({ backpack, selectedSlotIdx, onSelectSlot, zIndex = 10 }) {
+export function BackpackHotbar({ backpack, selectedSlotIdx, onSelectSlot, onLongPressSlot, zIndex = 10 }) {
   const bp = Array.isArray(backpack) ? backpack : [];
   const slots = Array.from({ length: 4 }).map((_, i) => bp[i] || null);
 
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        bottom: '20px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        display: 'flex',
-        gap: '12px',
-        zIndex
-      }}
-    >
-      {slots.map((slot, i) => {
-        const isSelected = selectedSlotIdx === i;
-        const hasItem = slot && slot.quantity > 0;
+  const [holdingIdx, setHoldingIdx] = useState(null);
+  const holdTimerRef = useRef(null);
 
-        return (
-          <div
-            key={i}
-            onClick={() => onSelectSlot(hasItem ? (isSelected ? null : i) : null)}
-            style={{
-              width: '60px',
-              height: '60px',
-              background: '#e2e8f0',
-              border: isSelected ? '4px solid #3b82f6' : '4px solid #94a3b8',
-              boxShadow: isSelected ? '0 0 10px rgba(59, 130, 246, 0.8)' : 'none',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              position: 'relative',
-              cursor: hasItem ? 'pointer' : 'default',
-              transition: 'all 0.1s'
-            }}
-          >
-            {hasItem ? (
-              <>
-                <img
-                  src={getItemIcon(slot.item_id)}
-                  alt={slot.item_id}
-                  style={{ width: '36px', height: '36px', objectFit: 'contain', imageRendering: 'pixelated' }}
-                />
-                <span
+  const handlePointerDown = (i, hasItem) => {
+    if (!hasItem) return;
+    setHoldingIdx(i);
+    holdTimerRef.current = setTimeout(() => {
+      setHoldingIdx(null);
+      holdTimerRef.current = null;
+      if (onLongPressSlot) {
+        onLongPressSlot(i);
+      }
+    }, 1000);
+  };
+
+  const handlePointerUpOrLeave = (i, hasItem, isSelected, isLeave = false) => {
+    if (holdTimerRef.current) {
+      clearTimeout(holdTimerRef.current);
+      holdTimerRef.current = null;
+    }
+    if (holdingIdx === i) {
+      setHoldingIdx(null);
+      if (!isLeave) {
+        onSelectSlot(hasItem ? (isSelected ? null : i) : null);
+      }
+    }
+  };
+
+  return (
+    <>
+      <style>{`
+        @keyframes hold-progress {
+          from { width: 0%; }
+          to { width: 100%; }
+        }
+      `}</style>
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          display: 'flex',
+          gap: '12px',
+          zIndex
+        }}
+      >
+        {slots.map((slot, i) => {
+          const isSelected = selectedSlotIdx === i;
+          const hasItem = slot && slot.quantity > 0;
+          const isHoldingThis = holdingIdx === i;
+
+          return (
+            <div
+              key={i}
+              onPointerDown={() => handlePointerDown(i, hasItem)}
+              onPointerUp={() => handlePointerUpOrLeave(i, hasItem, isSelected)}
+              onPointerLeave={() => handlePointerUpOrLeave(i, hasItem, isSelected, true)}
+              style={{
+                width: '60px',
+                height: '60px',
+                background: '#e2e8f0',
+                border: isSelected ? '4px solid #3b82f6' : '4px solid #94a3b8',
+                boxShadow: isSelected ? '0 0 10px rgba(59, 130, 246, 0.8)' : 'none',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative',
+                cursor: hasItem ? 'pointer' : 'default',
+                transition: 'all 0.1s',
+                overflow: 'hidden',
+                userSelect: 'none',
+                touchAction: 'none'
+              }}
+            >
+              {isHoldingThis && (
+                <div
                   style={{
                     position: 'absolute',
-                    bottom: '2px',
-                    right: '4px',
-                    fontSize: '10px',
-                    fontWeight: 'bold',
-                    color: '#1e293b',
-                    textShadow: '1px 1px 0 #fff'
+                    inset: 0,
+                    background: 'rgba(239, 68, 68, 0.3)',
+                    zIndex: 2,
+                    pointerEvents: 'none'
                   }}
                 >
-                  {slot.quantity}
+                  <div
+                    style={{
+                      height: '4px',
+                      background: '#ef4444',
+                      width: '100%',
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      animation: 'hold-progress 1s linear forwards'
+                    }}
+                  />
+                </div>
+              )}
+              {hasItem ? (
+                <>
+                  <img
+                    src={getItemIcon(slot.item_id)}
+                    alt={slot.item_id}
+                    style={{ width: '36px', height: '36px', objectFit: 'contain', imageRendering: 'pixelated' }}
+                  />
+                  <span
+                    style={{
+                      position: 'absolute',
+                      bottom: '2px',
+                      right: '4px',
+                      fontSize: '10px',
+                      fontWeight: 'bold',
+                      color: '#1e293b',
+                      textShadow: '1px 1px 0 #fff'
+                    }}
+                  >
+                    {slot.quantity}
+                  </span>
+                </>
+              ) : (
+                <span style={{ fontSize: '10px', color: '#cbd5e1', fontFamily: 'var(--font-pixel)' }}>
+                  Trống
                 </span>
-              </>
-            ) : (
-              <span style={{ fontSize: '10px', color: '#cbd5e1', fontFamily: 'var(--font-pixel)' }}>
-                Trống
-              </span>
-            )}
-          </div>
-        );
-      })}
-    </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </>
   );
 }
 
