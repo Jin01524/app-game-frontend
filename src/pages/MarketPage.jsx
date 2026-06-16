@@ -874,6 +874,16 @@ export default function MarketPage() {
         setStorageRiceQty(prev => Math.max(0, prev - parseInt(sellInput) || 0));
         toast.success(`Bán thành công! Nhận được ${data.earned} Xu.`);
         setShowMarketMenu(false);
+        // Cập nhật backpack và xóa ô chọn nếu đã hết item
+        if (data.backpack) {
+          updateBackpack(data.backpack);
+          if (selectedBackpackSlotIdx !== null) {
+            const currentItem = data.backpack[selectedBackpackSlotIdx];
+            if (!currentItem || currentItem.quantity <= 0) {
+              setSelectedBackpackSlotIdx(null);
+            }
+          }
+        }
         // Sync nền
         fetchMarket();
       }
