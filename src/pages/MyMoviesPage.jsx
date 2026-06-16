@@ -213,6 +213,55 @@ export default function MyMoviesPage() {
     initFetch();
   }, [fetchMovies]);
 
+  // Load detail movie including user watchLogs
+  const loadMovieDetail = useCallback(async (movieId, initialPart = null, initialEpisode = null) => {
+    setDetailLoading(true);
+    try {
+      const res = await authFetch(`/api/movies/${movieId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setMovieDetail(data);
+        movieRef.current = data;
+        
+        // Find default episode to play
+        let pIdx = 0;
+        let eIdx = 0;
+        
+        if (initialPart !== null && initialEpisode !== null) {
+          pIdx = initialPart;
+          eIdx = initialEpisode;
+        } else if (data.watchLogs && data.watchLogs.length > 0) {
+          // If has parts, try to play the last watched episode
+          if (data.watchLogs[0]) {
+            pIdx = data.watchLogs[0].partIndex;
+            eIdx = data.watchLogs[0].episodeIndex;
+          }
+        }
+        
+        setActivePartIndex(pIdx);
+        activePartIndexRef.current = pIdx;
+        setActiveEpisodeIndex(eIdx);
+        activeEpisodeIndexRef.current = eIdx;
+        
+        if (data.parts && data.parts[pIdx] && data.parts[pIdx].episodes && data.parts[pIdx].episodes[eIdx]) {
+          activeEpisodeRef.current = data.parts[pIdx].episodes[eIdx];
+        }
+
+        // If part or episode are not yet in search parameters, set them so they persist on reload
+        setSearchParams(prev => {
+          const next = new URLSearchParams(prev);
+          if (!next.has('part')) next.set('part', pIdx);
+          if (!next.has('episode')) next.set('episode', eIdx);
+          return next;
+        });
+      }
+    } catch (err) {
+      console.error('Failed to load movie detail:', err);
+    } finally {
+      setDetailLoading(false);
+    }
+  }, [authFetch, setSearchParams]);
+
   // Sync URL search params to React state
   useEffect(() => {
     const paramMovieId = searchParams.get('movie');
@@ -267,55 +316,6 @@ export default function MyMoviesPage() {
       }
     }
   }, [searchParams, movies, selectedMovie, activePartIndex, activeEpisodeIndex, movieDetail, fetchMovies, isPlaying, loadMovieDetail]);
-
-  // Load detail movie including user watchLogs
-  const loadMovieDetail = useCallback(async (movieId, initialPart = null, initialEpisode = null) => {
-    setDetailLoading(true);
-    try {
-      const res = await authFetch(`/api/movies/${movieId}`);
-      if (res.ok) {
-        const data = await res.json();
-        setMovieDetail(data);
-        movieRef.current = data;
-        
-        // Find default episode to play
-        let pIdx = 0;
-        let eIdx = 0;
-        
-        if (initialPart !== null && initialEpisode !== null) {
-          pIdx = initialPart;
-          eIdx = initialEpisode;
-        } else if (data.watchLogs && data.watchLogs.length > 0) {
-          // If has parts, try to play the last watched episode
-          if (data.watchLogs[0]) {
-            pIdx = data.watchLogs[0].partIndex;
-            eIdx = data.watchLogs[0].episodeIndex;
-          }
-        }
-        
-        setActivePartIndex(pIdx);
-        activePartIndexRef.current = pIdx;
-        setActiveEpisodeIndex(eIdx);
-        activeEpisodeIndexRef.current = eIdx;
-        
-        if (data.parts && data.parts[pIdx] && data.parts[pIdx].episodes && data.parts[pIdx].episodes[eIdx]) {
-          activeEpisodeRef.current = data.parts[pIdx].episodes[eIdx];
-        }
-
-        // If part or episode are not yet in search parameters, set them so they persist on reload
-        setSearchParams(prev => {
-          const next = new URLSearchParams(prev);
-          if (!next.has('part')) next.set('part', pIdx);
-          if (!next.has('episode')) next.set('episode', eIdx);
-          return next;
-        });
-      }
-    } catch (err) {
-      console.error('Failed to load movie detail:', err);
-    } finally {
-      setDetailLoading(false);
-    }
-  }, [authFetch, setSearchParams]);
 
   // Helper to extract YouTube ID
   const extractYoutubeId = (url) => {
