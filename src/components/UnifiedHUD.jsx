@@ -139,16 +139,6 @@ export default function UnifiedHUD({
       {/* Main Interaction Button or Eat/Drink Button */}
       {((selectedItem && canConsume) || showInteraction) && (
         <button 
-          onTouchStart={(e) => {
-            e.preventDefault();
-            if (selectedItem && canConsume) {
-              if (!actionLoading && !eatCooldown) {
-                onConsume();
-              }
-            } else {
-              onInteract();
-            }
-          }}
           onClick={(e) => {
             if (selectedItem && canConsume) {
               if (!actionLoading && !eatCooldown) {

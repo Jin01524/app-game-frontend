@@ -720,7 +720,15 @@ export default function HousePage() {
         setCanInteractVehicle((prev) => (prev !== inRangeVehicle ? inRangeVehicle : prev));
 
         if (keys.current.interact && !isVisiting) {
-          if (inRangeHouse && !showHouseMenu) {
+          const currentSlotIdx = selectedBackpackSlotIdxRef.current;
+          const backpackItem = (currentSlotIdx !== null && userRef.current?.backpack)
+            ? userRef.current.backpack[currentSlotIdx]
+            : null;
+
+          if (backpackItem && backpackItem.item_id === 'rom' && inRangeCage) {
+            keys.current.interact = false;
+            handleClickSlot();
+          } else if (inRangeHouse && !showHouseMenu) {
             keys.current.interact = false;
             setShowHouseMenu(true);
           } else if (inRangeCage && !showCageMenu) {
