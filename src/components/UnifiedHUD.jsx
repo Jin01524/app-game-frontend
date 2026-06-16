@@ -106,63 +106,86 @@ export default function UnifiedHUD({
       )}
 
       {/* Right Side Interactions / Actions */}
-      <div style={{ position: 'absolute', bottom: '20px', right: '20px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '16px', zIndex: 20 }}>
-        {showMovement && (
-          <button 
-            onPointerDown={(e) => { e.preventDefault(); if (keysRef) keysRef.current.jump = true; }}
-            onPointerUp={(e) => { e.preventDefault(); if (keysRef) keysRef.current.jump = false; }}
-            onPointerLeave={() => { if (keysRef) keysRef.current.jump = false; }}
-            onContextMenu={(e) => e.preventDefault()}
-            className="pixel-btn" 
-            style={{ width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', background: 'rgba(0,0,0,0.5)', border: '4px solid var(--px-border)', color: 'white', touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none', marginRight: '4px' }}>
-            ▲
-          </button>
-        )}
+      {showMovement && (
+        <button 
+          onPointerDown={(e) => { e.preventDefault(); if (keysRef) keysRef.current.jump = true; }}
+          onPointerUp={(e) => { e.preventDefault(); if (keysRef) keysRef.current.jump = false; }}
+          onPointerLeave={() => { if (keysRef) keysRef.current.jump = false; }}
+          onContextMenu={(e) => e.preventDefault()}
+          className="pixel-btn" 
+          style={{ 
+            position: 'absolute',
+            bottom: '104px', 
+            right: '24px', 
+            width: '60px', 
+            height: '60px', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            fontSize: '1.2rem', 
+            background: 'rgba(0,0,0,0.5)', 
+            border: '4px solid var(--px-border)', 
+            color: 'white', 
+            touchAction: 'none', 
+            userSelect: 'none', 
+            WebkitUserSelect: 'none', 
+            WebkitTouchCallout: 'none',
+            zIndex: 20 
+          }}>
+          ▲
+        </button>
+      )}
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          {/* Main Interaction Button or Eat/Drink Button */}
-          {((selectedItem && canConsume) || (!selectedItem && showInteraction)) && (
-            <button 
-              onClick={selectedItem ? onConsume : onInteract}
-              disabled={selectedItem ? actionLoading || eatCooldown : false}
-              className="pixel-btn"
-              style={{ 
-                width: '68px', height: '68px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: selectedItem ? '#16a34a' : 'rgb(59, 130, 246)', 
-                border: selectedItem ? '4px solid #15803d' : '4px solid #1e3a8a', padding: '0',
-                boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
-                touchAction: 'none',
-                userSelect: 'none',
-                WebkitUserSelect: 'none',
-                WebkitTouchCallout: 'none',
-                animation: (!selectedItem && interactionActive) ? 'pulse 1s infinite' : 'none',
-                cursor: (selectedItem && (actionLoading || eatCooldown)) ? 'default' : 'pointer',
-                position: 'relative',
-                overflow: 'hidden'
-              }}>
-              {selectedItem ? (
-                <>
-                  <img src={isDrinkable ? drinkIcon : eatIcon} alt={isDrinkable ? 'Uống' : 'Ăn'} style={{ width: '36px', height: '36px', imageRendering: 'pixelated' }} />
-                  {eatCooldown && (
-                    <div
-                      style={{
-                        position: 'absolute',
-                        inset: 0,
-                        background: 'rgba(0,0,0,0.4)',
-                        animation: 'cooldown-swipe 0.2s linear forwards'
-                      }}
-                    />
-                  )}
-                </>
-              ) : typeof interactionIcon === 'string' ? (
-                <img src={interactionIcon} alt="Tương Tác" style={{ width: '36px', height: '36px', imageRendering: 'pixelated' }} />
-              ) : (
-                interactionIcon
+      {/* Main Interaction Button or Eat/Drink Button */}
+      {((selectedItem && canConsume) || (!selectedItem && showInteraction)) && (
+        <button 
+          onClick={selectedItem ? onConsume : onInteract}
+          disabled={selectedItem ? actionLoading || eatCooldown : false}
+          className="pixel-btn"
+          style={{ 
+            position: 'absolute',
+            bottom: '20px', 
+            right: '20px',
+            width: '68px', 
+            height: '68px', 
+            borderRadius: '50%', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            background: selectedItem ? '#16a34a' : 'rgb(59, 130, 246)', 
+            border: selectedItem ? '4px solid #15803d' : '4px solid #1e3a8a', 
+            padding: '0',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
+            touchAction: 'none',
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+            WebkitTouchCallout: 'none',
+            animation: (!selectedItem && interactionActive) ? 'pulse 1s infinite' : 'none',
+            cursor: (selectedItem && (actionLoading || eatCooldown)) ? 'default' : 'pointer',
+            overflow: 'hidden',
+            zIndex: 20
+          }}>
+          {selectedItem ? (
+            <>
+              <img src={isDrinkable ? drinkIcon : eatIcon} alt={isDrinkable ? 'Uống' : 'Ăn'} style={{ width: '36px', height: '36px', imageRendering: 'pixelated' }} />
+              {eatCooldown && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'rgba(0,0,0,0.4)',
+                    animation: 'cooldown-swipe 0.2s linear forwards'
+                  }}
+                />
               )}
-            </button>
+            </>
+          ) : typeof interactionIcon === 'string' ? (
+            <img src={interactionIcon} alt="Tương Tác" style={{ width: '36px', height: '36px', imageRendering: 'pixelated' }} />
+          ) : (
+            interactionIcon
           )}
-        </div>
-      </div>
+        </button>
+      )}
     </>
   );
 }
