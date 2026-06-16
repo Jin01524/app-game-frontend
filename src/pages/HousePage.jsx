@@ -1566,7 +1566,7 @@ export default function HousePage() {
         }}
         interactionIcon={
           selectedBackpackItem && selectedBackpackItem.item_id === 'rom' ? (
-            <img src={whiskIcon} alt="Cho Bò Ăn" style={{ width: '36px', height: '36px', imageRendering: 'pixelated' }} />
+            <img src={khoIcon} alt="Cho Bò Ăn" style={{ width: '36px', height: '36px', imageRendering: 'pixelated', filter: 'hue-rotate(90deg)' }} />
           ) : canInteract && !isVisiting ? (
             <img src={plantIcon} alt="Ruộng" style={{width:'32px'}}/>
           ) : canInteractCage && !isVisiting ? (
