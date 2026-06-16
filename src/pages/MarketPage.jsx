@@ -1,6 +1,6 @@
 import { toast } from '../utils/toast';
 import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { io } from 'socket.io-client';
 import PixelCanvas from '../components/PixelCanvas';
@@ -31,6 +31,18 @@ import cheapCarDarkBlueGreyImg from '../../assets/vehicle/cheap_car_Dark-Blue-Gr
 import vf3RedImg from '../../assets/vehicle/vf3_red.png';
 import vf3BlueImg from '../../assets/vehicle/vf3_blue.png';
 import vf3YellowImg from '../../assets/vehicle/vf3_yellow.png';
+
+const VEHICLE_SKIN_IMAGES = {
+  Motorcycle_orange: motorcycleOrangeImg,
+  Motorcycle_red: motorcycleRedImg,
+  large_displacement_motorcycles_red: largeDisplacementMotorcyclesRedImg,
+  old_car_white: oldCarWhiteImg,
+  cheap_car_white: cheapCarWhiteImg,
+  cheap_car_Dark_Blue_Grey: cheapCarDarkBlueGreyImg,
+  vf3_red: vf3RedImg,
+  vf3_blue: vf3BlueImg,
+  vf3_yellow: vf3YellowImg
+};
 
 import marketIcon from '../../assets/market.png';
 import transactionIcon from '../../assets/transaction.png';
@@ -159,6 +171,8 @@ export default function MarketPage() {
   const riceQty = storageRiceQty + backpackRiceQty;
   const [showMarketMenu, setShowMarketMenu] = useState(false);
   const [showAnimalMenu, setShowAnimalMenu] = useState(false);
+  const [canInteractVehicle, setCanInteractVehicle] = useState(false);
+  const [showVehicleMenu, setShowVehicleMenu] = useState(false);
   const [sellInput, setSellInput] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(0);
@@ -177,9 +191,12 @@ export default function MarketPage() {
   const selectedBackpackSlotIdxRef = useRef(null);
   const userRef = useRef(user);
 
+  const location = useLocation();
+  const startX = location.state?.startX ?? 50;
+
   const gameState = useRef({
     player: {
-      x: 50,
+      x: startX,
       y: 0,
       vy: 0,
       isGrounded: true,
@@ -204,6 +221,11 @@ export default function MarketPage() {
       x: 1650,
       width: 250,
       height: 180
+    },
+    vehicle: {
+      x: 150,
+      width: 80,
+      height: 60
     },
     cameraX: 0,
     bgImg: null,
@@ -254,6 +276,14 @@ export default function MarketPage() {
     const stallImage = new Image(); stallImage.src = stallImgAsset; stallImage.onload = () => { state.stallImg = stallImage; };
     const imgAnimal = new Image(); imgAnimal.src = animalShopImgAsset; imgAnimal.onload = () => { state.imgAnimalShop = imgAnimal; };
     const imgMotorCar = new Image(); imgMotorCar.src = motorCarShopImgAsset; imgMotorCar.onload = () => { state.imgMotorCarShop = imgMotorCar; };
+
+    // Pre-load vehicle images
+    state.vehicleImgs = {};
+    Object.entries(VEHICLE_SKIN_IMAGES).forEach(([id, src]) => {
+      const img = new Image();
+      img.src = src;
+      img.onload = () => { state.vehicleImgs[id] = img; };
+    });
   }, []);
 
   const fetchMarket = async () => {
@@ -376,6 +406,10 @@ export default function MarketPage() {
           setSellInput(riceQty.toString());
         } else if (canInteractAnimal && !showAnimalMenu) {
           setShowAnimalMenu(true);
+        } else if (canInteractMotorCar && !showMotorCarMenu) {
+          setShowMotorCarMenu(true);
+        } else if (canInteractVehicle && !showVehicleMenu) {
+          setShowVehicleMenu(true);
         } else if (closestPlayerRef.current) {
           setShowTradeMenu({ username: closestPlayerRef.current, isAccepting: false });
         }
@@ -393,7 +427,7 @@ export default function MarketPage() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [canInteract, canInteractAnimal, showMarketMenu, showAnimalMenu, riceQty, user?.username]);
+  }, [canInteract, canInteractAnimal, canInteractMotorCar, canInteractVehicle, showMarketMenu, showAnimalMenu, showMotorCarMenu, showVehicleMenu, riceQty, user?.username]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -444,6 +478,16 @@ export default function MarketPage() {
 
       if (state.player.y > 0) { state.player.y = 0; state.player.vy = 0; state.player.isGrounded = true; }
       const worldWidth = 2200;
+      if (state.player.x <= 5) {
+        sessionStorage.setItem('riding_vehicle', 'false');
+        navigate('/home2d', { state: { startX: 1950 } });
+        return;
+      }
+      if (state.player.x >= worldWidth - state.player.width - 5) {
+        sessionStorage.setItem('riding_vehicle', 'false');
+        navigate('/lobby', { state: { startX: 10 } });
+        return;
+      }
       state.player.x = Math.max(0, Math.min(worldWidth - state.player.width, state.player.x));
       
       state.cameraX = state.player.x - canvas.width / 2 + state.player.width / 2;
@@ -478,6 +522,10 @@ export default function MarketPage() {
       const centerMotorCar = state.motorCarShop.x + state.motorCarShop.width / 2;
       const inRangeMotorCar = Math.abs(centerPlayer - centerMotorCar) < 150;
       
+      const centerVehicle = state.vehicle.x + state.vehicle.width / 2;
+      const hasVehicle = sessionStorage.getItem('riding_vehicle') === 'true';
+      const inRangeVehicle = hasVehicle && Math.abs(centerPlayer - centerVehicle) < 100;
+      
       let closestPlayer = null;
       let minDist = 50;
       if (otherPlayersRef.current) {
@@ -493,10 +541,12 @@ export default function MarketPage() {
       setCanInteract((prev) => prev !== inRange ? inRange : prev);
       setCanInteractAnimal((prev) => prev !== inRangeAnimal ? inRangeAnimal : prev);
       setCanInteractMotorCar((prev) => prev !== inRangeMotorCar ? inRangeMotorCar : prev);
+      setCanInteractVehicle((prev) => prev !== inRangeVehicle ? inRangeVehicle : prev);
       
       if (!inRange && showMarketMenu) setShowMarketMenu(false);
       if (!inRangeAnimal && showAnimalMenu) setShowAnimalMenu(false);
       if (!inRangeMotorCar && showMotorCarMenu) setShowMotorCarMenu(false);
+      if (!inRangeVehicle && showVehicleMenu) setShowVehicleMenu(false);
 
       ctx.save();
       ctx.translate(-state.cameraX, 0);
@@ -549,6 +599,26 @@ export default function MarketPage() {
         ctx.fillStyle = '#5c3a21'; ctx.fillRect(0, groundY + 20, worldWidth, 1000);
       }
 
+      // Draw Vehicle if riding_vehicle is true
+      if (sessionStorage.getItem('riding_vehicle') === 'true') {
+        const vState = state.vehicle;
+        const equippedSkin = userRef.current?.equippedVehicleSkin || 'Motorcycle_orange';
+        const vImg = state.vehicleImgs && state.vehicleImgs[equippedSkin];
+        if (vImg && vImg.complete && vImg.width > 0) {
+          const vH = 60;
+          const vW = vImg.width * (vH / vImg.height);
+          ctx.imageSmoothingEnabled = false;
+          ctx.drawImage(vImg, vState.x, groundY - vH, vW, vH);
+        } else {
+          ctx.fillStyle = '#f97316';
+          ctx.fillRect(vState.x, groundY - vState.height, vState.width, vState.height);
+          ctx.fillStyle = '#fff';
+          ctx.font = '8px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('🏍', vState.x + vState.width/2, groundY - vState.height/2 + 4);
+        }
+      }
+
       if (inRange && !showMarketMenu) {
         const bounce = Math.sin(time / 150) * 5;
         ctx.fillStyle = '#facc15'; ctx.font = '24px sans-serif'; ctx.textAlign = 'center';
@@ -561,10 +631,10 @@ export default function MarketPage() {
         const bounce = Math.sin(time / 150) * 5;
         ctx.fillStyle = '#facc15'; ctx.font = '24px sans-serif'; ctx.textAlign = 'center';
         ctx.fillText('▼', state.motorCarShop.x + state.motorCarShop.width/2, groundY - state.motorCarShop.height - 20 + bounce);
-      } else if (false) {
+      } else if (inRangeVehicle && !showVehicleMenu) {
         const bounce = Math.sin(time / 150) * 5;
         ctx.fillStyle = '#facc15'; ctx.font = '24px sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText('▼', state.animalShop.x + state.animalShop.width/2, groundY - state.animalShop.height - 20 + bounce);
+        ctx.fillText('▼', state.vehicle.x + state.vehicle.width/2, groundY - state.vehicle.height - 20 + bounce);
       }
 
       const drawCharacter = (pState, isMe) => {
@@ -766,6 +836,28 @@ export default function MarketPage() {
     }
   };
 
+  const handleEquipVehicle = async (vehicleId) => {
+    setActionLoading(true);
+    try {
+      const res = await authFetch('/api/vehicle/equip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vehicleId })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || 'Lỗi trang bị xe');
+      } else {
+        toast.success(data.message || 'Trang bị xe thành công!');
+        refreshUser();
+      }
+    } catch (e) {
+      toast.error('Lỗi kết nối');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleSell = async () => {
     setActionLoading(true);
     try {
@@ -879,8 +971,8 @@ export default function MarketPage() {
         }}
         actionLoading={actionLoading}
         eatCooldown={eatCooldown}
-        showInteraction={selectedBackpackSlotIdx === null && !showMarketMenu && !showAnimalMenu && !showMotorCarMenu && (canInteract || canInteractAnimal || canInteractMotorCar || closestPlayer)}
-        interactionActive={selectedBackpackSlotIdx === null && !!(canInteract || canInteractAnimal || canInteractMotorCar || closestPlayer)}
+        showInteraction={selectedBackpackSlotIdx === null && !showMarketMenu && !showAnimalMenu && !showMotorCarMenu && !showVehicleMenu && (canInteract || canInteractAnimal || canInteractMotorCar || canInteractVehicle || closestPlayer)}
+        interactionActive={selectedBackpackSlotIdx === null && !!(canInteract || canInteractAnimal || canInteractMotorCar || canInteractVehicle || closestPlayer)}
         onInteract={() => {
           if (canInteract) {
             setShowMarketMenu(true);
@@ -889,6 +981,8 @@ export default function MarketPage() {
             setShowAnimalMenu(true);
           } else if (canInteractMotorCar) {
             setShowMotorCarMenu(true);
+          } else if (canInteractVehicle) {
+            setShowVehicleMenu(true);
           } else if (closestPlayerRef.current) {
             setShowTradeMenu({ username: closestPlayerRef.current, isAccepting: false });
           }
@@ -899,6 +993,8 @@ export default function MarketPage() {
           ) : canInteractAnimal ? (
             <img src={marketIcon} alt="Động Vật" style={{ width: '40px', height: '40px', imageRendering: 'pixelated', display: 'block', filter: 'hue-rotate(180deg)' }} />
           ) : canInteractMotorCar ? (
+            <span style={{ fontSize: '24px' }}>🏍️</span>
+          ) : canInteractVehicle ? (
             <span style={{ fontSize: '24px' }}>🏍️</span>
           ) : closestPlayer ? (
             <img src={transactionIcon} alt="Giao Dịch" style={{ width: '36px', height: '36px', imageRendering: 'pixelated' }} />
@@ -1111,6 +1207,77 @@ export default function MarketPage() {
         </div>
       )}
 
+      {showVehicleMenu && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+          <div className="rpg-box fade-in" style={{ background: '#fffbeb', width: '380px', maxHeight: '90%', overflowY: 'auto', padding: '12px 16px', color: '#000', position: 'relative', marginTop: '-50px', boxSizing: 'border-box' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #ccc', paddingBottom: '6px', marginBottom: '12px' }}>
+              <h2 style={{ fontSize: '15px', margin: 0, fontWeight: 'bold' }}>🏍️ XE CỦA BẠN</h2>
+              <button onClick={() => setShowVehicleMenu(false)} style={{ background: 'transparent', border: 'none', fontSize: '14px', cursor: 'pointer', fontFamily: 'var(--font-pixel)', fontWeight: 'bold', color: '#ef4444' }}>[x]</button>
+            </div>
+
+            {/* Quick Travel */}
+            <div style={{ marginBottom: '14px' }}>
+              <div style={{ fontSize: '11px', fontWeight: 'bold', marginBottom: '6px', color: '#64748b' }}>⚡ DI CHUYỂN NHANH</div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  className="pixel-btn"
+                  onClick={() => {
+                    sessionStorage.setItem('riding_vehicle', 'true');
+                    navigate('/home2d');
+                  }}
+                  style={{ flex: 1, background: '#3b82f6', color: 'white', padding: '8px 6px', fontSize: '10px' }}
+                >🏡 NÔNG TRẠI</button>
+                <button
+                  className="pixel-btn"
+                  onClick={() => {
+                    sessionStorage.setItem('riding_vehicle', 'true');
+                    navigate('/lobby');
+                  }}
+                  style={{ flex: 1, background: '#8b5cf6', color: 'white', padding: '8px 6px', fontSize: '10px' }}
+                >🎮 SẢNH</button>
+              </div>
+            </div>
+
+            {/* Skin Selection */}
+            <div style={{ fontSize: '11px', fontWeight: 'bold', marginBottom: '8px', color: '#64748b' }}>🎨 CHỌN SKIN XE</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {(['Motorcycle_orange', ...(user?.vehicleSkins || [])]).filter((v, i, arr) => arr.indexOf(v) === i).map(skinId => {
+                const img = VEHICLE_SKIN_IMAGES[skinId];
+                const isEquipped = (user?.equippedVehicleSkin || 'Motorcycle_orange') === skinId;
+                const skinLabels = {
+                  Motorcycle_orange: 'Xe máy cam (mặc định)',
+                  Motorcycle_red: 'Xe máy đỏ',
+                  large_displacement_motorcycles_red: 'Mô tô PKL đỏ',
+                  old_car_white: 'Ô tô cổ trắng',
+                  cheap_car_white: 'Ô tô giá rẻ trắng',
+                  'cheap_car_Dark-Blue-Grey': 'Ô tô xanh xám',
+                  vf3_red: 'VinFast VF3 đỏ',
+                  vf3_blue: 'VinFast VF3 xanh',
+                  vf3_yellow: 'VinFast VF3 vàng'
+                };
+                return (
+                  <div key={skinId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: isEquipped ? '#fef3c7' : 'white', border: `2px solid ${isEquipped ? '#f59e0b' : '#cbd5e1'}`, padding: '8px 10px', borderRadius: '4px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      {img && <img src={img} alt={skinId} style={{ width: '64px', height: '40px', objectFit: 'contain', imageRendering: 'pixelated' }} />}
+                      <span style={{ fontSize: '11px', fontWeight: 'bold' }}>{skinLabels[skinId] || skinId}</span>
+                    </div>
+                    <button
+                      className="pixel-btn"
+                      disabled={isEquipped || actionLoading}
+                      onClick={() => handleEquipVehicle(skinId)}
+                      style={{ background: isEquipped ? '#94a3b8' : '#22c55e', color: '#fff', padding: '5px 8px', fontSize: '10px', cursor: isEquipped ? 'not-allowed' : 'pointer' }}
+                    >
+                      {isEquipped ? 'ĐANG DÙNG' : 'TRANG BỊ'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div style={{ marginTop: '12px', fontSize: '10px', color: '#94a3b8', textAlign: 'center' }}>Mua thêm skin xe tại Cửa hàng xe trong khu Chợ</div>
+          </div>
+        </div>
+      )}
       {showBackpackMenu && <BackpackModal onClose={() => setShowBackpackMenu(false)} onOpenStorage={() => toast.error('Về nông trại để mở Kho!')} />}
       <DiscardItemPrompt
         itemId={discardPrompt?.itemId}

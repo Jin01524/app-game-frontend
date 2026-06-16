@@ -1,6 +1,6 @@
 import { toast } from '../utils/toast';
 import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import { useAuth } from '../context/AuthContext';
 import PixelCanvas from '../components/PixelCanvas';
@@ -337,9 +337,12 @@ export default function HousePage() {
     setPreferConsume(false);
   }, [selectedBackpackSlotIdx, canInteractHouse]);
 
+  const location = useLocation();
+  const startX = location.state?.startX ?? 200;
+
   // Game state
   const gameState = useRef({
-    player: { x: 200, y: 0, vy: 0, isGrounded: true, width: 32, height: 48, facing: 1, walkCycle: 0, characterType: user?.characterType || 'FrogNinja' },
+    player: { x: startX, y: 0, vy: 0, isGrounded: true, width: 32, height: 48, facing: 1, walkCycle: 0, characterType: user?.characterType || 'FrogNinja' },
     farmPlot: { x: 650, width: 128 },
     house: { x: 80, width: 80, height: 80 },
     craftingTable: { x: 1150, width: 40, height: 40 },
@@ -717,7 +720,11 @@ export default function HousePage() {
         }
 
         if (state.player.x < 0) state.player.x = 0;
-        if (state.player.x > 2000 - state.player.width) state.player.x = 2000 - state.player.width;
+        if (state.player.x >= 2000 - state.player.width - 5) {
+          sessionStorage.setItem('riding_vehicle', 'false');
+          navigate('/market', { state: { startX: 10 } });
+          return;
+        }
 
         // Update React state only if we need to show/hide the UI button
         setCanInteract((prev) => (prev !== inRange ? inRange : prev));
@@ -1678,12 +1685,18 @@ export default function HousePage() {
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button
                   className="pixel-btn"
-                  onClick={() => navigate('/market')}
+                  onClick={() => {
+                    sessionStorage.setItem('riding_vehicle', 'true');
+                    navigate('/market');
+                  }}
                   style={{ flex: 1, background: '#3b82f6', color: 'white', padding: '8px 6px', fontSize: '10px' }}
                 >🏪 CHỢ</button>
                 <button
                   className="pixel-btn"
-                  onClick={() => navigate('/lobby')}
+                  onClick={() => {
+                    sessionStorage.setItem('riding_vehicle', 'true');
+                    navigate('/lobby');
+                  }}
                   style={{ flex: 1, background: '#8b5cf6', color: 'white', padding: '8px 6px', fontSize: '10px' }}
                 >🎮 SẢNH</button>
               </div>
