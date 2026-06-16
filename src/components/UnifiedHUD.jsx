@@ -139,7 +139,16 @@ export default function UnifiedHUD({
       {/* Main Interaction Button or Eat/Drink Button */}
       {((selectedItem && canConsume) || showInteraction) && (
         <button 
-          onClick={(selectedItem && canConsume) ? onConsume : onInteract}
+          onPointerDown={(e) => {
+            e.preventDefault();
+            if (selectedItem && canConsume) {
+              if (!actionLoading && !eatCooldown) {
+                onConsume();
+              }
+            } else {
+              onInteract();
+            }
+          }}
           disabled={(selectedItem && canConsume) ? actionLoading || eatCooldown : false}
           className="pixel-btn"
           style={{ 
