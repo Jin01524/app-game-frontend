@@ -1037,7 +1037,7 @@ export default function MyMoviesPage() {
                 className={styles.backBtn} 
                 onClick={isPlaying ? handleBackToDetails : handleBackToCatalog}
               >
-                {isPlaying ? '← Quay lại thông tin phim' : '← Quay lại danh sách phim'}
+                {isPlaying ? '← Quay lại' : '← Quay lại danh sách phim'}
               </button>
             </header>
 
