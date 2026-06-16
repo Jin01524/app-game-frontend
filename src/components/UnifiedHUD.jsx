@@ -4,6 +4,7 @@ import coinIcon from '../../assets/coin-tl4.2.png';
 
 import eatIcon from '../../assets/eat-icon.png';
 import drinkIcon from '../../assets/drink.png';
+import exchangeIcon from '../../assets/exchange.png';
 
 export default function UnifiedHUD({
   pageTitle,
@@ -36,6 +37,11 @@ export default function UnifiedHUD({
   interactionIcon = null,
   onInteract,
   interactionActive = false,
+
+  // Toggle priority between Consume and Interact
+  preferConsume = false,
+  onTogglePreferConsume = () => {},
+  bothPossible = false,
 
   // Custom Extra Header elements (e.g. Storage/Kho button in Farm)
   extraHeaderElements = null
@@ -136,64 +142,97 @@ export default function UnifiedHUD({
         </button>
       )}
 
-      {/* Main Interaction Button or Eat/Drink Button */}
-      {((selectedItem && canConsume) || showInteraction) && (
+      {/* Switch Button (Exchange Action Priority) */}
+      {bothPossible && (
         <button 
-          onClick={(e) => {
-            if (selectedItem && canConsume) {
-              if (!actionLoading && !eatCooldown) {
-                onConsume();
-              }
-            } else {
-              onInteract();
-            }
-          }}
-          disabled={(selectedItem && canConsume) ? actionLoading || eatCooldown : false}
-          className="pixel-btn"
+          onClick={onTogglePreferConsume}
+          className="pixel-btn" 
           style={{ 
             position: 'absolute',
-            bottom: '20px', 
-            right: '20px',
-            width: '68px', 
-            height: '68px', 
-            borderRadius: '50%', 
+            bottom: '104px', 
+            right: '104px', 
+            width: '60px', 
+            height: '60px', 
+            borderRadius: '50%',
             display: 'flex', 
             alignItems: 'center', 
-            justifyContent: 'center',
-            background: (selectedItem && canConsume) ? '#16a34a' : 'rgb(59, 130, 246)', 
-            border: (selectedItem && canConsume) ? '4px solid #15803d' : '4px solid #1e3a8a', 
-            padding: '0',
-            boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
-            touchAction: 'none',
-            userSelect: 'none',
-            WebkitUserSelect: 'none',
+            justifyContent: 'center', 
+            background: 'rgba(0,0,0,0.5)', 
+            border: '4px solid var(--px-border)', 
+            touchAction: 'none', 
+            userSelect: 'none', 
+            WebkitUserSelect: 'none', 
             WebkitTouchCallout: 'none',
-            animation: (!(selectedItem && canConsume) && interactionActive) ? 'pulse 1s infinite' : 'none',
-            cursor: ((selectedItem && canConsume) && (actionLoading || eatCooldown)) ? 'default' : 'pointer',
-            overflow: 'hidden',
-            zIndex: 20
+            zIndex: 20 
           }}>
-          {(selectedItem && canConsume) ? (
-            <>
-              <img src={isDrinkable ? drinkIcon : eatIcon} alt={isDrinkable ? 'Uống' : 'Ăn'} style={{ width: '36px', height: '36px', imageRendering: 'pixelated' }} />
-              {eatCooldown && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    background: 'rgba(0,0,0,0.4)',
-                    animation: 'cooldown-swipe 0.2s linear forwards'
-                  }}
-                />
-              )}
-            </>
-          ) : typeof interactionIcon === 'string' ? (
-            <img src={interactionIcon} alt="Tương Tác" style={{ width: '36px', height: '36px', imageRendering: 'pixelated' }} />
-          ) : (
-            interactionIcon
-          )}
+          <img src={exchangeIcon} alt="Đổi" style={{ width: '32px', height: '32px', imageRendering: 'pixelated' }} />
         </button>
       )}
+
+      {/* Main Interaction Button or Eat/Drink Button */}
+      {((bothPossible ? true : ((selectedItem && canConsume) || showInteraction))) && (() => {
+        const isCurrentlyConsume = bothPossible ? preferConsume : (selectedItem && canConsume);
+        const isCurrentlyInteract = bothPossible ? !preferConsume : showInteraction;
+        if (!isCurrentlyConsume && !isCurrentlyInteract) return null;
+
+        return (
+          <button 
+            onClick={(e) => {
+              if (isCurrentlyConsume) {
+                if (!actionLoading && !eatCooldown) {
+                  onConsume();
+                }
+              } else {
+                onInteract();
+              }
+            }}
+            disabled={isCurrentlyConsume ? actionLoading || eatCooldown : false}
+            className="pixel-btn"
+            style={{ 
+              position: 'absolute',
+              bottom: '20px', 
+              right: '20px',
+              width: '68px', 
+              height: '68px', 
+              borderRadius: '50%', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              background: isCurrentlyConsume ? '#16a34a' : 'rgb(59, 130, 246)', 
+              border: isCurrentlyConsume ? '4px solid #15803d' : '4px solid #1e3a8a', 
+              padding: '0',
+              boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
+              touchAction: 'none',
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+              WebkitTouchCallout: 'none',
+              animation: (!isCurrentlyConsume && interactionActive) ? 'pulse 1s infinite' : 'none',
+              cursor: (isCurrentlyConsume && (actionLoading || eatCooldown)) ? 'default' : 'pointer',
+              overflow: 'hidden',
+              zIndex: 20
+            }}>
+            {isCurrentlyConsume ? (
+              <>
+                <img src={isDrinkable ? drinkIcon : eatIcon} alt={isDrinkable ? 'Uống' : 'Ăn'} style={{ width: '36px', height: '36px', imageRendering: 'pixelated' }} />
+                {eatCooldown && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      background: 'rgba(0,0,0,0.4)',
+                      animation: 'cooldown-swipe 0.2s linear forwards'
+                    }}
+                  />
+                )}
+              </>
+            ) : typeof interactionIcon === 'string' ? (
+              <img src={interactionIcon} alt="Tương Tác" style={{ width: '36px', height: '36px', imageRendering: 'pixelated' }} />
+            ) : (
+              interactionIcon
+            )}
+          </button>
+        );
+      })()}
     </>
   );
 }

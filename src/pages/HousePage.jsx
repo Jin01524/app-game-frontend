@@ -310,6 +310,7 @@ export default function HousePage() {
   const [feedQtyInput, setFeedQtyInput] = useState('');
   const [storePrompt, setStorePrompt] = useState(null);
   const [storeQtyInput, setStoreQtyInput] = useState('');
+  const [preferConsume, setPreferConsume] = useState(false);
   const [selectedFeedItem, setSelectedFeedItem] = useState(null);
   const [saving, setSaving] = useState(false);
   const [droppedItems, setDroppedItems] = useState([]);
@@ -331,6 +332,10 @@ export default function HousePage() {
   useEffect(() => {
     userRef.current = user;
   }, [user]);
+
+  useEffect(() => {
+    setPreferConsume(false);
+  }, [selectedBackpackSlotIdx, canInteractHouse]);
 
   // Game state
   const gameState = useRef({
@@ -734,7 +739,11 @@ export default function HousePage() {
               handleClickSlot();
             } else if (inRangeHouse) {
               keys.current.interact = false;
-              handleClickStore();
+              if (preferConsume && canConsume) {
+                handleConsumeItem();
+              } else {
+                handleClickStore();
+              }
             } else {
               // Block other interactions when holding an item
               keys.current.interact = false;
@@ -1559,6 +1568,7 @@ export default function HousePage() {
     return count > 0 ? [{ item_id: 'cow', quantity: count }] : [];
   };
   const availableCows = getAvailableCows();
+  const bothPossible = canConsume && canInteractHouse && !isVisiting;
 
   return (
     <LandscapeEnforcer>
@@ -1581,6 +1591,9 @@ export default function HousePage() {
         canConsume={canConsume}
         isDrinkable={isDrinkable}
         onConsume={handleConsumeItem}
+        preferConsume={preferConsume}
+        onTogglePreferConsume={() => setPreferConsume(prev => !prev)}
+        bothPossible={bothPossible}
         onDiscard={() => {
           if (selectedBackpackSlotIdx !== null && user?.backpack) {
             const item = user.backpack[selectedBackpackSlotIdx];
