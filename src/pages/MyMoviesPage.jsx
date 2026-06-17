@@ -340,18 +340,37 @@ export default function MyMoviesPage() {
 
   // Background preloader trigger effect
   useEffect(() => {
-    if (isPlaying || !movieDetail) return;
+    if (!movieDetail) return;
     
     try {
-      const activePart = movieDetail.parts?.[activePartIndex];
-      const activeEpisode = activePart?.episodes?.[activeEpisodeIndex];
-      const activeUrl = activeEpisode?.url;
-      
-      if (activeUrl) {
-        preloadGooglePhotosUrl(activeUrl);
+      if (!isPlaying) {
+        // Preload active episode
+        const activePart = movieDetail.parts?.[activePartIndex];
+        const activeEpisode = activePart?.episodes?.[activeEpisodeIndex];
+        const activeUrl = activeEpisode?.url;
+        if (activeUrl) {
+          preloadGooglePhotosUrl(activeUrl);
+        }
+      } else {
+        // User is currently watching, preload next episode URL
+        const currentPart = movieDetail.parts?.[activePartIndex];
+        if (currentPart && currentPart.episodes) {
+          let nextUrl = null;
+          if (activeEpisodeIndex + 1 < currentPart.episodes.length) {
+            nextUrl = currentPart.episodes[activeEpisodeIndex + 1]?.url;
+          } else if (activePartIndex + 1 < movieDetail.parts.length) {
+            const nextPart = movieDetail.parts[activePartIndex + 1];
+            if (nextPart && nextPart.episodes && nextPart.episodes.length > 0) {
+              nextUrl = nextPart.episodes[0]?.url;
+            }
+          }
+          if (nextUrl) {
+            preloadGooglePhotosUrl(nextUrl);
+          }
+        }
       }
     } catch (e) {
-      console.error('[Preload Effect] Error finding active URL:', e);
+      console.error('[Preload Effect] Error finding active/next URL:', e);
     }
   }, [movieDetail, activePartIndex, activeEpisodeIndex, isPlaying, preloadGooglePhotosUrl]);
 
