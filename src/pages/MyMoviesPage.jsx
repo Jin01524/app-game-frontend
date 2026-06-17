@@ -335,6 +335,7 @@ export default function MyMoviesPage() {
   const playerRef = useRef(null);
   const nativePlayerRef = useRef(null);
   const resumeSecsRef = useRef(0);
+  const lastCurrentTimeRef = useRef(0);
   const startTimeRef = useRef(null);
   const activeEpisodeRef = useRef(null);
   const activePartIndexRef = useRef(0);
@@ -560,7 +561,8 @@ export default function MyMoviesPage() {
             console.error('Error getting current time from player:', e);
           }
         } else if (playerInstance.currentTime !== undefined) {
-          lastPosition = Math.round(playerInstance.currentTime);
+          const pTime = playerInstance.currentTime;
+          lastPosition = Math.round(pTime === 0 && lastCurrentTimeRef.current > 0 ? lastCurrentTimeRef.current : pTime);
         }
       }
       
@@ -710,6 +712,7 @@ export default function MyMoviesPage() {
       photosSourceUrlRef.current = url;
       proxyResolvedAttemptRef.current = false; // reset guard for new episode
       resumeSecsRef.current = resumeSecs || 0;
+      lastCurrentTimeRef.current = 0; // reset last known time for new episode
       
       const resolveAndPlay = async () => {
         try {
@@ -1401,7 +1404,10 @@ export default function MyMoviesPage() {
                                 playsInline
                                 onPlay={handleNativePlay}
                                 onPause={handleNativePause}
-                                onTimeUpdate={(e) => setVideoCurrentTime(e.target.currentTime)}
+                                onTimeUpdate={(e) => {
+                                  setVideoCurrentTime(e.target.currentTime);
+                                  lastCurrentTimeRef.current = e.target.currentTime;
+                                }}
                                 onDurationChange={(e) => setVideoDuration(e.target.duration)}
                                 onProgress={(e) => {
                                   if (e.target.buffered.length > 0) {
