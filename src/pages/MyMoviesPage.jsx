@@ -425,6 +425,7 @@ export default function MyMoviesPage() {
             events: {
               onReady: (event) => {
                 if (resumeSecs > 0) {
+                  event.target.seekTo(resumeSecs, true);
                   setSeekMsg(`Tiếp tục xem từ ${formatTimeLabel(resumeSecs)}`);
                   // Clear message after 3s
                   setTimeout(() => setSeekMsg(''), 3000);
@@ -1163,12 +1164,17 @@ export default function MyMoviesPage() {
                               ref={el => {
                                   nativePlayerRef.current = el;
                                   if (el && resumeSecsRef.current > 0) {
-                                    el.onloadedmetadata = () => {
+                                    const seek = () => {
                                       if (resumeSecsRef.current > 0) {
                                         el.currentTime = resumeSecsRef.current;
                                         resumeSecsRef.current = 0;
                                       }
                                     };
+                                    if (el.readyState >= 1) {
+                                      seek();
+                                    } else {
+                                      el.onloadedmetadata = seek;
+                                    }
                                   }
                                 }}
                               src={`https://app-video-proxy.ngocbinhdt1999.workers.dev/?url=${encodeURIComponent(photosStreamUrl)}`}
