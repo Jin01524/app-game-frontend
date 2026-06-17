@@ -984,7 +984,7 @@
   transform: translate(-50%, -50%);
   pointer-events: none;
   opacity: 0;
-  animation: fadeInBgVideo 1s ease 4s forwards; /* 4s delay to hide initial touch overlay, then fade in */
+  animation: fadeInBgVideo 1s ease forwards;
 }
 
 .coverBgImg {
