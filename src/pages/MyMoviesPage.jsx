@@ -176,6 +176,7 @@ export default function MyMoviesPage() {
   const [photosLoading, setPhotosLoading] = useState(false);
   const [photosError, setPhotosError] = useState('');
   const [useProxyFallback, setUseProxyFallback] = useState(false);
+  const photosSourceUrlRef = useRef('');        // original photos URL of current stream
   const proxyResolvedAttemptRef = useRef(false); // guard: prevent infinite re-resolve loop
 
   // Custom HTML5 Video Player States
