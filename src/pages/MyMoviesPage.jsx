@@ -215,11 +215,15 @@ export default function MyMoviesPage() {
 
   const handleNativePlay = () => {
     setVideoPlaying(true);
+    startTimeRef.current = Date.now();
     handlePlayerActivity();
   };
 
   const handleNativePause = () => {
     setVideoPlaying(false);
+    if (nativePlayerRef.current) {
+      saveWatchTime(nativePlayerRef.current);
+    }
     setShowCustomControls(true);
     if (controlsTimeoutRef.current) {
       clearTimeout(controlsTimeoutRef.current);
@@ -742,9 +746,6 @@ export default function MyMoviesPage() {
           } else {
             setSelectedQuality('720p');
           }
-          
-          startTimeRef.current = Date.now();
-          
           if (resumeSecs > 0) {
             setSeekMsg(`Tiếp tục xem từ ${formatTimeLabel(resumeSecs)}`);
             setTimeout(() => setSeekMsg(''), 3000);
@@ -976,10 +977,14 @@ export default function MyMoviesPage() {
     return () => {
       // Destroy player on exit details
       if (playerRef.current) {
+        saveWatchTime(playerRef.current);
         try {
           playerRef.current.destroy();
         } catch (e) {}
         playerRef.current = null;
+      } else if (nativePlayerRef.current) {
+        saveWatchTime(nativePlayerRef.current);
+        nativePlayerRef.current = null;
       }
     };
   }, [movieDetail, initPlayer, activePartIndex, activeEpisodeIndex, isPlaying]);
