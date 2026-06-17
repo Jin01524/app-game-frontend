@@ -317,6 +317,44 @@ export default function MyMoviesPage() {
     }
   }, [searchParams, movies, selectedMovie, activePartIndex, activeEpisodeIndex, movieDetail, fetchMovies, isPlaying, loadMovieDetail]);
 
+  // Pre-resolve Google Photos URL in the background to speed up play boot time
+  const preloadGooglePhotosUrl = useCallback(async (url) => {
+    if (!url || !/photos\.app\.goo\.gl|photos\.google\.com/i.test(url)) return;
+    
+    // Check if already in cache
+    const cached = getCachedPhotosData(url);
+    if (cached) return;
+    
+    console.log('[Preload] Pre-resolving Google Photos URL in background...', url.substring(0, 60));
+    try {
+      const res = await authFetch(`/api/movies/photos-url?url=${encodeURIComponent(url)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setCachedPhotosData(url, { streamUrl: data.videoUrl, qualities: data.qualities });
+        console.log('[Preload] Pre-resolved successfully:', url.substring(0, 60));
+      }
+    } catch (err) {
+      console.warn('[Preload] Failed to pre-resolve URL:', err);
+    }
+  }, [authFetch]);
+
+  // Background preloader trigger effect
+  useEffect(() => {
+    if (isPlaying || !movieDetail) return;
+    
+    try {
+      const activePart = movieDetail.parts?.[activePartIndex];
+      const activeEpisode = activePart?.episodes?.[activeEpisodeIndex];
+      const activeUrl = activeEpisode?.url;
+      
+      if (activeUrl) {
+        preloadGooglePhotosUrl(activeUrl);
+      }
+    } catch (e) {
+      console.error('[Preload Effect] Error finding active URL:', e);
+    }
+  }, [movieDetail, activePartIndex, activeEpisodeIndex, isPlaying, preloadGooglePhotosUrl]);
+
   // Helper to extract YouTube ID
   const extractYoutubeId = (url) => {
     if (!url) return '';
