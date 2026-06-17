@@ -1357,6 +1357,10 @@
   justify-content: center;
   align-items: center;
   overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .customControlsContainer {
@@ -1573,6 +1577,8 @@
   height: 20px;
   object-fit: contain;
   display: block;
-  image-rendering: pixelated;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
