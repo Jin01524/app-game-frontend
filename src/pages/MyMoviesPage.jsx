@@ -8,6 +8,7 @@ import muteIcon from '../../assets/mute.png';
 import volumeHighIcon from '../../assets/volume-high.png';
 import nextIcon from '../../assets/next-button.png';
 import timeForwardIcon from '../../assets/time-forward-ten.png';
+import settingsIcon from '../../assets/settings.png';
 
 // Client-side Google Photos HTML parser to extract streamable video URLs
 const extractVideosFromHtmlClient = (html) => {
@@ -1496,14 +1497,12 @@ export default function MyMoviesPage() {
                                   <div className={styles.controlsGroup}>
                                     {/* Next Episode */}
                                     {hasNextEpisode && (
-                                      <button onClick={handlePlayNextEpisode} className={`${styles.controlBtn} ${styles.nextEpBtn}`} title="Tập tiếp theo">
+                                      <button onClick={handlePlayNextEpisode} className={`${styles.controlBtn} ${styles.nextEpBtn}`} title="Tập tiếp theo" style={{ padding: '6px' }}>
                                         <img 
                                           src={nextIcon} 
                                           alt="Tập tiếp theo" 
                                           className={styles.btnIconImg}
-                                          style={{ marginRight: '6px' }}
                                         />
-                                        Tập tiếp theo
                                       </button>
                                     )}
 
@@ -1515,7 +1514,13 @@ export default function MyMoviesPage() {
                                           className={styles.controlBtn}
                                           title="Chất lượng phim"
                                         >
-                                          ⚙️ {selectedQuality}
+                                          <img 
+                                            src={settingsIcon} 
+                                            alt="Quality settings" 
+                                            className={styles.btnIconImg} 
+                                            style={{ marginRight: '4px', display: 'inline-block', verticalAlign: 'middle' }}
+                                          />
+                                          <span style={{ fontSize: '0.82rem', fontWeight: 'bold', color: '#cbd5e1', verticalAlign: 'middle' }}>{selectedQuality}</span>
                                         </button>
                                         {showQualityMenu && (
                                           <div className={styles.qualityPopover}>
