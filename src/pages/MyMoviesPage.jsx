@@ -176,8 +176,148 @@ export default function MyMoviesPage() {
   const [photosLoading, setPhotosLoading] = useState(false);
   const [photosError, setPhotosError] = useState('');
   const [useProxyFallback, setUseProxyFallback] = useState(false);
-  const photosSourceUrlRef = useRef('');        // original photos URL of current stream
   const proxyResolvedAttemptRef = useRef(false); // guard: prevent infinite re-resolve loop
+
+  // Custom HTML5 Video Player States
+  const [videoPlaying, setVideoPlaying] = useState(false);
+  const [videoCurrentTime, setVideoCurrentTime] = useState(0);
+  const [videoDuration, setVideoDuration] = useState(0);
+  const [videoBufferedEnd, setVideoBufferedEnd] = useState(0);
+  const [videoVolume, setVideoVolume] = useState(1);
+  const [videoMuted, setVideoMuted] = useState(false);
+  const [showCustomControls, setShowCustomControls] = useState(true);
+  const [showQualityMenu, setShowQualityMenu] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  
+  const videoContainerRef = useRef(null);
+  const controlsTimeoutRef = useRef(null);
+
+  const handlePlayerActivity = useCallback(() => {
+    setShowCustomControls(true);
+    if (controlsTimeoutRef.current) {
+      clearTimeout(controlsTimeoutRef.current);
+    }
+    if (nativePlayerRef.current && !nativePlayerRef.current.paused) {
+      controlsTimeoutRef.current = setTimeout(() => {
+        setShowCustomControls(false);
+        setShowQualityMenu(false);
+      }, 3000);
+    }
+  }, []);
+
+  const handleNativePlay = () => {
+    setVideoPlaying(true);
+    handlePlayerActivity();
+  };
+
+  const handleNativePause = () => {
+    setVideoPlaying(false);
+    setShowCustomControls(true);
+    if (controlsTimeoutRef.current) {
+      clearTimeout(controlsTimeoutRef.current);
+    }
+  };
+
+  const togglePlay = () => {
+    if (!nativePlayerRef.current) return;
+    if (nativePlayerRef.current.paused) {
+      nativePlayerRef.current.play().catch(err => console.error(err));
+    } else {
+      nativePlayerRef.current.pause();
+    }
+    handlePlayerActivity();
+  };
+
+  const rewind10s = () => {
+    if (!nativePlayerRef.current) return;
+    nativePlayerRef.current.currentTime = Math.max(0, nativePlayerRef.current.currentTime - 10);
+    handlePlayerActivity();
+  };
+
+  const forward10s = () => {
+    if (!nativePlayerRef.current) return;
+    nativePlayerRef.current.currentTime = Math.min(nativePlayerRef.current.duration || 0, nativePlayerRef.current.currentTime + 10);
+    handlePlayerActivity();
+  };
+
+  const handleVolumeChange = (val) => {
+    if (!nativePlayerRef.current) return;
+    const v = parseFloat(val);
+    nativePlayerRef.current.volume = v;
+    setVideoVolume(v);
+    if (v > 0) {
+      nativePlayerRef.current.muted = false;
+      setVideoMuted(false);
+    }
+    handlePlayerActivity();
+  };
+
+  const toggleMute = () => {
+    if (!nativePlayerRef.current) return;
+    const m = !nativePlayerRef.current.muted;
+    nativePlayerRef.current.muted = m;
+    setVideoMuted(m);
+    handlePlayerActivity();
+  };
+
+  const handleTimelineChange = (val) => {
+    if (!nativePlayerRef.current) return;
+    const time = parseFloat(val);
+    nativePlayerRef.current.currentTime = time;
+    setVideoCurrentTime(time);
+    handlePlayerActivity();
+  };
+
+  const formatTime = (secs) => {
+    if (isNaN(secs) || secs === Infinity) return '0:00';
+    const h = Math.floor(secs / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = Math.floor(secs % 60);
+    const pad = (n) => (n < 10 ? `0${n}` : n);
+    if (h > 0) {
+      return `${h}:${pad(m)}:${pad(s)}`;
+    }
+    return `${m}:${pad(s)}`;
+  };
+
+  const handlePlayNextEpisode = () => {
+    if (!movieDetail) return;
+    const currentPart = movieDetail.parts?.[activePartIndex];
+    if (currentPart && currentPart.episodes) {
+      if (activeEpisodeIndex + 1 < currentPart.episodes.length) {
+        handleSelectEpisode(activePartIndex, activeEpisodeIndex + 1);
+      } else if (activePartIndex + 1 < movieDetail.parts.length) {
+        handleSelectEpisode(activePartIndex + 1, 0);
+      }
+    }
+  };
+
+  const currentPart = movieDetail?.parts?.[activePartIndex];
+  const hasNextEpisode = currentPart && (
+    activeEpisodeIndex + 1 < currentPart.episodes.length ||
+    activePartIndex + 1 < movieDetail.parts.length
+  );
+
+  const toggleFullscreen = () => {
+    if (!videoContainerRef.current) return;
+    if (!document.fullscreenElement) {
+      videoContainerRef.current.requestFullscreen().then(() => {
+        setIsFullscreen(true);
+      }).catch(err => console.error(err));
+    } else {
+      document.exitFullscreen().then(() => {
+        setIsFullscreen(false);
+      }).catch(err => console.error(err));
+    }
+  };
+
+  useEffect(() => {
+    const handleFsChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFsChange);
+    return () => document.removeEventListener('fullscreenchange', handleFsChange);
+  }, []);
 
   // Refs for tracking play duration on server
   const playerRef = useRef(null);
@@ -1206,8 +1346,8 @@ export default function MyMoviesPage() {
                       
                       {isPhotosVideo && (
                         <div 
-                          className={styles.photosPlaceholder}
-                          style={{ background: '#000', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+                           className={styles.photosPlaceholder}
+                           style={{ background: '#000', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: photosStreamUrl ? 0 : '16px', overflow: 'hidden' }}
                         >
                           {photosLoading ? (
                             <div className="spinner" style={{ width: 48, height: 48, borderWidth: 4 }} />
@@ -1216,32 +1356,170 @@ export default function MyMoviesPage() {
                               {photosError}
                             </div>
                           ) : photosStreamUrl ? (
-                            <video
-                              key={photosStreamUrl} // Buộc load lại element để seek thời gian chính xác khi chuyển chất lượng
-                              ref={el => {
-                                  nativePlayerRef.current = el;
-                                  if (el && resumeSecsRef.current > 0) {
-                                    const seek = () => {
-                                      if (resumeSecsRef.current > 0) {
-                                        el.currentTime = resumeSecsRef.current;
-                                        resumeSecsRef.current = 0;
+                            <div 
+                              ref={videoContainerRef}
+                              className={styles.customVideoContainer}
+                              onMouseMove={handlePlayerActivity}
+                              onClick={handlePlayerActivity}
+                              onTouchStart={handlePlayerActivity}
+                            >
+                              <video
+                                key={photosStreamUrl} // Buộc load lại element để seek thời gian chính xác khi chuyển chất lượng
+                                ref={el => {
+                                    nativePlayerRef.current = el;
+                                    if (el && resumeSecsRef.current > 0) {
+                                      const seek = () => {
+                                        if (resumeSecsRef.current > 0) {
+                                          el.currentTime = resumeSecsRef.current;
+                                          resumeSecsRef.current = 0;
+                                        }
+                                      };
+                                      if (el.readyState >= 1) {
+                                        seek();
+                                      } else {
+                                        el.onloadedmetadata = seek;
                                       }
-                                    };
-                                    if (el.readyState >= 1) {
-                                      seek();
-                                    } else {
-                                      el.onloadedmetadata = seek;
                                     }
+                                  }}
+                                src={`https://app-video-proxy.ngocbinhdt1999.workers.dev/?url=${encodeURIComponent(photosStreamUrl)}`}
+                                onError={handlePhotosStreamError}
+                                controls={false}
+                                autoPlay
+                                playsInline
+                                onPlay={handleNativePlay}
+                                onPause={handleNativePause}
+                                onTimeUpdate={(e) => setVideoCurrentTime(e.target.currentTime)}
+                                onDurationChange={(e) => setVideoDuration(e.target.duration)}
+                                onProgress={(e) => {
+                                  if (e.target.buffered.length > 0) {
+                                    setVideoBufferedEnd(e.target.buffered.end(e.target.buffered.length - 1));
                                   }
                                 }}
-                              src={`https://app-video-proxy.ngocbinhdt1999.workers.dev/?url=${encodeURIComponent(photosStreamUrl)}`}
-                              onError={handlePhotosStreamError}
-                              controls
-                              autoPlay
-                              playsInline
-                              className={styles.nativeVideoPlayer}
-                              style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#000', borderRadius: '12px' }}
-                            />
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  togglePlay();
+                                }}
+                                onDoubleClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleFullscreen();
+                                }}
+                                className={styles.nativeVideoPlayer}
+                                style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#000', borderRadius: isFullscreen ? '0' : '12px' }}
+                              />
+
+                              {/* Custom Controls Overlay */}
+                              <div className={`${styles.customControlsContainer} ${showCustomControls ? styles.visible : ''}`} onClick={(e) => e.stopPropagation()}>
+                                {/* Timeline Progress Bar */}
+                                <div className={styles.timelineContainer}>
+                                  <div 
+                                    className={styles.bufferBar} 
+                                    style={{ width: `${videoDuration > 0 ? (videoBufferedEnd / videoDuration) * 100 : 0}%` }}
+                                  />
+                                  <div 
+                                    className={styles.progressBar} 
+                                    style={{ width: `${videoDuration > 0 ? (videoCurrentTime / videoDuration) * 100 : 0}%` }}
+                                  />
+                                  <input 
+                                    type="range" 
+                                    min={0}
+                                    max={videoDuration || 100}
+                                    value={videoCurrentTime}
+                                    onChange={(e) => handleTimelineChange(e.target.value)}
+                                    className={styles.timelineInput}
+                                  />
+                                </div>
+
+                                {/* Controls Row */}
+                                <div className={styles.controlsRow}>
+                                  <div className={styles.controlsGroup}>
+                                    {/* Play/Pause */}
+                                    <button onClick={togglePlay} className={styles.controlBtn} title={videoPlaying ? 'Tạm dừng' : 'Phát'}>
+                                      {videoPlaying ? '⏸️' : '▶️'}
+                                    </button>
+
+                                    {/* Skip Back 10s */}
+                                    <button onClick={rewind10s} className={styles.controlBtn} title="Tua lại 10s">
+                                      ⏪ 10s
+                                    </button>
+
+                                    {/* Skip Forward 10s */}
+                                    <button onClick={forward10s} className={styles.controlBtn} title="Tua tiếp 10s">
+                                      10s ⏩
+                                    </button>
+
+                                    {/* Volume Control */}
+                                    <div className={styles.volumeContainer}>
+                                      <button onClick={toggleMute} className={styles.controlBtn} title={videoMuted ? 'Bật tiếng' : 'Tắt tiếng'}>
+                                        {videoMuted || videoVolume === 0 ? '🔇' : videoVolume < 0.5 ? '🔉' : '🔊'}
+                                      </button>
+                                      <input 
+                                        type="range" 
+                                        min={0}
+                                        max={1}
+                                        step={0.05}
+                                        value={videoMuted ? 0 : videoVolume}
+                                        onChange={(e) => handleVolumeChange(e.target.value)}
+                                        className={styles.volumeSlider}
+                                      />
+                                    </div>
+
+                                    {/* Time Display */}
+                                    <span className={styles.timeText}>
+                                      {formatTime(videoCurrentTime)} / {formatTime(videoDuration)}
+                                    </span>
+                                  </div>
+
+                                  <div className={styles.controlsGroup}>
+                                    {/* Next Episode */}
+                                    {hasNextEpisode && (
+                                      <button onClick={handlePlayNextEpisode} className={`${styles.controlBtn} ${styles.nextEpBtn}`} title="Tập tiếp theo">
+                                        ⏭️ Tập tiếp theo
+                                      </button>
+                                    )}
+
+                                    {/* Quality Selection Menu */}
+                                    {photosQualities && (
+                                      <div style={{ position: 'relative' }}>
+                                        <button 
+                                          onClick={() => setShowQualityMenu(!showQualityMenu)} 
+                                          className={styles.controlBtn}
+                                          title="Chất lượng phim"
+                                        >
+                                          ⚙️ {selectedQuality}
+                                        </button>
+                                        {showQualityMenu && (
+                                          <div className={styles.qualityPopover}>
+                                            {['1080p', '720p', '360p'].map((q) => {
+                                              const spec = photosQualities[q];
+                                              const available = spec && spec.available;
+                                              return (
+                                                <button 
+                                                  key={q} 
+                                                  disabled={!available}
+                                                  onClick={() => {
+                                                    handleQualityChange(q);
+                                                    setShowQualityMenu(false);
+                                                  }}
+                                                  className={`${styles.qualityOption} ${selectedQuality === q ? styles.active : ''}`}
+                                                >
+                                                  <span>{q}</span>
+                                                  {selectedQuality === q && <span style={{ color: '#10b981' }}>✓</span>}
+                                                </button>
+                                              );
+                                            })}
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+
+                                    {/* Fullscreen Toggle */}
+                                    <button onClick={toggleFullscreen} className={styles.controlBtn} title={isFullscreen ? 'Thoát toàn màn hình' : 'Toàn màn hình'}>
+                                      {isFullscreen ? '🗗' : '⛶'}
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
                           ) : (
                             <div className="spinner" style={{ width: 48, height: 48, borderWidth: 4 }} />
                           )}
@@ -1294,27 +1572,7 @@ export default function MyMoviesPage() {
                     >
                       {theaterMode ? '📺 Chế độ thường' : '🖥️ Chế độ rạp chiếu'}
                     </button>
-                    {isPhotosVideo && photosQualities && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: '500' }}>Chất lượng:</span>
-                        <select
-                          value={selectedQuality}
-                          onChange={(e) => handleQualityChange(e.target.value)}
-                          className={styles.selectBox}
-                          style={{ padding: '6px 12px', fontSize: '0.85rem', height: 'auto', background: '#1e293b', border: '1px solid #334155', color: '#f8fafc', borderRadius: '6px' }}
-                        >
-                          {['1080p', '720p', '360p'].map((q) => {
-                            const spec = photosQualities[q];
-                            const available = spec && spec.available;
-                            return (
-                              <option key={q} value={q} disabled={!available}>
-                                {q} {!available ? ' (Chưa cập nhật)' : ''}
-                              </option>
-                            );
-                          })}
-                        </select>
-                      </div>
-                    )}
+
                     {isDriveVideo && (
                       <a
                         href={activeUrl}
