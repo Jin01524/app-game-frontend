@@ -2,6 +2,12 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import styles from './MyMoviesPage.module.css';
+import playIcon from '../../assets/play-button.png';
+import pauseIcon from '../../assets/pause-button.png';
+import muteIcon from '../../assets/mute.png';
+import volumeHighIcon from '../../assets/volume-high.png';
+import nextIcon from '../../assets/next-button.png';
+import timeForwardIcon from '../../assets/time-forward-ten.png';
 
 // Client-side Google Photos HTML parser to extract streamable video URLs
 const extractVideosFromHtmlClient = (html) => {
@@ -1435,23 +1441,40 @@ export default function MyMoviesPage() {
                                   <div className={styles.controlsGroup}>
                                     {/* Play/Pause */}
                                     <button onClick={togglePlay} className={styles.controlBtn} title={videoPlaying ? 'Tạm dừng' : 'Phát'}>
-                                      {videoPlaying ? '⏸️' : '▶️'}
+                                      <img 
+                                        src={videoPlaying ? pauseIcon : playIcon} 
+                                        alt={videoPlaying ? 'Pause' : 'Play'} 
+                                        className={styles.btnIconImg} 
+                                      />
                                     </button>
 
                                     {/* Skip Back 10s */}
                                     <button onClick={rewind10s} className={styles.controlBtn} title="Tua lại 10s">
-                                      ⏪ 10s
+                                      <img 
+                                        src={timeForwardIcon} 
+                                        alt="Rewind 10s" 
+                                        className={styles.btnIconImg} 
+                                        style={{ transform: 'scaleX(-1)' }} 
+                                      />
                                     </button>
 
                                     {/* Skip Forward 10s */}
                                     <button onClick={forward10s} className={styles.controlBtn} title="Tua tiếp 10s">
-                                      10s ⏩
+                                      <img 
+                                        src={timeForwardIcon} 
+                                        alt="Forward 10s" 
+                                        className={styles.btnIconImg} 
+                                      />
                                     </button>
 
                                     {/* Volume Control */}
                                     <div className={styles.volumeContainer}>
                                       <button onClick={toggleMute} className={styles.controlBtn} title={videoMuted ? 'Bật tiếng' : 'Tắt tiếng'}>
-                                        {videoMuted || videoVolume === 0 ? '🔇' : videoVolume < 0.5 ? '🔉' : '🔊'}
+                                        <img 
+                                          src={videoMuted || videoVolume === 0 ? muteIcon : volumeHighIcon} 
+                                          alt="Volume" 
+                                          className={styles.btnIconImg} 
+                                        />
                                       </button>
                                       <input 
                                         type="range" 
@@ -1474,7 +1497,13 @@ export default function MyMoviesPage() {
                                     {/* Next Episode */}
                                     {hasNextEpisode && (
                                       <button onClick={handlePlayNextEpisode} className={`${styles.controlBtn} ${styles.nextEpBtn}`} title="Tập tiếp theo">
-                                        ⏭️ Tập tiếp theo
+                                        <img 
+                                          src={nextIcon} 
+                                          alt="Tập tiếp theo" 
+                                          className={styles.btnIconImg}
+                                          style={{ marginRight: '6px' }}
+                                        />
+                                        Tập tiếp theo
                                       </button>
                                     )}
 
