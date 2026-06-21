@@ -1922,13 +1922,7 @@ export default function MyMoviesPage() {
                     </div>
 
                     <div className={styles.detailsInfo}>
-                       <button 
-                         className={styles.detailsBackBtn} 
-                         onClick={handleBackToCatalog}
-                       >
-                         ← Quay lại
-                       </button>
-                       <div className={styles.detailsHeader}>
+                      <div className={styles.detailsHeader}>
                         <h1 className={styles.detailsTitle}>{movieDetail.title}</h1>
                         {movieDetail.publishYear && (
                           <span className={styles.detailsYear}>({movieDetail.publishYear})</span>
