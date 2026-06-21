@@ -205,7 +205,9 @@ export default function MyMoviesPage() {
     if (controlsTimeoutRef.current) {
       clearTimeout(controlsTimeoutRef.current);
     }
-    if (nativePlayerRef.current && !nativePlayerRef.current.paused) {
+    const isPlaying = (nativePlayerRef.current && !nativePlayerRef.current.paused) || 
+                      (playerRef.current && typeof playerRef.current.getPlayerState === 'function' && playerRef.current.getPlayerState() === window.YT.PlayerState.PLAYING);
+    if (isPlaying) {
       controlsTimeoutRef.current = setTimeout(() => {
         setShowCustomControls(false);
         setShowQualityMenu(false);
@@ -231,52 +233,145 @@ export default function MyMoviesPage() {
   };
 
   const togglePlay = () => {
-    if (!nativePlayerRef.current) return;
-    if (nativePlayerRef.current.paused) {
-      nativePlayerRef.current.play().catch(err => console.error(err));
-    } else {
-      nativePlayerRef.current.pause();
+    const isPhotos = activeUrl && /photos\.app\.goo\.gl|photos\.google\.com/i.test(activeUrl);
+    const isYoutube = activeUrl && !!extractYoutubeId(activeUrl);
+    
+    if (isPhotos) {
+      if (!nativePlayerRef.current) return;
+      if (nativePlayerRef.current.paused) {
+        nativePlayerRef.current.play().catch(err => console.error(err));
+      } else {
+        nativePlayerRef.current.pause();
+      }
+    } else if (isYoutube) {
+      if (!playerRef.current) return;
+      try {
+        const state = playerRef.current.getPlayerState();
+        if (state === window.YT.PlayerState.PLAYING) {
+          playerRef.current.pauseVideo();
+        } else {
+          playerRef.current.playVideo();
+        }
+      } catch (err) {
+        console.error(err);
+      }
     }
     handlePlayerActivity();
   };
 
   const rewind10s = () => {
-    if (!nativePlayerRef.current) return;
-    nativePlayerRef.current.currentTime = Math.max(0, nativePlayerRef.current.currentTime - 10);
+    const isPhotos = activeUrl && /photos\.app\.goo\.gl|photos\.google\.com/i.test(activeUrl);
+    const isYoutube = activeUrl && !!extractYoutubeId(activeUrl);
+
+    if (isPhotos) {
+      if (!nativePlayerRef.current) return;
+      nativePlayerRef.current.currentTime = Math.max(0, nativePlayerRef.current.currentTime - 10);
+    } else if (isYoutube) {
+      if (!playerRef.current) return;
+      try {
+        const currentTime = playerRef.current.getCurrentTime() || 0;
+        playerRef.current.seekTo(Math.max(0, currentTime - 10), true);
+      } catch (err) {
+        console.error(err);
+      }
+    }
     handlePlayerActivity();
   };
 
   const forward10s = () => {
-    if (!nativePlayerRef.current) return;
-    nativePlayerRef.current.currentTime = Math.min(nativePlayerRef.current.duration || 0, nativePlayerRef.current.currentTime + 10);
+    const isPhotos = activeUrl && /photos\.app\.goo\.gl|photos\.google\.com/i.test(activeUrl);
+    const isYoutube = activeUrl && !!extractYoutubeId(activeUrl);
+
+    if (isPhotos) {
+      if (!nativePlayerRef.current) return;
+      nativePlayerRef.current.currentTime = Math.min(nativePlayerRef.current.duration || 0, nativePlayerRef.current.currentTime + 10);
+    } else if (isYoutube) {
+      if (!playerRef.current) return;
+      try {
+        const currentTime = playerRef.current.getCurrentTime() || 0;
+        const duration = playerRef.current.getDuration() || 0;
+        playerRef.current.seekTo(Math.min(duration, currentTime + 10), true);
+      } catch (err) {
+        console.error(err);
+      }
+    }
     handlePlayerActivity();
   };
 
   const handleVolumeChange = (val) => {
-    if (!nativePlayerRef.current) return;
+    const isPhotos = activeUrl && /photos\.app\.goo\.gl|photos\.google\.com/i.test(activeUrl);
+    const isYoutube = activeUrl && !!extractYoutubeId(activeUrl);
     const v = parseFloat(val);
-    nativePlayerRef.current.volume = v;
+    
     setVideoVolume(v);
     if (v > 0) {
-      nativePlayerRef.current.muted = false;
       setVideoMuted(false);
+    }
+
+    if (isPhotos) {
+      if (!nativePlayerRef.current) return;
+      nativePlayerRef.current.volume = v;
+      if (v > 0) {
+        nativePlayerRef.current.muted = false;
+      }
+    } else if (isYoutube) {
+      if (!playerRef.current) return;
+      try {
+        playerRef.current.setVolume(v * 100);
+        if (v > 0) {
+          playerRef.current.unMute();
+        }
+      } catch (err) {
+        console.error(err);
+      }
     }
     handlePlayerActivity();
   };
 
   const toggleMute = () => {
-    if (!nativePlayerRef.current) return;
-    const m = !nativePlayerRef.current.muted;
-    nativePlayerRef.current.muted = m;
-    setVideoMuted(m);
+    const isPhotos = activeUrl && /photos\.app\.goo\.gl|photos\.google\.com/i.test(activeUrl);
+    const isYoutube = activeUrl && !!extractYoutubeId(activeUrl);
+
+    if (isPhotos) {
+      if (!nativePlayerRef.current) return;
+      const m = !nativePlayerRef.current.muted;
+      nativePlayerRef.current.muted = m;
+      setVideoMuted(m);
+    } else if (isYoutube) {
+      if (!playerRef.current) return;
+      try {
+        const m = !videoMuted;
+        if (m) {
+          playerRef.current.mute();
+        } else {
+          playerRef.current.unMute();
+          playerRef.current.setVolume(videoVolume * 100);
+        }
+        setVideoMuted(m);
+      } catch (err) {
+        console.error(err);
+      }
+    }
     handlePlayerActivity();
   };
 
   const handleTimelineChange = (val) => {
-    if (!nativePlayerRef.current) return;
+    const isPhotos = activeUrl && /photos\.app\.goo\.gl|photos\.google\.com/i.test(activeUrl);
+    const isYoutube = activeUrl && !!extractYoutubeId(activeUrl);
     const time = parseFloat(val);
-    nativePlayerRef.current.currentTime = time;
+    
     setVideoCurrentTime(time);
+    if (isPhotos) {
+      if (!nativePlayerRef.current) return;
+      nativePlayerRef.current.currentTime = time;
+    } else if (isYoutube) {
+      if (!playerRef.current) return;
+      try {
+        playerRef.current.seekTo(time, true);
+      } catch (err) {
+        console.error(err);
+      }
+    }
     handlePlayerActivity();
   };
 
@@ -331,9 +426,48 @@ export default function MyMoviesPage() {
     return () => document.removeEventListener('fullscreenchange', handleFsChange);
   }, []);
 
+  // Sync YouTube player states to React states
+  useEffect(() => {
+    let interval = null;
+    const isYoutube = activeUrl && !!extractYoutubeId(activeUrl);
+    if (isPlaying && isYoutube) {
+      interval = setInterval(() => {
+        if (playerRef.current && typeof playerRef.current.getPlayerState === 'function') {
+          try {
+            const state = playerRef.current.getPlayerState();
+            const isPlayingState = state === window.YT.PlayerState.PLAYING;
+            
+            setVideoPlaying(isPlayingState);
+            
+            const currentTime = playerRef.current.getCurrentTime() || 0;
+            const duration = playerRef.current.getDuration() || 0;
+            const loadedFraction = playerRef.current.getVideoLoadedFraction() || 0;
+            
+            setVideoCurrentTime(currentTime);
+            lastCurrentTimeRef.current = currentTime;
+            if (duration > 0) {
+              setVideoDuration(duration);
+              setVideoBufferedEnd(loadedFraction * duration);
+            }
+          } catch (e) {
+            console.error('Error syncing YT player status:', e);
+          }
+        }
+      }, 500);
+    } else {
+      if (isYoutube) {
+        setVideoPlaying(false);
+      }
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isPlaying, activeUrl]);
+
   // Refs for tracking play duration on server
   const playerRef = useRef(null);
   const nativePlayerRef = useRef(null);
+  const ytProgressIntervalRef = useRef(null);
   const resumeSecsRef = useRef(0);
   const lastCurrentTimeRef = useRef(0);
   const startTimeRef = useRef(null);
@@ -631,7 +765,11 @@ export default function MyMoviesPage() {
               autoplay: 1,
               modestbranding: 1,
               rel: 0,
-              start: resumeSecs || 0
+              start: resumeSecs || 0,
+              controls: 0,
+              disablekb: 1,
+              fs: 0,
+              iv_load_policy: 3
             },
             events: {
               onReady: (event) => {
@@ -641,6 +779,22 @@ export default function MyMoviesPage() {
                   // Clear message after 3s
                   setTimeout(() => setSeekMsg(''), 3000);
                 }
+                try {
+                  event.target.setVolume(videoVolume * 100);
+                  if (videoMuted) {
+                    event.target.mute();
+                  } else {
+                    event.target.unMute();
+                  }
+                } catch (e) {
+                  console.error('Error setting initial volume on YT player ready:', e);
+                }
+                try {
+                  const duration = event.target.getDuration();
+                  if (duration > 0) {
+                    setVideoDuration(duration);
+                  }
+                } catch (e) {}
               },
               onStateChange: (event) => {
                 // PLAYING
@@ -1154,6 +1308,7 @@ export default function MyMoviesPage() {
   const activeUrl = activeEpisode?.url || '';
   const isDriveVideo = !!extractDriveId(activeUrl);
   const isPhotosVideo = activeUrl && /photos\.app\.goo\.gl|photos\.google\.com/i.test(activeUrl);
+  const isYoutubeVideo = activeUrl && !!extractYoutubeId(activeUrl);
 
   const hasWatchProgress = movieDetail?.watchLogs && movieDetail.watchLogs.length > 0 && movieDetail.watchLogs.some(log => log.watchedSeconds > 0);
   const coverBgInfo = movieDetail ? getCoverBgInfo(movieDetail.coverBackground) : { isYt: false, isImg: false, ytId: '' };
@@ -1350,7 +1505,12 @@ export default function MyMoviesPage() {
                     className={`${styles.playerPlaceholder} ${theaterMode ? styles.playerPlaceholderWide : ''}`}
                   >
                     <div
+                      ref={videoContainerRef}
                       className={`${styles.playerWrapper} ${theaterMode ? styles.playerWrapperWide : ''} ${isFloating ? styles.playerWrapperFloating : ''}`}
+                      onMouseMove={handlePlayerActivity}
+                      onClick={handlePlayerActivity}
+                      onTouchStart={handlePlayerActivity}
+                      style={{ borderRadius: isFullscreen ? '0' : '12px' }}
                     >
                       {seekMsg && <div className={styles.seekNotification}>{seekMsg}</div>}
                       
@@ -1360,6 +1520,31 @@ export default function MyMoviesPage() {
                         style={{ display: isPhotosVideo ? 'none' : 'block' }}
                       ></div>
                       
+                      {/* Click/Hover interceptor layer for YouTube player */}
+                      {isYoutubeVideo && (
+                        <div
+                          className={styles.youtubeClickInterceptor}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            togglePlay();
+                          }}
+                          onDoubleClick={(e) => {
+                            e.stopPropagation();
+                            toggleFullscreen();
+                          }}
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            zIndex: 1,
+                            background: 'transparent',
+                            cursor: 'pointer'
+                          }}
+                        />
+                      )}
+
                       {isPhotosVideo && (
                         <div 
                            className={styles.photosPlaceholder}
@@ -1373,11 +1558,7 @@ export default function MyMoviesPage() {
                             </div>
                           ) : photosStreamUrl ? (
                             <div 
-                              ref={videoContainerRef}
                               className={styles.customVideoContainer}
-                              onMouseMove={handlePlayerActivity}
-                              onClick={handlePlayerActivity}
-                              onTouchStart={handlePlayerActivity}
                             >
                               <video
                                 key={photosStreamUrl} // Buộc load lại element để seek thời gian chính xác khi chuyển chất lượng
@@ -1425,150 +1606,152 @@ export default function MyMoviesPage() {
                                 className={styles.nativeVideoPlayer}
                                 style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#000', borderRadius: isFullscreen ? '0' : '12px' }}
                               />
-
-                              {/* Custom Controls Overlay */}
-                              <div className={`${styles.customControlsContainer} ${showCustomControls ? styles.visible : ''}`} onClick={(e) => e.stopPropagation()}>
-                                {/* Timeline Progress Bar */}
-                                <div className={styles.timelineContainer}>
-                                  <div 
-                                    className={styles.bufferBar} 
-                                    style={{ width: `${videoDuration > 0 ? (videoBufferedEnd / videoDuration) * 100 : 0}%` }}
-                                  />
-                                  <div 
-                                    className={styles.progressBar} 
-                                    style={{ width: `${videoDuration > 0 ? (videoCurrentTime / videoDuration) * 100 : 0}%` }}
-                                  />
-                                  <input 
-                                    type="range" 
-                                    min={0}
-                                    max={videoDuration || 100}
-                                    value={videoCurrentTime}
-                                    onChange={(e) => handleTimelineChange(e.target.value)}
-                                    className={styles.timelineInput}
-                                  />
-                                </div>
-
-                                {/* Controls Row */}
-                                <div className={styles.controlsRow}>
-                                  <div className={styles.controlsGroup}>
-                                    {/* Play/Pause */}
-                                    <button onClick={togglePlay} className={styles.controlBtn} title={videoPlaying ? 'Tạm dừng' : 'Phát'}>
-                                      <img 
-                                        src={videoPlaying ? pauseIcon : playIcon} 
-                                        alt={videoPlaying ? 'Pause' : 'Play'} 
-                                        className={styles.btnIconImg} 
-                                      />
-                                    </button>
-
-                                    {/* Skip Back 10s */}
-                                    <button onClick={rewind10s} className={styles.controlBtn} title="Tua lại 10s">
-                                      <img 
-                                        src={timeForwardIcon} 
-                                        alt="Rewind 10s" 
-                                        className={styles.btnIconImg} 
-                                        style={{ transform: 'scaleX(-1)' }} 
-                                      />
-                                    </button>
-
-                                    {/* Skip Forward 10s */}
-                                    <button onClick={forward10s} className={styles.controlBtn} title="Tua tiếp 10s">
-                                      <img 
-                                        src={timeForwardIcon} 
-                                        alt="Forward 10s" 
-                                        className={styles.btnIconImg} 
-                                      />
-                                    </button>
-
-                                    {/* Volume Control */}
-                                    <div className={styles.volumeContainer}>
-                                      <button onClick={toggleMute} className={styles.controlBtn} title={videoMuted ? 'Bật tiếng' : 'Tắt tiếng'}>
-                                        <img 
-                                          src={videoMuted || videoVolume === 0 ? muteIcon : volumeHighIcon} 
-                                          alt="Volume" 
-                                          className={styles.btnIconImg} 
-                                        />
-                                      </button>
-                                      <input 
-                                        type="range" 
-                                        min={0}
-                                        max={1}
-                                        step={0.05}
-                                        value={videoMuted ? 0 : videoVolume}
-                                        onChange={(e) => handleVolumeChange(e.target.value)}
-                                        className={styles.volumeSlider}
-                                      />
-                                    </div>
-
-                                    {/* Time Display */}
-                                    <span className={styles.timeText}>
-                                      {formatTime(videoCurrentTime)} / {formatTime(videoDuration)}
-                                    </span>
-                                  </div>
-
-                                  <div className={styles.controlsGroup}>
-                                    {/* Next Episode */}
-                                    {hasNextEpisode && (
-                                      <button onClick={handlePlayNextEpisode} className={`${styles.controlBtn} ${styles.nextEpBtn}`} title="Tập tiếp theo" style={{ padding: '6px' }}>
-                                        <img 
-                                          src={nextIcon} 
-                                          alt="Tập tiếp theo" 
-                                          className={styles.btnIconImg}
-                                        />
-                                      </button>
-                                    )}
-
-                                    {/* Quality Selection Menu */}
-                                    {photosQualities && (
-                                      <div style={{ position: 'relative' }}>
-                                        <button 
-                                          onClick={() => setShowQualityMenu(!showQualityMenu)} 
-                                          className={styles.controlBtn}
-                                          title="Chất lượng phim"
-                                        >
-                                          <img 
-                                            src={settingsIcon} 
-                                            alt="Quality settings" 
-                                            className={styles.btnIconImg} 
-                                            style={{ marginRight: '4px', display: 'inline-block', verticalAlign: 'middle' }}
-                                          />
-                                          <span style={{ fontSize: '0.82rem', fontWeight: 'bold', color: '#cbd5e1', verticalAlign: 'middle' }}>{selectedQuality}</span>
-                                        </button>
-                                        {showQualityMenu && (
-                                          <div className={styles.qualityPopover}>
-                                            {['1080p', '720p', '360p'].map((q) => {
-                                              const spec = photosQualities[q];
-                                              const available = spec && spec.available;
-                                              return (
-                                                <button 
-                                                  key={q} 
-                                                  disabled={!available}
-                                                  onClick={() => {
-                                                    handleQualityChange(q);
-                                                    setShowQualityMenu(false);
-                                                  }}
-                                                  className={`${styles.qualityOption} ${selectedQuality === q ? styles.active : ''}`}
-                                                >
-                                                  <span>{q}</span>
-                                                  {selectedQuality === q && <span style={{ color: '#10b981' }}>✓</span>}
-                                                </button>
-                                              );
-                                            })}
-                                          </div>
-                                        )}
-                                      </div>
-                                    )}
-
-                                    {/* Fullscreen Toggle */}
-                                    <button onClick={toggleFullscreen} className={styles.controlBtn} title={isFullscreen ? 'Thoát toàn màn hình' : 'Toàn màn hình'}>
-                                      {isFullscreen ? '🗗' : '⛶'}
-                                    </button>
-                                  </div>
-                                </div>
-                              </div>
                             </div>
                           ) : (
                             <div className="spinner" style={{ width: 48, height: 48, borderWidth: 4 }} />
                           )}
+                        </div>
+                      )}
+
+                      {/* Custom Controls Overlay for both Photos and YouTube */}
+                      {((isPhotosVideo && photosStreamUrl && !photosLoading && !photosError) || isYoutubeVideo) && (
+                        <div className={`${styles.customControlsContainer} ${showCustomControls ? styles.visible : ''}`} onClick={(e) => e.stopPropagation()}>
+                          {/* Timeline Progress Bar */}
+                          <div className={styles.timelineContainer}>
+                            <div 
+                              className={styles.bufferBar} 
+                              style={{ width: `${videoDuration > 0 ? (videoBufferedEnd / videoDuration) * 100 : 0}%` }}
+                            />
+                            <div 
+                              className={styles.progressBar} 
+                              style={{ width: `${videoDuration > 0 ? (videoCurrentTime / videoDuration) * 100 : 0}%` }}
+                            />
+                            <input 
+                              type="range" 
+                              min={0}
+                              max={videoDuration || 100}
+                              value={videoCurrentTime}
+                              onChange={(e) => handleTimelineChange(e.target.value)}
+                              className={styles.timelineInput}
+                            />
+                          </div>
+
+                          {/* Controls Row */}
+                          <div className={styles.controlsRow}>
+                            <div className={styles.controlsGroup}>
+                              {/* Play/Pause */}
+                              <button onClick={togglePlay} className={styles.controlBtn} title={videoPlaying ? 'Tạm dừng' : 'Phát'}>
+                                <img 
+                                  src={videoPlaying ? pauseIcon : playIcon} 
+                                  alt={videoPlaying ? 'Pause' : 'Play'} 
+                                  className={styles.btnIconImg} 
+                                />
+                              </button>
+
+                              {/* Skip Back 10s */}
+                              <button onClick={rewind10s} className={styles.controlBtn} title="Tua lại 10s">
+                                <img 
+                                  src={timeForwardIcon} 
+                                  alt="Rewind 10s" 
+                                  className={styles.btnIconImg} 
+                                  style={{ transform: 'scaleX(-1)' }} 
+                                />
+                              </button>
+
+                              {/* Skip Forward 10s */}
+                              <button onClick={forward10s} className={styles.controlBtn} title="Tua tiếp 10s">
+                                <img 
+                                  src={timeForwardIcon} 
+                                  alt="Forward 10s" 
+                                  className={styles.btnIconImg} 
+                                />
+                              </button>
+
+                              {/* Volume Control */}
+                              <div className={styles.volumeContainer}>
+                                <button onClick={toggleMute} className={styles.controlBtn} title={videoMuted ? 'Bật tiếng' : 'Tắt tiếng'}>
+                                  <img 
+                                    src={videoMuted || videoVolume === 0 ? muteIcon : volumeHighIcon} 
+                                    alt="Volume" 
+                                    className={styles.btnIconImg} 
+                                  />
+                                </button>
+                                <input 
+                                  type="range" 
+                                  min={0}
+                                  max={1}
+                                  step={0.05}
+                                  value={videoMuted ? 0 : videoVolume}
+                                  onChange={(e) => handleVolumeChange(e.target.value)}
+                                  className={styles.volumeSlider}
+                                />
+                              </div>
+
+                              {/* Time Display */}
+                              <span className={styles.timeText}>
+                                {formatTime(videoCurrentTime)} / {formatTime(videoDuration)}
+                              </span>
+                            </div>
+
+                            <div className={styles.controlsGroup}>
+                              {/* Next Episode */}
+                              {hasNextEpisode && (
+                                <button onClick={handlePlayNextEpisode} className={`${styles.controlBtn} ${styles.nextEpBtn}`} title="Tập tiếp theo" style={{ padding: '6px' }}>
+                                  <img 
+                                    src={nextIcon} 
+                                    alt="Tập tiếp theo" 
+                                    className={styles.btnIconImg}
+                                  />
+                                </button>
+                              )}
+
+                              {/* Quality Selection Menu */}
+                              {photosQualities && (
+                                <div style={{ position: 'relative' }}>
+                                  <button 
+                                    onClick={() => setShowQualityMenu(!showQualityMenu)} 
+                                    className={styles.controlBtn}
+                                    title="Chất lượng phim"
+                                  >
+                                    <img 
+                                      src={settingsIcon} 
+                                      alt="Quality settings" 
+                                      className={styles.btnIconImg} 
+                                      style={{ marginRight: '4px', display: 'inline-block', verticalAlign: 'middle' }}
+                                    />
+                                    <span style={{ fontSize: '0.82rem', fontWeight: 'bold', color: '#cbd5e1', verticalAlign: 'middle' }}>{selectedQuality}</span>
+                                  </button>
+                                  {showQualityMenu && (
+                                    <div className={styles.qualityPopover}>
+                                      {['1080p', '720p', '360p'].map((q) => {
+                                        const spec = photosQualities[q];
+                                        const available = spec && spec.available;
+                                        return (
+                                          <button 
+                                            key={q} 
+                                            disabled={!available}
+                                            onClick={() => {
+                                              handleQualityChange(q);
+                                              setShowQualityMenu(false);
+                                            }}
+                                            className={`${styles.qualityOption} ${selectedQuality === q ? styles.active : ''}`}
+                                          >
+                                            <span>{q}</span>
+                                            {selectedQuality === q && <span style={{ color: '#10b981' }}>✓</span>}
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* Fullscreen Toggle */}
+                              <button onClick={toggleFullscreen} className={styles.controlBtn} title={isFullscreen ? 'Thoát toàn màn hình' : 'Toàn màn hình'}>
+                                {isFullscreen ? '🗗' : '⛶'}
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       )}
                       
