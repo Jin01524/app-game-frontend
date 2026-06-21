@@ -97,7 +97,7 @@ body {
 
 /* Pixel cursor */
 *, input, textarea { cursor: inherit; }
-button, a, [role="button"], label[for] { cursor: crosshair !important; }
+button, a, [role="button"], label[for] { cursor: pointer; }
 input, textarea, select { cursor: text !important; }
 
 /* ── Scrollbar ── */
