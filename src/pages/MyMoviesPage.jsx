@@ -1962,61 +1962,63 @@ export default function MyMoviesPage() {
                       </div>
                     </div>
                   </div>
-
-                  {movieDetail.description && (
-                    <div className={styles.detailsDescriptionSection}>
-                      <h3>Mô tả phim</h3>
-                      <p>{movieDetail.description}</p>
-                    </div>
-                  )}
-
-                  {/* Episodes Browser */}
-                  <div className={styles.detailsEpisodesSection}>
-                    <h3>Danh sách tập phim</h3>
-                    
-                    {movieDetail.parts && movieDetail.parts.length > 1 && (
-                      <div className={styles.detailsPartSelector}>
-                        {movieDetail.parts.map((part, pIdx) => (
-                          <button
-                            key={pIdx}
-                            className={`${styles.detailsPartTab} ${activePartIndex === pIdx ? styles.detailsPartTabActive : ''}`}
-                            onClick={() => setActivePartIndex(pIdx)}
-                          >
-                            {part.title || `Phần ${pIdx + 1}`}
-                          </button>
-                        ))}
+                  
+                  <div className={styles.detailsBottomCard}>
+                    {movieDetail.description && (
+                      <div className={styles.detailsDescriptionSection}>
+                        <h3>Mô tả phim</h3>
+                        <p>{movieDetail.description}</p>
                       </div>
                     )}
 
-                    <div className={styles.detailsEpisodesGrid}>
-                      {movieDetail.parts && movieDetail.parts[activePartIndex] && movieDetail.parts[activePartIndex].episodes.map((ep, eIdx) => {
-                        const watchLog = getWatchLog(activePartIndex, eIdx);
-                        const isLastWatched = movieDetail.watchLogs?.[0] && movieDetail.watchLogs[0].partIndex === activePartIndex && movieDetail.watchLogs[0].episodeIndex === eIdx;
-                        
-                        return (
-                          <div
-                            key={eIdx}
-                            className={`${styles.detailsEpisodeCard} ${isLastWatched ? styles.detailsEpisodeCardLast : ''}`}
-                            onClick={() => {
-                              handleSelectEpisode(activePartIndex, eIdx);
-                              setIsPlaying(true);
-                            }}
-                          >
-                            <div className={styles.detailsEpHeader}>
-                              <span className={styles.detailsEpTitle}>{ep.title}</span>
-                              {isLastWatched && <span className={styles.lastWatchedBadge}>Đang xem dở</span>}
-                            </div>
-                            {watchLog && watchLog.watchedSeconds > 0 && (
-                              <div className={styles.detailsEpProgress}>
-                                <span>Đã xem: {formatTimeLabel(watchLog.watchedSeconds)}</span>
-                                {watchLog.lastPositionSeconds > 0 && (
-                                  <span>Dừng ở: {formatTimeLabel(watchLog.lastPositionSeconds)}</span>
-                                )}
+                    {/* Episodes Browser */}
+                    <div className={styles.detailsEpisodesSection}>
+                      <h3>Danh sách tập phim</h3>
+                      
+                      {movieDetail.parts && movieDetail.parts.length > 1 && (
+                        <div className={styles.detailsPartSelector}>
+                          {movieDetail.parts.map((part, pIdx) => (
+                            <button
+                              key={pIdx}
+                              className={`${styles.detailsPartTab} ${activePartIndex === pIdx ? styles.detailsPartTabActive : ''}`}
+                              onClick={() => setActivePartIndex(pIdx)}
+                            >
+                              {part.title || `Phần ${pIdx + 1}`}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className={styles.detailsEpisodesGrid}>
+                        {movieDetail.parts && movieDetail.parts[activePartIndex] && movieDetail.parts[activePartIndex].episodes.map((ep, eIdx) => {
+                          const watchLog = getWatchLog(activePartIndex, eIdx);
+                          const isLastWatched = movieDetail.watchLogs?.[0] && movieDetail.watchLogs[0].partIndex === activePartIndex && movieDetail.watchLogs[0].episodeIndex === eIdx;
+                          
+                          return (
+                            <div
+                              key={eIdx}
+                              className={`${styles.detailsEpisodeCard} ${isLastWatched ? styles.detailsEpisodeCardLast : ''}`}
+                              onClick={() => {
+                                handleSelectEpisode(activePartIndex, eIdx);
+                                setIsPlaying(true);
+                              }}
+                            >
+                              <div className={styles.detailsEpHeader}>
+                                <span className={styles.detailsEpTitle}>{ep.title}</span>
+                                {isLastWatched && <span className={styles.lastWatchedBadge}>Đang xem dở</span>}
                               </div>
-                            )}
-                          </div>
-                        );
-                      })}
+                              {watchLog && watchLog.watchedSeconds > 0 && (
+                                <div className={styles.detailsEpProgress}>
+                                  <span>Đã xem: {formatTimeLabel(watchLog.watchedSeconds)}</span>
+                                  {watchLog.lastPositionSeconds > 0 && (
+                                    <span>Dừng ở: {formatTimeLabel(watchLog.lastPositionSeconds)}</span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                 </div>
