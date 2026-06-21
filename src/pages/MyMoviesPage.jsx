@@ -426,44 +426,6 @@ export default function MyMoviesPage() {
     return () => document.removeEventListener('fullscreenchange', handleFsChange);
   }, []);
 
-  // Sync YouTube player states to React states
-  useEffect(() => {
-    let interval = null;
-    const isYoutube = activeUrl && !!extractYoutubeId(activeUrl);
-    if (isPlaying && isYoutube) {
-      interval = setInterval(() => {
-        if (playerRef.current && typeof playerRef.current.getPlayerState === 'function') {
-          try {
-            const state = playerRef.current.getPlayerState();
-            const isPlayingState = state === window.YT.PlayerState.PLAYING;
-            
-            setVideoPlaying(isPlayingState);
-            
-            const currentTime = playerRef.current.getCurrentTime() || 0;
-            const duration = playerRef.current.getDuration() || 0;
-            const loadedFraction = playerRef.current.getVideoLoadedFraction() || 0;
-            
-            setVideoCurrentTime(currentTime);
-            lastCurrentTimeRef.current = currentTime;
-            if (duration > 0) {
-              setVideoDuration(duration);
-              setVideoBufferedEnd(loadedFraction * duration);
-            }
-          } catch (e) {
-            console.error('Error syncing YT player status:', e);
-          }
-        }
-      }, 500);
-    } else {
-      if (isYoutube) {
-        setVideoPlaying(false);
-      }
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isPlaying, activeUrl]);
-
   // Refs for tracking play duration on server
   const playerRef = useRef(null);
   const nativePlayerRef = useRef(null);
@@ -1311,7 +1273,43 @@ export default function MyMoviesPage() {
   const isYoutubeVideo = activeUrl && !!extractYoutubeId(activeUrl);
 
   const hasWatchProgress = movieDetail?.watchLogs && movieDetail.watchLogs.length > 0 && movieDetail.watchLogs.some(log => log.watchedSeconds > 0);
-  const coverBgInfo = movieDetail ? getCoverBgInfo(movieDetail.coverBackground) : { isYt: false, isImg: false, ytId: '' };
+  // Sync YouTube player states to React states
+  useEffect(() => {
+    let interval = null;
+    const isYoutube = activeUrl && !!extractYoutubeId(activeUrl);
+    if (isPlaying && isYoutube) {
+      interval = setInterval(() => {
+        if (playerRef.current && typeof playerRef.current.getPlayerState === 'function') {
+          try {
+            const state = playerRef.current.getPlayerState();
+            const isPlayingState = state === window.YT.PlayerState.PLAYING;
+            
+            setVideoPlaying(isPlayingState);
+            
+            const currentTime = playerRef.current.getCurrentTime() || 0;
+            const duration = playerRef.current.getDuration() || 0;
+            const loadedFraction = playerRef.current.getVideoLoadedFraction() || 0;
+            
+            setVideoCurrentTime(currentTime);
+            lastCurrentTimeRef.current = currentTime;
+            if (duration > 0) {
+              setVideoDuration(duration);
+              setVideoBufferedEnd(loadedFraction * duration);
+            }
+          } catch (e) {
+            console.error('Error syncing YT player status:', e);
+          }
+        }
+      }, 500);
+    } else {
+      if (isYoutube) {
+        setVideoPlaying(false);
+      }
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isPlaying, activeUrl]);
 
   return (
     <div className={styles.page}>
