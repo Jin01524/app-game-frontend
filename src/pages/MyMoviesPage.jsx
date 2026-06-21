@@ -502,7 +502,7 @@ export default function MyMoviesPage() {
           if (!next.has('part')) next.set('part', pIdx);
           if (!next.has('episode')) next.set('episode', eIdx);
           return next;
-        });
+        }, { replace: true });
       }
     } catch (err) {
       console.error('Failed to load movie detail:', err);
