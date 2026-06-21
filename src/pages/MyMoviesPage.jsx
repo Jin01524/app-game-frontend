@@ -1273,6 +1273,7 @@ export default function MyMoviesPage() {
   const isYoutubeVideo = activeUrl && !!extractYoutubeId(activeUrl);
 
   const hasWatchProgress = movieDetail?.watchLogs && movieDetail.watchLogs.length > 0 && movieDetail.watchLogs.some(log => log.watchedSeconds > 0);
+  const coverBgInfo = movieDetail ? getCoverBgInfo(movieDetail.coverBackground) : { isYt: false, isImg: false, ytId: '' };
   // Sync YouTube player states to React states
   useEffect(() => {
     let interval = null;
