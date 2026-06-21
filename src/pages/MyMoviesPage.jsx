@@ -1943,20 +1943,29 @@ export default function MyMoviesPage() {
                       </div>
 
                       <div className={styles.detailsPlayAction}>
-                        <button 
-                          className={styles.playButtonMain}
-                          onClick={() => {
-                            setIsPlaying(true);
-                            setSearchParams({
-                              movie: movieDetail.id,
-                              play: 'true',
-                              part: activePartIndex,
-                              episode: activeEpisodeIndex
-                            });
-                          }}
-                        >
-                          {hasWatchProgress ? '▶ XEM TIẾP' : '▶ XEM PHIM'}
-                        </button>
+                        <div className={styles.detailsPlayButtonsRow}>
+                          <button 
+                            className={styles.playButtonMain}
+                            onClick={() => {
+                              setIsPlaying(true);
+                              setSearchParams({
+                                movie: movieDetail.id,
+                                play: 'true',
+                                part: activePartIndex,
+                                episode: activeEpisodeIndex
+                              });
+                            }}
+                          >
+                            {hasWatchProgress ? '▶ XEM TIẾP' : '▶ XEM PHIM'}
+                          </button>
+                          
+                          <button 
+                            className={styles.backButtonCatalog}
+                            onClick={handleBackToCatalog}
+                          >
+                            DANH SÁCH PHIM
+                          </button>
+                        </div>
                         
                         {hasWatchProgress && (
                           <div className={styles.detailsProgressInfo}>
