@@ -1963,13 +1963,14 @@ export default function MyMoviesPage() {
                     </div>
                   </div>
                   
+                  {movieDetail.description && (
+                    <div className={styles.detailsDescriptionSection}>
+                      <h3>Mô tả phim</h3>
+                      <p>{movieDetail.description}</p>
+                    </div>
+                  )}
+
                   <div className={styles.detailsBottomCard}>
-                    {movieDetail.description && (
-                      <div className={styles.detailsDescriptionSection}>
-                        <h3>Mô tả phim</h3>
-                        <p>{movieDetail.description}</p>
-                      </div>
-                    )}
 
                     {/* Episodes Browser */}
                     <div className={styles.detailsEpisodesSection}>
