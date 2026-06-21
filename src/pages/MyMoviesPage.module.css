@@ -38,6 +38,30 @@
   border-color: #475569;
 }
 
+.detailsBackBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid #334155;
+  color: #f8fafc;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+  width: fit-content;
+  margin-bottom: 8px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.detailsBackBtn:hover {
+  background: #1e293b;
+  color: #f8fafc;
+  border-color: #10b981;
+  transform: translateX(-2px);
+}
+
 .title {
   font-size: 1.8rem;
   font-weight: 800;

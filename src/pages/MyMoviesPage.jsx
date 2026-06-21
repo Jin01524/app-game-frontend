@@ -1484,14 +1484,16 @@ export default function MyMoviesPage() {
         {/* DETAIL & PLAYER VIEW */}
         {selectedMovie && (
           <>
-            <header className={styles.header}>
-              <button 
-                className={styles.backBtn} 
-                onClick={isPlaying ? handleBackToDetails : handleBackToCatalog}
-              >
-                {isPlaying ? '← Quay lại' : '← Quay lại danh sách phim'}
-              </button>
-            </header>
+            {isPlaying && (
+              <header className={styles.header}>
+                <button 
+                  className={styles.backBtn} 
+                  onClick={handleBackToDetails}
+                >
+                  ← Quay lại
+                </button>
+              </header>
+            )}
 
             {detailLoading || !movieDetail ? (
               <div className={styles.loadingCenter}>
@@ -1920,7 +1922,13 @@ export default function MyMoviesPage() {
                     </div>
 
                     <div className={styles.detailsInfo}>
-                      <div className={styles.detailsHeader}>
+                       <button 
+                         className={styles.detailsBackBtn} 
+                         onClick={handleBackToCatalog}
+                       >
+                         ← Quay lại
+                       </button>
+                       <div className={styles.detailsHeader}>
                         <h1 className={styles.detailsTitle}>{movieDetail.title}</h1>
                         {movieDetail.publishYear && (
                           <span className={styles.detailsYear}>({movieDetail.publishYear})</span>
