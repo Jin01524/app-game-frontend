@@ -587,33 +587,34 @@
 
 /* Watched Section */
 .watchedSection {
-  margin-bottom: 32px;
-  background: #1e293b; /* Slate 800 */
-  border: 1px solid #334155;
-  border-radius: 12px;
-  padding: 20px;
+  margin-bottom: 40px;
+  background: transparent;
+  border: none;
+  padding: 0;
 }
 
 .watchedSectionTitle {
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   font-weight: 800;
   margin: 0 0 16px 0;
-  color: #10b981; /* Emerald 500 */
+  color: #f8fafc;
   letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .watchedGrid {
   display: flex;
-  gap: 16px;
+  gap: 18px;
   overflow-x: auto;
-  padding-bottom: 8px;
+  padding: 10px 4px;
+  margin: 0 -4px;
   scrollbar-width: thin;
 }
 .watchedGrid::-webkit-scrollbar {
   height: 6px;
 }
 .watchedGrid::-webkit-scrollbar-track {
-  background: #0f172a;
+  background: rgba(15, 23, 42, 0.5);
   border-radius: 3px;
 }
 .watchedGrid::-webkit-scrollbar-thumb {
@@ -625,20 +626,22 @@
 }
 
 .watchedCard {
-  background: #0f172a; /* Slate 900 */
+  background: #1e293b;
   border: 1px solid #334155;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s, box-shadow 0.3s;
   display: flex;
   flex-direction: column;
-  width: 200px;
+  width: 180px;
   flex-shrink: 0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 .watchedCard:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px) scale(1.03);
   border-color: #10b981;
+  box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.5), 0 8px 8px -5px rgba(0, 0, 0, 0.3);
 }
 
 .watchedCoverContainer {
@@ -646,6 +649,7 @@
   width: 100%;
   padding-top: 133%; /* 3:4 aspect ratio */
   background: #000;
+  overflow: hidden;
 }
 
 .watchedCoverImg {
@@ -655,17 +659,57 @@
   object-fit: cover;
 }
 
+.watchedPlayOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 2;
+}
+
+.watchedCard:hover .watchedPlayOverlay {
+  opacity: 1;
+}
+
+.watchedPlayIcon {
+  width: 42px;
+  height: 42px;
+  background: #10b981;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.4);
+  transition: transform 0.2s ease;
+  padding-left: 2px; /* Center triangle icon */
+  box-sizing: border-box;
+}
+
+.watchedCard:hover .watchedPlayIcon {
+  transform: scale(1.1);
+}
+
 .watchedProgressOverlay {
   position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
   background: rgba(15, 23, 42, 0.85);
-  padding: 4px 8px;
-  font-size: 0.75rem;
+  padding: 6px 8px;
+  font-size: 0.72rem;
   color: #10b981;
   text-align: center;
   border-top: 1px solid rgba(16, 185, 129, 0.3);
+  z-index: 3;
 }
 
 .watchedInfo {
@@ -676,7 +720,7 @@
 }
 
 .watchedTitle {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 700;
   margin: 0;
   color: #f8fafc;

@@ -1349,6 +1349,9 @@ export default function MyMoviesPage() {
                           ) : (
                             <div className={styles.placeholderCover}>🎬</div>
                           )}
+                          <div className={styles.watchedPlayOverlay}>
+                            <div className={styles.watchedPlayIcon}>▶</div>
+                          </div>
                           <div className={styles.watchedProgressOverlay}>
                             <span>Đã xem: {formatTimeLabel(progress.totalWatchedSeconds)}</span>
                           </div>
